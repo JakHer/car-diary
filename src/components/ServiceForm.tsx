@@ -1,9 +1,11 @@
 import type { FormEvent } from 'react'
-import type { ServiceRecordInput } from '../types'
+import type { ServiceRecord, ServiceRecordInput } from '../types'
 
 interface ServiceFormProps {
   currentMileage: number
-  onAdd: (record: ServiceRecordInput) => void
+  record?: ServiceRecord
+  onCancel: () => void
+  onSave: (record: ServiceRecordInput) => void
 }
 
 const getLocalDate = (): string => {
@@ -12,14 +14,19 @@ const getLocalDate = (): string => {
   return new Date(now.getTime() - offset).toISOString().slice(0, 10)
 }
 
-export const ServiceForm = ({ currentMileage, onAdd }: ServiceFormProps) => {
+export const ServiceForm = ({
+  currentMileage,
+  record,
+  onCancel,
+  onSave,
+}: ServiceFormProps) => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const form = event.currentTarget
     const data = new FormData(form)
     const cost = Number(data.get('cost'))
 
-    onAdd({
+    onSave({
       title: String(data.get('title')).trim(),
       category: String(data.get('category')) as ServiceRecordInput['category'],
       date: String(data.get('date')),
@@ -29,27 +36,31 @@ export const ServiceForm = ({ currentMileage, onAdd }: ServiceFormProps) => {
       notes: String(data.get('notes')).trim(),
     })
 
-    form.reset()
   }
 
   return (
     <form className="card service-form" onSubmit={handleSubmit}>
       <div className="section-heading">
         <div>
-          <p className="eyebrow">New entry</p>
-          <h2>Add service record</h2>
+          <p className="eyebrow">{record ? 'Editing entry' : 'New entry'}</p>
+          <h2>{record ? 'Edit service record' : 'Add service record'}</h2>
         </div>
       </div>
 
       <label className="field">
         <span>Service</span>
-        <input name="title" placeholder="e.g. Engine oil change" required />
+        <input
+          name="title"
+          defaultValue={record?.title}
+          placeholder="e.g. Engine oil change"
+          required
+        />
       </label>
 
       <div className="form-grid form-grid-compact">
         <label className="field">
           <span>Category</span>
-          <select name="category" defaultValue="Maintenance">
+          <select name="category" defaultValue={record?.category ?? 'Maintenance'}>
             <option>Maintenance</option>
             <option>Repair</option>
             <option>Inspection</option>
@@ -60,7 +71,12 @@ export const ServiceForm = ({ currentMileage, onAdd }: ServiceFormProps) => {
 
         <label className="field">
           <span>Date</span>
-          <input name="date" type="date" defaultValue={getLocalDate()} required />
+          <input
+            name="date"
+            type="date"
+            defaultValue={record?.date ?? getLocalDate()}
+            required
+          />
         </label>
 
         <label className="field">
@@ -70,7 +86,7 @@ export const ServiceForm = ({ currentMileage, onAdd }: ServiceFormProps) => {
             type="number"
             min="0"
             step="1"
-            defaultValue={currentMileage}
+            defaultValue={record?.mileage ?? currentMileage}
             required
           />
         </label>
@@ -82,6 +98,9 @@ export const ServiceForm = ({ currentMileage, onAdd }: ServiceFormProps) => {
             type="number"
             min="0"
             step="0.01"
+            defaultValue={
+              record ? (record.costInCents / 100).toFixed(2) : undefined
+            }
             placeholder="0.00"
             required
           />
@@ -90,7 +109,11 @@ export const ServiceForm = ({ currentMileage, onAdd }: ServiceFormProps) => {
 
       <label className="field">
         <span>Workshop</span>
-        <input name="workshop" placeholder="Optional" />
+        <input
+          name="workshop"
+          defaultValue={record?.workshop}
+          placeholder="Optional"
+        />
       </label>
 
       <label className="field">
@@ -98,13 +121,21 @@ export const ServiceForm = ({ currentMileage, onAdd }: ServiceFormProps) => {
         <textarea
           name="notes"
           rows={3}
+          defaultValue={record?.notes}
           placeholder="Parts, observations, next steps..."
         />
       </label>
 
-      <button className="button button-primary button-full" type="submit">
-        Save service record
-      </button>
+      <div className="service-form-actions">
+        {record && (
+          <button className="button button-secondary" type="button" onClick={onCancel}>
+            Cancel
+          </button>
+        )}
+        <button className="button button-primary" type="submit">
+          {record ? 'Save changes' : 'Save service record'}
+        </button>
+      </div>
     </form>
   )
 }

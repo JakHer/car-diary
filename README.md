@@ -26,8 +26,9 @@ npm run dev
 
 - vehicle profile setup,
 - service records with mileage, workshop, cost, and notes,
+- service record editing and deletion,
 - service timeline and vehicle summary,
 - versioned local browser storage.
 
-Data is currently stored in the browser under `car-diary:data:v1`. Clearing
+Data is currently stored in the browser under `car-diary:data:v2`. Clearing
 site data will remove the saved vehicle and its service history.

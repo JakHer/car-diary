@@ -4,6 +4,7 @@ import { ServiceHistory } from './components/ServiceHistory'
 import { VehicleSetup } from './components/VehicleSetup'
 import { loadCarDiaryState, saveCarDiaryState } from './lib/storage'
 import type {
+  ServiceRecord,
   ServiceRecordInput,
   Vehicle,
   VehicleInput,
@@ -16,8 +17,25 @@ const currencyFormatter = new Intl.NumberFormat('en-GB', {
   maximumFractionDigits: 0,
 })
 
+const lastServiceFormatter = new Intl.DateTimeFormat('en-GB', {
+  month: 'short',
+  year: 'numeric',
+})
+
+const getVehicleMileage = (
+  vehicle: Vehicle,
+  records: ServiceRecord[],
+): number => {
+  const recordedMileages = records
+    .filter((record) => record.vehicleId === vehicle.id)
+    .map((record) => record.mileage)
+
+  return Math.max(vehicle.startingMileage, ...recordedMileages)
+}
+
 const App = () => {
   const [state, setState] = useState(loadCarDiaryState)
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
 
   useEffect(() => {
     saveCarDiaryState(state)
@@ -39,10 +57,15 @@ const App = () => {
     [state.activeVehicleId, state.serviceRecords],
   )
 
+  const editingRecord = activeRecords.find(
+    (record) => record.id === editingRecordId,
+  )
+
   const addVehicle = (input: VehicleInput) => {
     const vehicle: Vehicle = {
       ...input,
       id: crypto.randomUUID(),
+      startingMileage: input.currentMileage,
       createdAt: new Date().toISOString(),
     }
 
@@ -53,28 +76,70 @@ const App = () => {
     }))
   }
 
-  const addServiceRecord = (input: ServiceRecordInput) => {
+  const saveServiceRecord = (input: ServiceRecordInput) => {
     if (!activeVehicle) return
 
-    const record = {
-      ...input,
-      id: crypto.randomUUID(),
-      vehicleId: activeVehicle.id,
-      createdAt: new Date().toISOString(),
-    }
+    setState((currentState) => {
+      const nextRecords = editingRecordId
+        ? currentState.serviceRecords.map((record) =>
+            record.id === editingRecordId ? { ...record, ...input } : record,
+          )
+        : [
+            ...currentState.serviceRecords,
+            {
+              ...input,
+              id: crypto.randomUUID(),
+              vehicleId: activeVehicle.id,
+              createdAt: new Date().toISOString(),
+            },
+          ]
 
-    setState((currentState) => ({
-      ...currentState,
-      vehicles: currentState.vehicles.map((vehicle) =>
-        vehicle.id === activeVehicle.id
-          ? {
-              ...vehicle,
-              currentMileage: Math.max(vehicle.currentMileage, input.mileage),
-            }
-          : vehicle,
-      ),
-      serviceRecords: [...currentState.serviceRecords, record],
-    }))
+      return {
+        ...currentState,
+        vehicles: currentState.vehicles.map((vehicle) =>
+          vehicle.id === activeVehicle.id
+            ? {
+                ...vehicle,
+                currentMileage: getVehicleMileage(vehicle, nextRecords),
+              }
+            : vehicle,
+        ),
+        serviceRecords: nextRecords,
+      }
+    })
+
+    setEditingRecordId(null)
+  }
+
+  const deleteServiceRecord = (recordId: string) => {
+    const record = activeRecords.find((entry) => entry.id === recordId)
+    if (!activeVehicle || !record) return
+
+    const shouldDelete = window.confirm(
+      `Delete "${record.title}"? This action cannot be undone.`,
+    )
+    if (!shouldDelete) return
+
+    setState((currentState) => {
+      const nextRecords = currentState.serviceRecords.filter(
+        (entry) => entry.id !== recordId,
+      )
+
+      return {
+        ...currentState,
+        vehicles: currentState.vehicles.map((vehicle) =>
+          vehicle.id === activeVehicle.id
+            ? {
+                ...vehicle,
+                currentMileage: getVehicleMileage(vehicle, nextRecords),
+              }
+            : vehicle,
+        ),
+        serviceRecords: nextRecords,
+      }
+    })
+
+    if (editingRecordId === recordId) setEditingRecordId(null)
   }
 
   const totalCost = activeRecords.reduce(
@@ -148,10 +213,9 @@ const App = () => {
               <span>Last service</span>
               <strong>
                 {activeRecords[0]
-                  ? new Intl.DateTimeFormat('en-GB', {
-                      month: 'short',
-                      year: 'numeric',
-                    }).format(new Date(`${activeRecords[0].date}T12:00:00`))
+                  ? lastServiceFormatter.format(
+                      new Date(`${activeRecords[0].date}T12:00:00`),
+                    )
                   : 'Not yet'}
               </strong>
               <p>{activeRecords[0]?.title ?? 'Add your first record'}</p>
@@ -159,10 +223,18 @@ const App = () => {
           </section>
 
           <div className="workspace-grid">
-            <ServiceHistory records={activeRecords} />
+            <ServiceHistory
+              records={activeRecords}
+              editingRecordId={editingRecordId}
+              onDelete={deleteServiceRecord}
+              onEdit={setEditingRecordId}
+            />
             <ServiceForm
+              key={editingRecord?.id ?? `new-${activeRecords.length}`}
               currentMileage={activeVehicle.currentMileage}
-              onAdd={addServiceRecord}
+              record={editingRecord}
+              onCancel={() => setEditingRecordId(null)}
+              onSave={saveServiceRecord}
             />
           </div>
         </main>

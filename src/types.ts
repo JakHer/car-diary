@@ -12,11 +12,12 @@ export interface Vehicle {
   year: number
   registrationNumber: string
   vin: string
+  startingMileage: number
   currentMileage: number
   createdAt: string
 }
 
-export type VehicleInput = Omit<Vehicle, 'id' | 'createdAt'>
+export type VehicleInput = Omit<Vehicle, 'id' | 'startingMileage' | 'createdAt'>
 
 export interface ServiceRecord {
   id: string
@@ -37,7 +38,7 @@ export type ServiceRecordInput = Omit<
 >
 
 export interface CarDiaryState {
-  version: 1
+  version: 2
   vehicles: Vehicle[]
   activeVehicleId: string | null
   serviceRecords: ServiceRecord[]
