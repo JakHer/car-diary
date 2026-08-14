@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ServiceForm } from './components/ServiceForm'
 import { ServiceHistory } from './components/ServiceHistory'
-import { VehicleSetup } from './components/VehicleSetup'
+import { VehicleForm } from './components/VehicleForm'
 import { loadCarDiaryState, saveCarDiaryState } from './lib/storage'
 import type {
   ServiceRecord,
@@ -36,10 +36,24 @@ const getVehicleMileage = (
 const App = () => {
   const [state, setState] = useState(loadCarDiaryState)
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
+  const [vehicleFormMode, setVehicleFormMode] = useState<
+    'add' | 'edit' | null
+  >(null)
 
   useEffect(() => {
     saveCarDiaryState(state)
   }, [state])
+
+  useEffect(() => {
+    if (!vehicleFormMode) return undefined
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setVehicleFormMode(null)
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [vehicleFormMode])
 
   const activeVehicle = state.vehicles.find(
     (vehicle) => vehicle.id === state.activeVehicleId,
@@ -74,6 +88,69 @@ const App = () => {
       vehicles: [...currentState.vehicles, vehicle],
       activeVehicleId: vehicle.id,
     }))
+    setEditingRecordId(null)
+    setVehicleFormMode(null)
+  }
+
+  const updateVehicle = (input: VehicleInput) => {
+    if (!activeVehicle) return
+
+    setState((currentState) => ({
+      ...currentState,
+      vehicles: currentState.vehicles.map((vehicle) => {
+        if (vehicle.id !== activeVehicle.id) return vehicle
+
+        const updatedVehicle: Vehicle = {
+          ...vehicle,
+          ...input,
+          startingMileage: input.currentMileage,
+        }
+
+        return {
+          ...updatedVehicle,
+          currentMileage: getVehicleMileage(
+            updatedVehicle,
+            currentState.serviceRecords,
+          ),
+        }
+      }),
+    }))
+    setVehicleFormMode(null)
+  }
+
+  const selectVehicle = (vehicleId: string) => {
+    setState((currentState) => ({
+      ...currentState,
+      activeVehicleId: vehicleId,
+    }))
+    setEditingRecordId(null)
+  }
+
+  const deleteVehicle = () => {
+    if (!activeVehicle) return
+
+    const serviceCount = activeRecords.length
+    const shouldDelete = window.confirm(
+      `Delete ${activeVehicle.make} ${activeVehicle.model} and ${serviceCount} ${serviceCount === 1 ? 'service record' : 'service records'}? This action cannot be undone.`,
+    )
+    if (!shouldDelete) return
+
+    setState((currentState) => {
+      const nextVehicles = currentState.vehicles.filter(
+        (vehicle) => vehicle.id !== activeVehicle.id,
+      )
+
+      return {
+        ...currentState,
+        vehicles: nextVehicles,
+        activeVehicleId: nextVehicles[0]?.id ?? null,
+        serviceRecords: currentState.serviceRecords.filter(
+          (record) => record.vehicleId !== activeVehicle.id,
+        ),
+      }
+    })
+    setEditingRecordId(null)
+    setVehicleFormMode(null)
   }
 
   const saveServiceRecord = (input: ServiceRecordInput) => {
@@ -156,9 +233,33 @@ const App = () => {
           </span>
           <span>Car Diary</span>
         </a>
-        <span className="storage-status">
-          <span aria-hidden="true" /> Local storage
-        </span>
+        <div className="app-header-actions">
+          {activeVehicle && (
+            <div className="vehicle-switcher">
+              <select
+                aria-label="Active vehicle"
+                value={activeVehicle.id}
+                onChange={(event) => selectVehicle(event.target.value)}
+              >
+                {state.vehicles.map((vehicle) => (
+                  <option key={vehicle.id} value={vehicle.id}>
+                    {vehicle.make} {vehicle.model}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="button button-secondary button-small"
+                type="button"
+                onClick={() => setVehicleFormMode('add')}
+              >
+                + Add
+              </button>
+            </div>
+          )}
+          <span className="storage-status">
+            <span aria-hidden="true" /> Local storage
+          </span>
+        </div>
       </header>
 
       {!activeVehicle ? (
@@ -171,7 +272,7 @@ const App = () => {
               expenses as they happen.
             </p>
           </div>
-          <VehicleSetup onSave={addVehicle} />
+          <VehicleForm onSave={addVehicle} />
         </main>
       ) : (
         <main className="dashboard">
@@ -187,6 +288,18 @@ const App = () => {
                   <span>{activeVehicle.registrationNumber}</span>
                 )}
                 {activeVehicle.vin && <span>VIN {activeVehicle.vin}</span>}
+              </div>
+              <div className="vehicle-actions">
+                <button type="button" onClick={() => setVehicleFormMode('edit')}>
+                  Edit vehicle
+                </button>
+                <button
+                  className="button-danger"
+                  type="button"
+                  onClick={deleteVehicle}
+                >
+                  Delete vehicle
+                </button>
               </div>
             </div>
             <div className="mileage-display">
@@ -238,6 +351,40 @@ const App = () => {
             />
           </div>
         </main>
+      )}
+
+      {vehicleFormMode && activeVehicle && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setVehicleFormMode(null)
+          }}
+        >
+          <div
+            className="vehicle-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              vehicleFormMode === 'edit' ? 'Edit vehicle' : 'Add vehicle'
+            }
+          >
+            <button
+              className="dialog-close"
+              type="button"
+              aria-label="Close vehicle form"
+              onClick={() => setVehicleFormMode(null)}
+            >
+              X
+            </button>
+            <VehicleForm
+              key={vehicleFormMode === 'edit' ? activeVehicle.id : 'new'}
+              vehicle={vehicleFormMode === 'edit' ? activeVehicle : undefined}
+              onCancel={() => setVehicleFormMode(null)}
+              onSave={vehicleFormMode === 'edit' ? updateVehicle : addVehicle}
+            />
+          </div>
+        </div>
       )}
     </div>
   )
