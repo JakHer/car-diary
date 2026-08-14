@@ -24,7 +24,8 @@ npm run dev
 
 ## Current features
 
-- vehicle profile setup,
+- multiple vehicle profiles with active vehicle switching,
+- vehicle profile editing and deletion,
 - service records with mileage, workshop, cost, and notes,
 - service record editing and deletion,
 - service timeline and vehicle summary,
