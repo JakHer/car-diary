@@ -22,9 +22,12 @@ npm run dev
 - `npm run lint` — run static code analysis
 - `npm run preview` — preview the production build locally
 
-## Initial roadmap
+## Current features
 
-- vehicle profile,
-- service history,
-- mileage and expense tracking,
-- local browser storage.
+- vehicle profile setup,
+- service records with mileage, workshop, cost, and notes,
+- service timeline and vehicle summary,
+- versioned local browser storage.
+
+Data is currently stored in the browser under `car-diary:data:v1`. Clearing
+site data will remove the saved vehicle and its service history.

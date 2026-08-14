@@ -10,10 +10,17 @@
   -moz-osx-font-smoothing: grayscale;
 
   --color-surface: #ffffff;
+  --color-surface-muted: #f0f3f1;
   --color-text-strong: #18201c;
   --color-text-muted: #647069;
+  --color-text-light: #98a19c;
   --color-border: #dce2de;
+  --color-border-strong: #cbd3ce;
   --color-accent: #16744a;
+  --color-accent-hover: #105f3c;
+  --color-accent-soft: rgba(22, 116, 74, 0.1);
+  --radius-large: 18px;
+  --shadow-card: 0 14px 36px rgba(24, 32, 28, 0.055);
 }
 
 * {
@@ -29,6 +36,11 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+}
+
+::selection {
+  color: #fff;
+  background: var(--color-accent);
 }
 
 button,
