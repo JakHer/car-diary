@@ -239,8 +239,22 @@
   background: var(--color-accent-hover);
 }
 
-.button-full {
-  width: 100%;
+.button-secondary {
+  color: var(--color-text-strong);
+  background: var(--color-surface-muted);
+}
+
+.button-secondary:hover {
+  background: var(--color-border);
+}
+
+.service-form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.service-form-actions .button {
+  flex: 1;
 }
 
 .dashboard {
@@ -425,6 +439,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.timeline-item-active {
+  box-shadow: inset 3px 0 var(--color-accent);
+}
+
 .timeline-marker {
   position: absolute;
   top: 29px;
@@ -455,6 +473,41 @@
   color: var(--color-text-strong);
   font-size: 16px;
   white-space: nowrap;
+}
+
+.record-side {
+  display: grid;
+  justify-items: end;
+  gap: 12px;
+}
+
+.record-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.record-actions button {
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+  font-size: 11px;
+  font-weight: 700;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.record-actions button:hover,
+.record-actions button:focus-visible {
+  color: var(--color-text-strong);
+  background: var(--color-border);
+}
+
+.record-actions .button-danger:hover,
+.record-actions .button-danger:focus-visible {
+  color: #a62b2b;
+  background: #fbeaea;
 }
 
 .category {
@@ -552,5 +605,12 @@
   .record-header {
     flex-direction: column;
     gap: 12px;
+  }
+
+  .record-side {
+    width: 100%;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    justify-items: start;
   }
 }

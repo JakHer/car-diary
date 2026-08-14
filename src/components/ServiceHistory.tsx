@@ -2,6 +2,9 @@ import type { ServiceRecord } from '../types'
 
 interface ServiceHistoryProps {
   records: ServiceRecord[]
+  editingRecordId: string | null
+  onDelete: (recordId: string) => void
+  onEdit: (recordId: string) => void
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -19,7 +22,12 @@ const formatDate = (date: string): string => {
   return dateFormatter.format(new Date(`${date}T12:00:00`))
 }
 
-export const ServiceHistory = ({ records }: ServiceHistoryProps) => {
+export const ServiceHistory = ({
+  records,
+  editingRecordId,
+  onDelete,
+  onEdit,
+}: ServiceHistoryProps) => {
   return (
     <section className="card history-card">
       <div className="section-heading history-heading">
@@ -41,7 +49,10 @@ export const ServiceHistory = ({ records }: ServiceHistoryProps) => {
       ) : (
         <ol className="timeline">
           {records.map((record) => (
-            <li className="timeline-item" key={record.id}>
+            <li
+              className={`timeline-item${editingRecordId === record.id ? ' timeline-item-active' : ''}`}
+              key={record.id}
+            >
               <div className="timeline-marker" aria-hidden="true" />
               <article>
                 <div className="record-header">
@@ -49,9 +60,23 @@ export const ServiceHistory = ({ records }: ServiceHistoryProps) => {
                     <span className="category">{record.category}</span>
                     <h3>{record.title}</h3>
                   </div>
-                  <strong>
-                    {currencyFormatter.format(record.costInCents / 100)}
-                  </strong>
+                  <div className="record-side">
+                    <strong>
+                      {currencyFormatter.format(record.costInCents / 100)}
+                    </strong>
+                    <div className="record-actions">
+                      <button type="button" onClick={() => onEdit(record.id)}>
+                        Edit
+                      </button>
+                      <button
+                        className="button-danger"
+                        type="button"
+                        onClick={() => onDelete(record.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="record-meta">
                   <span>{formatDate(record.date)}</span>
