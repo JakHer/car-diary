@@ -2,7 +2,7 @@
   "name": "car-diary",
   "private": true,
   "version": "0.1.0",
-  "description": "Dziennik historii serwisowej samochodu",
+  "description": "A vehicle service history and expense tracker",
   "type": "module",
   "scripts": {
     "dev": "vite",

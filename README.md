@@ -1,30 +1,30 @@
 # Car Diary
 
-Aplikacja do prowadzenia historii serwisowej samochodu: napraw, przeglądów,
-przebiegu i kosztów eksploatacji.
+An app for tracking your vehicle's service history, including repairs,
+inspections, mileage, and ownership expenses.
 
-## Wymagania
+## Requirements
 
-- Node.js 20 lub nowszy
+- Node.js 20 or newer
 - npm
 
-## Uruchomienie lokalne
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Dostępne polecenia
+## Available scripts
 
-- `npm run dev` — uruchamia środowisko deweloperskie
-- `npm run build` — sprawdza typy i buduje wersję produkcyjną
-- `npm run lint` — uruchamia analizę statyczną kodu
-- `npm run preview` — uruchamia lokalny podgląd wersji produkcyjnej
+- `npm run dev` — start the development server
+- `npm run build` — type-check and create a production build
+- `npm run lint` — run static code analysis
+- `npm run preview` — preview the production build locally
 
-## Plan pierwszej wersji
+## Initial roadmap
 
-- profil samochodu,
-- historia wizyt serwisowych,
-- rejestrowanie kosztów i przebiegu,
-- zapis danych lokalnie w przeglądarce.
+- vehicle profile,
+- service history,
+- mileage and expense tracking,
+- local browser storage.
