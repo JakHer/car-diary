@@ -21,6 +21,7 @@ describe('VehicleDialog', () => {
 
     render(
       <VehicleDialog
+        isSaving={false}
         mode="edit"
         vehicle={vehicle}
         onClose={onClose}

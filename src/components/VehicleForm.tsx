@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Vehicle, VehicleInput } from '../types'
+import { Loader } from './Loader'
 import {
   vehicleSchema,
   type VehicleFormValues,
@@ -19,6 +20,7 @@ import {
 
 interface VehicleFormProps {
   className?: string
+  isSaving: boolean
   vehicle?: Vehicle
   onCancel?: () => void
   onSave: (vehicle: VehicleInput) => void
@@ -26,6 +28,7 @@ interface VehicleFormProps {
 
 export const VehicleForm = ({
   className,
+  isSaving,
   vehicle,
   onCancel,
   onSave,
@@ -58,6 +61,7 @@ export const VehicleForm = ({
         'p-[clamp(24px,4vw,36px)] max-[700px]:p-[22px]',
         className,
       )}
+      aria-busy={isSaving}
       noValidate
       onSubmit={handleSubmit(saveVehicle)}
     >
@@ -228,8 +232,15 @@ export const VehicleForm = ({
               'max-[700px]:w-full',
             )}
             type="submit"
+            disabled={isSaving}
           >
-            {isEditing ? 'Save vehicle' : 'Create vehicle profile'}
+            {isSaving ? (
+              <Loader label="Saving vehicle..." size="small" />
+            ) : isEditing ? (
+              'Save vehicle'
+            ) : (
+              'Create vehicle profile'
+            )}
           </button>
         </div>
       </div>

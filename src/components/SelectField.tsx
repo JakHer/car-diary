@@ -1,4 +1,5 @@
 import * as Select from '@radix-ui/react-select'
+import { Check, ChevronDown } from 'lucide-react'
 import {
   inputStyles,
   invalidControlStyles,
@@ -20,40 +21,6 @@ interface SelectFieldProps {
   variant?: 'form' | 'compact'
   onValueChange?: (value: string) => void
 }
-
-const ChevronDownIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="size-3.5"
-    viewBox="0 0 16 16"
-    fill="none"
-  >
-    <path
-      d="m4 6 4 4 4-4"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.75"
-    />
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="size-3.5"
-    viewBox="0 0 16 16"
-    fill="none"
-  >
-    <path
-      d="m3.5 8 3 3 6-6"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.75"
-    />
-  </svg>
-)
 
 const compactTriggerStyles =
   'flex h-9 max-w-[190px] min-w-[132px] cursor-pointer items-center justify-between gap-2 overflow-hidden rounded-[9px] border border-border-strong bg-surface px-2.5 text-[13px] font-bold text-strong outline-none transition-[border-color,box-shadow,background-color] hover:bg-surface-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-soft)] data-[state=open]:border-accent data-[state=open]:shadow-[0_0_0_3px_var(--color-accent-soft)] max-[700px]:min-w-0 max-[700px]:max-w-[118px]'
@@ -89,7 +56,7 @@ export const SelectField = ({
     >
       <Select.Value className="truncate" />
       <Select.Icon className="shrink-0 text-muted">
-        <ChevronDownIcon />
+        <ChevronDown aria-hidden="true" className="size-3.5" strokeWidth={2} />
       </Select.Icon>
     </Select.Trigger>
 
@@ -109,7 +76,7 @@ export const SelectField = ({
             >
               <Select.ItemText>{option.label}</Select.ItemText>
               <Select.ItemIndicator className="absolute right-2.5 text-accent">
-                <CheckIcon />
+                <Check aria-hidden="true" className="size-3.5" strokeWidth={2} />
               </Select.ItemIndicator>
             </Select.Item>
           ))}

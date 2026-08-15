@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
+import { X } from 'lucide-react'
 import { VehicleForm } from './VehicleForm'
 import type { Vehicle, VehicleInput } from '../types'
 
 export type VehicleFormMode = 'add' | 'edit'
 
 interface VehicleDialogProps {
+  isSaving: boolean
   mode: VehicleFormMode
   vehicle: Vehicle
   onClose: () => void
@@ -12,6 +14,7 @@ interface VehicleDialogProps {
 }
 
 export const VehicleDialog = ({
+  isSaving,
   mode,
   vehicle,
   onClose,
@@ -46,10 +49,11 @@ export const VehicleDialog = ({
           aria-label="Close vehicle form"
           onClick={onClose}
         >
-          X
+          <X aria-hidden="true" className="size-4" strokeWidth={2} />
         </button>
         <VehicleForm
           className="max-h-[calc(100svh-48px)] overflow-y-auto max-[700px]:max-h-[calc(100svh-24px)]"
+          isSaving={isSaving}
           key={mode === 'edit' ? vehicle.id : 'new'}
           vehicle={mode === 'edit' ? vehicle : undefined}
           onCancel={onClose}

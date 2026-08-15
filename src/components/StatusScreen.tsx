@@ -13,15 +13,14 @@ const statusScreenStyles =
 const statusMessageStyles = 'mt-4 mb-0 leading-[1.6] text-muted'
 
 export const LoadingScreen = ({ message }: LoadingScreenProps) => (
-  <main className={statusScreenStyles}>
+  <main className={statusScreenStyles} aria-busy="true">
     <span className={brandMarkStyles} aria-hidden="true">
       CD
     </span>
-    <div
-      className="mt-[30px] size-[9px] animate-[loading-pulse_1.4s_infinite] rounded-full bg-accent shadow-[0_0_0_0_var(--color-accent-soft)]"
-      aria-hidden="true"
-    />
-    <p className={statusMessageStyles}>{message}</p>
+    <Loader className="mt-[30px] text-accent" size="large" />
+    <p className={statusMessageStyles} role="status">
+      {message}
+    </p>
   </main>
 )
 
@@ -58,3 +57,4 @@ export const ConfigurationScreen = () => (
   </main>
 )
 import { brandMarkStyles, primaryButtonStyles } from '../styles'
+import { Loader } from './Loader'

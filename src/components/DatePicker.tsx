@@ -2,6 +2,7 @@ import { useState } from 'react'
 import * as Popover from '@radix-ui/react-popover'
 import { DayPicker } from '@daypicker/react'
 import { enGB } from '@daypicker/react/locale'
+import { CalendarDays } from 'lucide-react'
 import {
   inputStyles,
   invalidControlStyles,
@@ -40,31 +41,6 @@ const formatDateValue = (date?: Date): string => {
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
-
-const CalendarIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="size-4"
-    viewBox="0 0 16 16"
-    fill="none"
-  >
-    <rect
-      x="2.5"
-      y="3.5"
-      width="11"
-      height="10"
-      rx="2"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-    <path
-      d="M5 2v3M11 2v3M2.5 7h11"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeWidth="1.5"
-    />
-  </svg>
-)
 
 export const DatePicker = ({
   defaultValue,
@@ -107,7 +83,11 @@ export const DatePicker = ({
               : 'Select date'}
           </span>
           <span className="shrink-0 text-muted">
-            <CalendarIcon />
+            <CalendarDays
+              aria-hidden="true"
+              className="size-4"
+              strokeWidth={1.75}
+            />
           </span>
         </button>
       </Popover.Trigger>

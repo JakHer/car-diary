@@ -5,6 +5,7 @@ import type {
   MaintenanceReminderInput,
 } from '../types'
 import { DatePicker } from './DatePicker'
+import { Loader } from './Loader'
 import {
   maintenanceReminderSchema,
   type MaintenanceReminderFormValues,
@@ -45,6 +46,7 @@ const reminderStatusStyles: Record<MaintenanceReminderStatus, string> = {
 
 interface MaintenanceRemindersProps {
   currentMileage: number
+  isSaving: boolean
   reminders: MaintenanceReminder[]
   onCreate: (input: MaintenanceReminderInput) => void
   onDelete: (reminderId: string) => void
@@ -53,6 +55,7 @@ interface MaintenanceRemindersProps {
 
 export const MaintenanceReminders = ({
   currentMileage,
+  isSaving,
   reminders,
   onCreate,
   onDelete,
@@ -133,6 +136,7 @@ export const MaintenanceReminders = ({
       <div className="mt-[22px] grid grid-cols-[minmax(280px,0.65fr)_minmax(0,1.35fr)] items-start gap-7 max-[980px]:grid-cols-1">
         <form
           className="grid gap-4"
+          aria-busy={isSaving}
           noValidate
           onSubmit={handleSubmit(createReminder)}
         >
@@ -201,8 +205,13 @@ export const MaintenanceReminders = ({
           <button
             className={joinClassNames(primaryButtonStyles, 'justify-self-start')}
             type="submit"
+            disabled={isSaving}
           >
-            Add reminder
+            {isSaving ? (
+              <Loader label="Adding reminder..." size="small" />
+            ) : (
+              'Add reminder'
+            )}
           </button>
         </form>
 

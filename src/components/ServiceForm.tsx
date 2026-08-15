@@ -2,6 +2,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ServiceRecord, ServiceRecordInput } from '../types'
 import { DatePicker } from './DatePicker'
+import { Loader } from './Loader'
 import { SelectField } from './SelectField'
 import {
   serviceRecordSchema,
@@ -25,6 +26,7 @@ import {
 
 interface ServiceFormProps {
   currentMileage: number
+  isSaving: boolean
   record?: ServiceRecord
   onCancel: () => void
   onSave: (record: ServiceRecordInput) => void
@@ -49,6 +51,7 @@ const getLocalDate = (): string => {
 
 export const ServiceForm = ({
   currentMileage,
+  isSaving,
   record,
   onCancel,
   onSave,
@@ -85,6 +88,7 @@ export const ServiceForm = ({
         cardStyles,
         'sticky top-5 grid gap-5 p-7 max-[980px]:static max-[980px]:row-start-1 max-[700px]:p-[22px]',
       )}
+      aria-busy={isSaving}
       noValidate
       onSubmit={handleSubmit(saveRecord)}
     >
@@ -260,8 +264,15 @@ export const ServiceForm = ({
         <button
           className={joinClassNames(primaryButtonStyles, 'flex-1')}
           type="submit"
+          disabled={isSaving}
         >
-          {record ? 'Save changes' : 'Save service record'}
+          {isSaving ? (
+            <Loader label="Saving record..." size="small" />
+          ) : record ? (
+            'Save changes'
+          ) : (
+            'Save service record'
+          )}
         </button>
       </div>
     </form>

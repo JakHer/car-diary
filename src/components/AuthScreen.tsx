@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { getSupabaseClient } from '../lib/supabase'
 import { authSchema, type AuthFormValues } from '../lib/validation'
+import { Loader } from './Loader'
 import {
   brandStyles,
   eyebrowStyles,
@@ -190,11 +191,18 @@ export const AuthScreen = () => {
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting
-              ? 'Please wait...'
-              : mode === 'sign-in'
-                ? 'Sign in'
-                : 'Create account'}
+            {isSubmitting ? (
+              <Loader
+                label={
+                  mode === 'sign-in' ? 'Signing in...' : 'Creating account...'
+                }
+                size="small"
+              />
+            ) : mode === 'sign-in' ? (
+              'Sign in'
+            ) : (
+              'Create account'
+            )}
           </button>
         </form>
 
