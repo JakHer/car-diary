@@ -1,10 +1,17 @@
-import type { FormEvent } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import type { Vehicle, VehicleInput } from '../types'
 import {
+  vehicleSchema,
+  type VehicleFormValues,
+} from '../lib/validation'
+import {
   cardStyles,
+  fieldErrorStyles,
   fieldStyles,
   formGridStyles,
   inputStyles,
+  invalidControlStyles,
   joinClassNames,
   primaryButtonStyles,
   secondaryButtonStyles,
@@ -25,20 +32,24 @@ export const VehicleForm = ({
 }: VehicleFormProps) => {
   const currentYear = new Date().getFullYear()
   const isEditing = Boolean(vehicle)
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<VehicleFormValues>({
+    resolver: zodResolver(vehicleSchema),
+    defaultValues: {
+      make: vehicle?.make ?? '',
+      model: vehicle?.model ?? '',
+      year: vehicle?.year,
+      currentMileage: vehicle?.startingMileage,
+      registrationNumber: vehicle?.registrationNumber ?? '',
+      vin: vehicle?.vin ?? '',
+    },
+    mode: 'onBlur',
+  })
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const data = new FormData(event.currentTarget)
-
-    onSave({
-      make: String(data.get('make')).trim(),
-      model: String(data.get('model')).trim(),
-      year: Number(data.get('year')),
-      registrationNumber: String(data.get('registrationNumber')).trim(),
-      vin: String(data.get('vin')).trim().toUpperCase(),
-      currentMileage: Number(data.get('currentMileage')),
-    })
-  }
+  const saveVehicle = (values: VehicleFormValues) => onSave(values)
 
   return (
     <form
@@ -47,7 +58,8 @@ export const VehicleForm = ({
         'p-[clamp(24px,4vw,36px)] max-[700px]:p-[22px]',
         className,
       )}
-      onSubmit={handleSubmit}
+      noValidate
+      onSubmit={handleSubmit(saveVehicle)}
     >
       <div className="mb-8 flex items-start gap-4">
         <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-accent-soft text-xs font-extrabold text-accent">
@@ -69,74 +81,125 @@ export const VehicleForm = ({
         <label className={fieldStyles}>
           <span>Make</span>
           <input
-            className={inputStyles}
-            name="make"
-            defaultValue={vehicle?.make}
+            className={joinClassNames(
+              inputStyles,
+              errors.make && invalidControlStyles,
+            )}
             placeholder="e.g. Volvo"
-            required
             autoFocus
+            aria-label="Make"
+            aria-invalid={Boolean(errors.make)}
+            {...register('make')}
           />
+          {errors.make && (
+            <p className={fieldErrorStyles} role="alert">
+              {errors.make.message}
+            </p>
+          )}
         </label>
 
         <label className={fieldStyles}>
           <span>Model</span>
           <input
-            className={inputStyles}
-            name="model"
-            defaultValue={vehicle?.model}
+            className={joinClassNames(
+              inputStyles,
+              errors.model && invalidControlStyles,
+            )}
             placeholder="e.g. V60"
-            required
+            aria-label="Model"
+            aria-invalid={Boolean(errors.model)}
+            {...register('model')}
           />
+          {errors.model && (
+            <p className={fieldErrorStyles} role="alert">
+              {errors.model.message}
+            </p>
+          )}
         </label>
 
         <label className={fieldStyles}>
           <span>Year</span>
           <input
-            className={inputStyles}
-            name="year"
+            className={joinClassNames(
+              inputStyles,
+              errors.year && invalidControlStyles,
+            )}
             type="number"
             min="1886"
             max={currentYear + 1}
-            defaultValue={vehicle?.year}
             placeholder={String(currentYear)}
-            required
+            aria-label="Year"
+            aria-invalid={Boolean(errors.year)}
+            {...register('year', { valueAsNumber: true })}
           />
+          {errors.year && (
+            <p className={fieldErrorStyles} role="alert">
+              {errors.year.message}
+            </p>
+          )}
         </label>
 
         <label className={fieldStyles}>
           <span>{isEditing ? 'Starting mileage (km)' : 'Current mileage (km)'}</span>
           <input
-            className={inputStyles}
-            name="currentMileage"
+            className={joinClassNames(
+              inputStyles,
+              errors.currentMileage && invalidControlStyles,
+            )}
             type="number"
             min="0"
             step="1"
-            defaultValue={vehicle?.startingMileage}
             placeholder="125000"
-            required
+            aria-label={
+              isEditing ? 'Starting mileage (km)' : 'Current mileage (km)'
+            }
+            aria-invalid={Boolean(errors.currentMileage)}
+            {...register('currentMileage', { valueAsNumber: true })}
           />
+          {errors.currentMileage && (
+            <p className={fieldErrorStyles} role="alert">
+              {errors.currentMileage.message}
+            </p>
+          )}
         </label>
 
         <label className={fieldStyles}>
           <span>Registration number</span>
           <input
-            className={inputStyles}
-            name="registrationNumber"
-            defaultValue={vehicle?.registrationNumber}
+            className={joinClassNames(
+              inputStyles,
+              errors.registrationNumber && invalidControlStyles,
+            )}
             placeholder="Optional"
+            aria-label="Registration number"
+            aria-invalid={Boolean(errors.registrationNumber)}
+            {...register('registrationNumber')}
           />
+          {errors.registrationNumber && (
+            <p className={fieldErrorStyles} role="alert">
+              {errors.registrationNumber.message}
+            </p>
+          )}
         </label>
 
         <label className={fieldStyles}>
           <span>VIN</span>
           <input
-            className={inputStyles}
-            name="vin"
-            minLength={17}
+            className={joinClassNames(
+              inputStyles,
+              errors.vin && invalidControlStyles,
+            )}
             maxLength={17}
-            defaultValue={vehicle?.vin}
             placeholder="Optional"
+            aria-label="VIN"
+            aria-invalid={Boolean(errors.vin)}
+            {...register('vin')}
           />
+          {errors.vin && (
+            <p className={fieldErrorStyles} role="alert">
+              {errors.vin.message}
+            </p>
+          )}
         </label>
       </div>
 

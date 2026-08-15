@@ -1,12 +1,16 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { getSupabaseClient } from '../lib/supabase'
+import { authSchema, type AuthFormValues } from '../lib/validation'
 import {
   brandStyles,
   eyebrowStyles,
   fieldStyles,
   formErrorStyles,
+  fieldErrorStyles,
   inputStyles,
+  invalidControlStyles,
   joinClassNames,
   primaryButtonStyles,
   inverseBrandMarkStyles,
@@ -16,26 +20,34 @@ type AuthMode = 'sign-in' | 'sign-up'
 
 export const AuthScreen = () => {
   const [mode, setMode] = useState<AuthMode>('sign-in')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const {
+    clearErrors,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+    register,
+  } = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+    mode: 'onBlur',
+  })
 
   const switchMode = () => {
     setMode((currentMode) =>
       currentMode === 'sign-in' ? 'sign-up' : 'sign-in',
     )
+    clearErrors()
     setError(null)
     setNotice(null)
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    const email = String(data.get('email')).trim()
-    const password = String(data.get('password'))
+  const submitAuth = async ({ email, password }: AuthFormValues) => {
     const client = getSupabaseClient()
 
-    setIsSubmitting(true)
     setError(null)
     setNotice(null)
 
@@ -65,8 +77,6 @@ export const AuthScreen = () => {
           ? authError.message
           : 'Authentication failed. Please try again.',
       )
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -118,33 +128,54 @@ export const AuthScreen = () => {
           </p>
         </div>
 
-        <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
+        <form
+          className="mt-8 grid gap-5"
+          noValidate
+          onSubmit={handleSubmit(submitAuth)}
+        >
           <label className={fieldStyles}>
             <span>Email</span>
             <input
-              className={inputStyles}
-              name="email"
+              className={joinClassNames(
+                inputStyles,
+                errors.email && invalidControlStyles,
+              )}
               type="email"
               autoComplete="email"
               placeholder="you@example.com"
-              required
               autoFocus
+              aria-label="Email"
+              aria-invalid={Boolean(errors.email)}
+              {...register('email')}
             />
+            {errors.email && (
+              <p className={fieldErrorStyles} role="alert">
+                {errors.email.message}
+              </p>
+            )}
           </label>
 
           <label className={fieldStyles}>
             <span>Password</span>
             <input
-              className={inputStyles}
-              name="password"
+              className={joinClassNames(
+                inputStyles,
+                errors.password && invalidControlStyles,
+              )}
               type="password"
-              minLength={6}
               autoComplete={
                 mode === 'sign-in' ? 'current-password' : 'new-password'
               }
               placeholder="At least 6 characters"
-              required
+              aria-label="Password"
+              aria-invalid={Boolean(errors.password)}
+              {...register('password')}
             />
+            {errors.password && (
+              <p className={fieldErrorStyles} role="alert">
+                {errors.password.message}
+              </p>
+            )}
           </label>
 
           {error && <p className={formErrorStyles}>{error}</p>}
