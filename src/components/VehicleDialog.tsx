@@ -28,20 +28,20 @@ export const VehicleDialog = ({
 
   return (
     <div
-      className="modal-backdrop"
+      className="fixed inset-0 z-20 grid place-items-center overflow-y-auto bg-[rgba(11,18,14,0.55)] p-6 backdrop-blur-[5px] max-[700px]:p-3"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
     >
       <div
-        className="vehicle-dialog"
+        className="relative w-full max-w-[650px]"
         role="dialog"
         aria-modal="true"
         aria-label={mode === 'edit' ? 'Edit vehicle' : 'Add vehicle'}
       >
         <button
-          className="dialog-close"
+          className="absolute top-4 right-4 z-10 grid size-8 cursor-pointer place-items-center rounded-full border-0 bg-surface-muted text-xs font-extrabold text-muted transition-colors hover:bg-border hover:text-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent-soft"
           type="button"
           aria-label="Close vehicle form"
           onClick={onClose}
@@ -49,6 +49,7 @@ export const VehicleDialog = ({
           X
         </button>
         <VehicleForm
+          className="max-h-[calc(100svh-48px)] overflow-y-auto max-[700px]:max-h-[calc(100svh-24px)]"
           key={mode === 'edit' ? vehicle.id : 'new'}
           vehicle={mode === 'edit' ? vehicle : undefined}
           onCancel={onClose}

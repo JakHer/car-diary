@@ -3,16 +3,38 @@ import type {
   MaintenanceReminder,
   MaintenanceReminderInput,
 } from '../types'
+import { DatePicker } from './DatePicker'
 import {
   getMaintenanceReminderStatus,
   type MaintenanceReminderStatus,
 } from '../lib/maintenanceReminders'
+import {
+  cardStyles,
+  dangerActionStyles,
+  eyebrowStyles,
+  fieldStyles,
+  formErrorStyles,
+  formGridStyles,
+  inputStyles,
+  joinClassNames,
+  primaryButtonStyles,
+  sectionHeadingStyles,
+  sectionTitleStyles,
+  smallActionStyles,
+  tagStyles,
+} from '../styles'
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 })
+
+const reminderStatusStyles: Record<MaintenanceReminderStatus, string> = {
+  upcoming: 'bg-accent-soft text-accent',
+  overdue: 'bg-[#fbeaea] text-[#a62b2b]',
+  completed: 'bg-surface-muted text-muted',
+}
 
 interface MaintenanceRemindersProps {
   currentMileage: number
@@ -70,40 +92,55 @@ export const MaintenanceReminders = ({
   }
 
   return (
-    <section className="card reminders-card" aria-labelledby="reminders-title">
-      <div className="section-heading reminders-heading">
+    <section
+      className={joinClassNames(
+        cardStyles,
+        'mt-6 p-7 max-[700px]:p-[22px]',
+      )}
+      aria-labelledby="reminders-title"
+    >
+      <div
+        className={joinClassNames(
+          sectionHeadingStyles,
+          'border-b border-border pb-[22px]',
+        )}
+      >
         <div>
-          <p className="eyebrow">Plan ahead</p>
-          <h2 id="reminders-title">Maintenance reminders</h2>
+          <p className={eyebrowStyles}>Plan ahead</p>
+          <h2 className={sectionTitleStyles} id="reminders-title">
+            Maintenance reminders
+          </h2>
         </div>
-        <span className="record-count">
+        <span className={joinClassNames(tagStyles, 'whitespace-nowrap')}>
           {reminders.filter((reminder) => !reminder.completedAt).length} active
         </span>
       </div>
 
-      <div className="reminders-layout">
+      <div className="mt-[22px] grid grid-cols-[minmax(280px,0.65fr)_minmax(0,1.35fr)] items-start gap-7 max-[980px]:grid-cols-1">
         <form
           key={reminders.length}
-          className="reminder-form"
+          className="grid gap-4"
           onSubmit={handleSubmit}
         >
-          <label className="field">
+          <label className={fieldStyles}>
             <span>Reminder</span>
             <input
+              className={inputStyles}
               name="title"
               placeholder="e.g. Replace timing belt"
               maxLength={160}
               required
             />
           </label>
-          <div className="form-grid form-grid-compact">
-            <label className="field">
+          <div className={joinClassNames(formGridStyles, 'gap-4')}>
+            <label className={fieldStyles}>
               <span>Due date</span>
-              <input name="dueDate" type="date" />
+              <DatePicker name="dueDate" />
             </label>
-            <label className="field">
+            <label className={fieldStyles}>
               <span>Due mileage (km)</span>
               <input
+                className={inputStyles}
                 name="dueMileage"
                 type="number"
                 min="0"
@@ -113,22 +150,27 @@ export const MaintenanceReminders = ({
             </label>
           </div>
           {formError && (
-            <p className="form-message form-message-error" role="alert">
+            <p className={formErrorStyles} role="alert">
               {formError}
             </p>
           )}
-          <button className="button button-primary" type="submit">
+          <button
+            className={joinClassNames(primaryButtonStyles, 'justify-self-start')}
+            type="submit"
+          >
             Add reminder
           </button>
         </form>
 
         {orderedReminders.length === 0 ? (
-          <div className="reminders-empty">
-            <p>No reminders yet.</p>
-            <span>Add a date or mileage target for the next service.</span>
+          <div className="grid min-h-40 place-content-center text-center">
+            <p className="m-0 font-bold text-strong">No reminders yet.</p>
+            <span className="mt-1.5 text-[13px] text-muted">
+              Add a date or mileage target for the next service.
+            </span>
           </div>
         ) : (
-          <ul className="reminder-list">
+          <ul className="m-0 list-none p-0">
             {orderedReminders.map((reminder) => {
               const status = getMaintenanceReminderStatus(
                 reminder,
@@ -137,13 +179,22 @@ export const MaintenanceReminders = ({
 
               return (
                 <li
-                  className={`reminder-item reminder-item-${status}`}
+                  className="flex items-start justify-between gap-5 border-b border-border py-4 first:pt-0 last:border-b-0 max-[700px]:flex-col"
                   key={reminder.id}
                 >
-                  <div className="reminder-content">
-                    <div className="reminder-title-row">
-                      <h3>{reminder.title}</h3>
-                      <span className={`reminder-status reminder-status-${status}`}>
+                  <div
+                    className={status === 'completed' ? 'opacity-[0.62]' : ''}
+                  >
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <h3 className="m-0 text-base font-bold text-strong">
+                        {reminder.title}
+                      </h3>
+                      <span
+                        className={joinClassNames(
+                          'rounded-full px-2 py-1 text-[10px] font-extrabold tracking-[0.06em] uppercase',
+                          reminderStatusStyles[status],
+                        )}
+                      >
                         {status === 'completed'
                           ? 'Completed'
                           : status === 'overdue'
@@ -151,7 +202,7 @@ export const MaintenanceReminders = ({
                             : 'Upcoming'}
                       </span>
                     </div>
-                    <div className="record-meta">
+                    <div className="mt-3 flex flex-wrap gap-x-[18px] gap-y-2 text-[13px] text-muted">
                       {reminder.dueDate && (
                         <span>
                           Due{' '}
@@ -167,8 +218,9 @@ export const MaintenanceReminders = ({
                       )}
                     </div>
                   </div>
-                  <div className="record-actions reminder-actions">
+                  <div className="flex shrink-0 gap-1.5">
                     <button
+                      className={smallActionStyles}
                       type="button"
                       onClick={() =>
                         onToggleCompleted(
@@ -180,7 +232,7 @@ export const MaintenanceReminders = ({
                       {status === 'completed' ? 'Reopen' : 'Complete'}
                     </button>
                     <button
-                      className="button-danger"
+                      className={dangerActionStyles}
                       type="button"
                       onClick={() => onDelete(reminder.id)}
                     >

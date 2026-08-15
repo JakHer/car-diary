@@ -1,0 +1,112 @@
+import * as Select from '@radix-ui/react-select'
+import { inputStyles, joinClassNames } from '../styles'
+
+export interface SelectOption {
+  label: string
+  value: string
+}
+
+interface SelectFieldProps {
+  ariaLabel: string
+  defaultValue?: string
+  name?: string
+  options: SelectOption[]
+  value?: string
+  variant?: 'form' | 'compact'
+  onValueChange?: (value: string) => void
+}
+
+const ChevronDownIcon = () => (
+  <svg
+    aria-hidden="true"
+    className="size-3.5"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="m4 6 4 4 4-4"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.75"
+    />
+  </svg>
+)
+
+const CheckIcon = () => (
+  <svg
+    aria-hidden="true"
+    className="size-3.5"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="m3.5 8 3 3 6-6"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.75"
+    />
+  </svg>
+)
+
+const compactTriggerStyles =
+  'flex h-9 max-w-[190px] min-w-[132px] cursor-pointer items-center justify-between gap-2 overflow-hidden rounded-[9px] border border-border-strong bg-surface px-2.5 text-[13px] font-bold text-strong outline-none transition-[border-color,box-shadow,background-color] hover:bg-surface-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-soft)] data-[state=open]:border-accent data-[state=open]:shadow-[0_0_0_3px_var(--color-accent-soft)] max-[700px]:min-w-0 max-[700px]:max-w-[118px]'
+
+export const SelectField = ({
+  ariaLabel,
+  defaultValue,
+  name,
+  options,
+  value,
+  variant = 'form',
+  onValueChange,
+}: SelectFieldProps) => (
+  <Select.Root
+    defaultValue={defaultValue}
+    name={name}
+    value={value}
+    onValueChange={onValueChange}
+  >
+    <Select.Trigger
+      className={
+        variant === 'compact'
+          ? compactTriggerStyles
+          : joinClassNames(
+              inputStyles,
+              'flex cursor-pointer items-center justify-between gap-3 text-left',
+            )
+      }
+      aria-label={ariaLabel}
+    >
+      <Select.Value className="truncate" />
+      <Select.Icon className="shrink-0 text-muted">
+        <ChevronDownIcon />
+      </Select.Icon>
+    </Select.Trigger>
+
+    <Select.Portal>
+      <Select.Content
+        className="z-50 max-h-[var(--radix-select-content-available-height)] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-[10px] border border-border bg-surface p-1 shadow-[0_16px_40px_rgba(24,32,28,0.16)]"
+        position="popper"
+        sideOffset={6}
+        align="start"
+      >
+        <Select.Viewport>
+          {options.map((option) => (
+            <Select.Item
+              className="relative flex h-9 cursor-pointer items-center rounded-[7px] pr-8 pl-2.5 text-[13px] font-semibold text-strong outline-none select-none data-[highlighted]:bg-accent-soft data-[highlighted]:text-accent"
+              key={option.value}
+              value={option.value}
+            >
+              <Select.ItemText>{option.label}</Select.ItemText>
+              <Select.ItemIndicator className="absolute right-2.5 text-accent">
+                <CheckIcon />
+              </Select.ItemIndicator>
+            </Select.Item>
+          ))}
+        </Select.Viewport>
+      </Select.Content>
+    </Select.Portal>
+  </Select.Root>
+)

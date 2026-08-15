@@ -8,6 +8,14 @@ import type {
   ServiceRecordInput,
   Vehicle,
 } from '../types'
+import {
+  cardStyles,
+  dangerActionStyles,
+  eyebrowStyles,
+  joinClassNames,
+  smallActionStyles,
+  tagStyles,
+} from '../styles'
 
 const currencyFormatter = new Intl.NumberFormat('en-GB', {
   style: 'currency',
@@ -60,26 +68,32 @@ export const VehicleDashboard = ({
   )
 
   return (
-    <main className="dashboard">
-      <section className="vehicle-hero">
+    <main className="py-14 pb-20 max-[700px]:py-12 max-[700px]:pb-14">
+      <section className="flex items-end justify-between gap-10 max-[700px]:flex-col max-[700px]:items-start">
         <div>
-          <p className="eyebrow">Active vehicle</p>
-          <h1>
+          <p className={eyebrowStyles}>Active vehicle</p>
+          <h1 className="m-0 text-[clamp(36px,6vw,66px)] leading-[0.98] tracking-[-0.055em] text-strong">
             {vehicle.make} {vehicle.model}
           </h1>
-          <div className="vehicle-meta">
-            <span>{vehicle.year}</span>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className={tagStyles}>{vehicle.year}</span>
             {vehicle.registrationNumber && (
-              <span>{vehicle.registrationNumber}</span>
+              <span className={tagStyles}>{vehicle.registrationNumber}</span>
             )}
-            {vehicle.vin && <span>VIN {vehicle.vin}</span>}
+            {vehicle.vin && (
+              <span className={tagStyles}>VIN {vehicle.vin}</span>
+            )}
           </div>
-          <div className="vehicle-actions">
-            <button type="button" onClick={onEditVehicle}>
+          <div className="mt-4 flex gap-1.5">
+            <button
+              className={smallActionStyles}
+              type="button"
+              onClick={onEditVehicle}
+            >
               Edit vehicle
             </button>
             <button
-              className="button-danger"
+              className={dangerActionStyles}
               type="button"
               onClick={onDeleteVehicle}
             >
@@ -87,36 +101,58 @@ export const VehicleDashboard = ({
             </button>
           </div>
         </div>
-        <div className="mileage-display">
-          <span>Current mileage</span>
-          <strong>
+        <div className="grid shrink-0 justify-items-end max-[700px]:justify-items-start">
+          <span className="mb-1.5 text-xs font-bold tracking-[0.04em] text-muted uppercase">
+            Current mileage
+          </span>
+          <strong className="text-[clamp(32px,5vw,48px)] leading-none tracking-[-0.04em] text-strong">
             {vehicle.currentMileage.toLocaleString('en-GB')}
-            <small> km</small>
+            <small className="text-base font-bold tracking-normal text-muted">
+              {' '}
+              km
+            </small>
           </strong>
         </div>
       </section>
 
-      <section className="summary-grid" aria-label="Vehicle summary">
-        <article className="summary-card">
-          <span>Service entries</span>
-          <strong>{records.length}</strong>
-          <p>Recorded for this vehicle</p>
+      <section
+        className="mt-11 grid grid-cols-3 gap-4 max-[700px]:grid-cols-1 max-[700px]:gap-3"
+        aria-label="Vehicle summary"
+      >
+        <article className={joinClassNames(cardStyles, 'p-[22px]')}>
+          <span className="text-xs font-bold tracking-[0.03em] text-muted uppercase">
+            Service entries
+          </span>
+          <strong className="mt-3 block text-[30px] tracking-[-0.03em] text-strong">
+            {records.length}
+          </strong>
+          <p className="mt-1 mb-0 text-xs text-muted">
+            Recorded for this vehicle
+          </p>
         </article>
-        <article className="summary-card">
-          <span>Total service cost</span>
-          <strong>{currencyFormatter.format(totalCost / 100)}</strong>
-          <p>Across all entries</p>
+        <article className={joinClassNames(cardStyles, 'p-[22px]')}>
+          <span className="text-xs font-bold tracking-[0.03em] text-muted uppercase">
+            Total service cost
+          </span>
+          <strong className="mt-3 block text-[30px] tracking-[-0.03em] text-strong">
+            {currencyFormatter.format(totalCost / 100)}
+          </strong>
+          <p className="mt-1 mb-0 text-xs text-muted">Across all entries</p>
         </article>
-        <article className="summary-card">
-          <span>Last service</span>
-          <strong>
+        <article className={joinClassNames(cardStyles, 'p-[22px]')}>
+          <span className="text-xs font-bold tracking-[0.03em] text-muted uppercase">
+            Last service
+          </span>
+          <strong className="mt-3 block text-[30px] tracking-[-0.03em] text-strong">
             {records[0]
               ? lastServiceFormatter.format(
                   new Date(`${records[0].date}T12:00:00`),
                 )
               : 'Not yet'}
           </strong>
-          <p>{records[0]?.title ?? 'Add your first record'}</p>
+          <p className="mt-1 mb-0 text-xs text-muted">
+            {records[0]?.title ?? 'Add your first record'}
+          </p>
         </article>
       </section>
 
@@ -128,7 +164,7 @@ export const VehicleDashboard = ({
         onToggleCompleted={onToggleReminder}
       />
 
-      <div className="workspace-grid">
+      <div className="mt-6 grid grid-cols-[minmax(0,1.45fr)_minmax(360px,0.75fr)] items-start gap-6 max-[980px]:grid-cols-1">
         <ServiceHistory
           records={records}
           editingRecordId={editingRecordId}
