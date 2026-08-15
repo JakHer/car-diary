@@ -18,12 +18,15 @@ interface SelectFieldProps {
   name?: string
   options: SelectOption[]
   value?: string
-  variant?: 'form' | 'compact'
+  variant?: 'form' | 'compact' | 'toolbar'
   onValueChange?: (value: string) => void
 }
 
 const compactTriggerStyles =
   'flex h-9 max-w-[190px] min-w-[132px] cursor-pointer items-center justify-between gap-2 overflow-hidden rounded-[9px] border border-border-strong bg-surface px-2.5 text-[13px] font-bold text-strong outline-none transition-[border-color,box-shadow,background-color] hover:bg-surface-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-soft)] data-[state=open]:border-accent data-[state=open]:shadow-[0_0_0_3px_var(--color-accent-soft)] max-[700px]:min-w-0 max-[700px]:max-w-[118px]'
+
+const toolbarTriggerStyles =
+  'flex h-9 min-w-[155px] cursor-pointer items-center justify-between gap-2 overflow-hidden rounded-[9px] border border-border-strong bg-surface px-2.5 text-[13px] font-bold text-strong outline-none transition-[border-color,box-shadow,background-color] hover:bg-surface-muted focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-soft)] data-[state=open]:border-accent data-[state=open]:shadow-[0_0_0_3px_var(--color-accent-soft)] max-[700px]:w-full max-[700px]:min-w-0'
 
 export const SelectField = ({
   ariaLabel,
@@ -45,6 +48,8 @@ export const SelectField = ({
       className={
         variant === 'compact'
           ? compactTriggerStyles
+          : variant === 'toolbar'
+            ? toolbarTriggerStyles
           : joinClassNames(
               inputStyles,
               'flex cursor-pointer items-center justify-between gap-3 text-left',
