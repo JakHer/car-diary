@@ -1,18 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AuthScreen } from './components/AuthScreen'
 import { ServiceForm } from './components/ServiceForm'
 import { ServiceHistory } from './components/ServiceHistory'
 import { VehicleForm } from './components/VehicleForm'
 import { useAuth } from './hooks/useAuth'
-import {
-  createServiceRecord,
-  createVehicle as createVehicleRow,
-  deleteServiceRecord as deleteServiceRecordRow,
-  deleteVehicle as deleteVehicleRow,
-  fetchCarDiaryState,
-  updateServiceRecord,
-  updateVehicle as updateVehicleRow,
-} from './lib/carDiaryRepository'
+import { useCarDiary } from './hooks/useCarDiary'
+import { queryClient } from './lib/queryClient'
 import {
   getSupabaseClient,
   isSupabaseConfigured,
@@ -49,51 +42,37 @@ const getErrorMessage = (error: unknown): string => {
 }
 
 interface CarDiaryAppProps {
+  userId: string
   userEmail: string
   onSignOut: () => Promise<void>
 }
 
-const CarDiaryApp = ({ userEmail, onSignOut }: CarDiaryAppProps) => {
-  const [state, setState] = useState<CarDiaryState>(emptyState)
+const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
+  const {
+    stateQuery,
+    createVehicleMutation,
+    updateVehicleMutation,
+    deleteVehicleMutation,
+    createServiceRecordMutation,
+    updateServiceRecordMutation,
+    deleteServiceRecordMutation,
+    mutationError,
+    isMutating,
+    resetMutationErrors,
+  } = useCarDiary(userId)
+  const state = stateQuery.data ?? emptyState
+  const [activeVehicleId, setActiveVehicleId] = useState<string | null>(null)
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
   const [vehicleFormMode, setVehicleFormMode] = useState<
     'add' | 'edit' | null
   >(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [hasLoadedState, setHasLoadedState] = useState(false)
-  const [isMutating, setIsMutating] = useState(false)
-  const [dataError, setDataError] = useState<string | null>(null)
-
-  const loadState = useCallback(
-    async (preferredVehicleId?: string | null): Promise<void> => {
-      const nextState = await fetchCarDiaryState()
-
-      setState((currentState) => {
-        const desiredVehicleId =
-          preferredVehicleId === undefined
-            ? currentState.activeVehicleId
-            : preferredVehicleId
-        const activeVehicleId = nextState.vehicles.some(
-          (vehicle) => vehicle.id === desiredVehicleId,
-        )
-          ? desiredVehicleId
-          : (nextState.vehicles[0]?.id ?? null)
-
-        return { ...nextState, activeVehicleId }
-      })
-    },
-    [],
-  )
-
   useEffect(() => {
-    setIsLoading(true)
-    setDataError(null)
-
-    void loadState()
-      .then(() => setHasLoadedState(true))
-      .catch((error: unknown) => setDataError(getErrorMessage(error)))
-      .finally(() => setIsLoading(false))
-  }, [loadState])
+    setActiveVehicleId((currentVehicleId) =>
+      state.vehicles.some((vehicle) => vehicle.id === currentVehicleId)
+        ? currentVehicleId
+        : (state.vehicles[0]?.id ?? null),
+    )
+  }, [state.vehicles])
 
   useEffect(() => {
     if (!vehicleFormMode) return undefined
@@ -107,72 +86,53 @@ const CarDiaryApp = ({ userEmail, onSignOut }: CarDiaryAppProps) => {
   }, [vehicleFormMode])
 
   const activeVehicle = state.vehicles.find(
-    (vehicle) => vehicle.id === state.activeVehicleId,
+    (vehicle) => vehicle.id === activeVehicleId,
   )
 
   const activeRecords = useMemo(
     () =>
       state.serviceRecords
-        .filter((record) => record.vehicleId === state.activeVehicleId)
+        .filter((record) => record.vehicleId === activeVehicleId)
         .toSorted(
           (first, second) =>
             second.date.localeCompare(first.date) ||
             second.mileage - first.mileage,
         ),
-    [state.activeVehicleId, state.serviceRecords],
+    [activeVehicleId, state.serviceRecords],
   )
 
   const editingRecord = activeRecords.find(
     (record) => record.id === editingRecordId,
   )
 
-  const executeMutation = async (
-    operation: () => Promise<string | null>,
-  ): Promise<boolean> => {
-    if (isMutating) return false
-
-    setIsMutating(true)
-    setDataError(null)
-
-    try {
-      const preferredVehicleId = await operation()
-      await loadState(preferredVehicleId)
-      return true
-    } catch (error) {
-      setDataError(getErrorMessage(error))
-      return false
-    } finally {
-      setIsMutating(false)
-    }
+  const addVehicle = (input: VehicleInput) => {
+    resetMutationErrors()
+    void createVehicleMutation
+      .mutateAsync(input)
+      .then((vehicleId) => {
+        setActiveVehicleId(vehicleId)
+        setEditingRecordId(null)
+        setVehicleFormMode(null)
+      })
+      .catch(() => undefined)
   }
 
-  const addVehicle = async (input: VehicleInput) => {
-    const succeeded = await executeMutation(() => createVehicleRow(input))
-    if (!succeeded) return
-
-    setEditingRecordId(null)
-    setVehicleFormMode(null)
-  }
-
-  const updateVehicle = async (input: VehicleInput) => {
+  const updateVehicle = (input: VehicleInput) => {
     if (!activeVehicle) return
 
-    const succeeded = await executeMutation(async () => {
-      await updateVehicleRow(activeVehicle.id, input)
-      return activeVehicle.id
-    })
-    if (succeeded) setVehicleFormMode(null)
+    resetMutationErrors()
+    void updateVehicleMutation
+      .mutateAsync({ vehicleId: activeVehicle.id, input })
+      .then(() => setVehicleFormMode(null))
+      .catch(() => undefined)
   }
 
   const selectVehicle = (vehicleId: string) => {
-    setState((currentState) => ({
-      ...currentState,
-      activeVehicleId: vehicleId,
-    }))
+    setActiveVehicleId(vehicleId)
     setEditingRecordId(null)
   }
 
-  const deleteVehicle = async () => {
+  const deleteVehicle = () => {
     if (!activeVehicle) return
 
     const serviceCount = activeRecords.length
@@ -181,32 +141,37 @@ const CarDiaryApp = ({ userEmail, onSignOut }: CarDiaryAppProps) => {
     )
     if (!shouldDelete) return
 
-    const succeeded = await executeMutation(async () => {
-      await deleteVehicleRow(activeVehicle.id)
-      return null
-    })
-    if (!succeeded) return
-
-    setEditingRecordId(null)
-    setVehicleFormMode(null)
+    resetMutationErrors()
+    void deleteVehicleMutation
+      .mutateAsync(activeVehicle.id)
+      .then(() => {
+        setActiveVehicleId(null)
+        setEditingRecordId(null)
+        setVehicleFormMode(null)
+      })
+      .catch(() => undefined)
   }
 
-  const saveServiceRecord = async (input: ServiceRecordInput) => {
+  const saveServiceRecord = (input: ServiceRecordInput) => {
     if (!activeVehicle) return
 
-    const succeeded = await executeMutation(async () => {
-      if (editingRecordId) {
-        await updateServiceRecord(editingRecordId, input)
-      } else {
-        await createServiceRecord(activeVehicle.id, input)
-      }
-      return activeVehicle.id
-    })
+    resetMutationErrors()
+    const mutation = editingRecordId
+      ? updateServiceRecordMutation.mutateAsync({
+          recordId: editingRecordId,
+          input,
+        })
+      : createServiceRecordMutation.mutateAsync({
+          vehicleId: activeVehicle.id,
+          input,
+        })
 
-    if (succeeded) setEditingRecordId(null)
+    void mutation
+      .then(() => setEditingRecordId(null))
+      .catch(() => undefined)
   }
 
-  const deleteServiceRecord = async (recordId: string) => {
+  const deleteServiceRecord = (recordId: string) => {
     const record = activeRecords.find((entry) => entry.id === recordId)
     if (!activeVehicle || !record) return
 
@@ -215,28 +180,19 @@ const CarDiaryApp = ({ userEmail, onSignOut }: CarDiaryAppProps) => {
     )
     if (!shouldDelete) return
 
-    const succeeded = await executeMutation(async () => {
-      await deleteServiceRecordRow(recordId)
-      return activeVehicle.id
-    })
-
-    if (succeeded && editingRecordId === recordId) {
-      setEditingRecordId(null)
-    }
+    resetMutationErrors()
+    void deleteServiceRecordMutation
+      .mutateAsync(recordId)
+      .then(() => {
+        if (editingRecordId === recordId) setEditingRecordId(null)
+      })
+      .catch(() => undefined)
   }
 
-  const retryLoading = async () => {
-    setIsLoading(true)
-    setDataError(null)
-
-    try {
-      await loadState()
-      setHasLoadedState(true)
-    } catch (error) {
-      setDataError(getErrorMessage(error))
-    } finally {
-      setIsLoading(false)
-    }
+  const dataError = stateQuery.error ?? mutationError
+  const handleDataError = () => {
+    resetMutationErrors()
+    if (stateQuery.error) void stateQuery.refetch()
   }
 
   const totalCost = activeRecords.reduce(
@@ -244,19 +200,23 @@ const CarDiaryApp = ({ userEmail, onSignOut }: CarDiaryAppProps) => {
     0,
   )
 
-  if (isLoading) {
+  if (stateQuery.isPending) {
     return <LoadingScreen message="Loading your garage..." />
   }
 
-  if (dataError && !hasLoadedState) {
+  if (stateQuery.isError && !stateQuery.data) {
     return (
       <main className="status-screen">
         <span className="brand-mark" aria-hidden="true">
           CD
         </span>
         <h1>We could not load your garage.</h1>
-        <p>{dataError}</p>
-        <button className="button button-primary" type="button" onClick={retryLoading}>
+        <p>{getErrorMessage(dataError)}</p>
+        <button
+          className="button button-primary"
+          type="button"
+          onClick={() => void stateQuery.refetch()}
+        >
           Try again
         </button>
       </main>
@@ -309,9 +269,9 @@ const CarDiaryApp = ({ userEmail, onSignOut }: CarDiaryAppProps) => {
 
       {dataError && (
         <div className="error-banner" role="alert">
-          <span>{dataError}</span>
-          <button type="button" onClick={() => setDataError(null)}>
-            Dismiss
+          <span>{getErrorMessage(dataError)}</span>
+          <button type="button" onClick={handleDataError}>
+            {stateQuery.error ? 'Retry' : 'Dismiss'}
           </button>
         </div>
       )}
@@ -483,11 +443,17 @@ const App = () => {
 
   const signOut = async () => {
     const { error } = await getSupabaseClient().auth.signOut()
-    if (error) window.alert(error.message)
+    if (error) {
+      window.alert(error.message)
+      return
+    }
+
+    queryClient.clear()
   }
 
   return (
     <CarDiaryApp
+      userId={session.user.id}
       userEmail={session.user.email ?? 'Signed-in account'}
       onSignOut={signOut}
     />
