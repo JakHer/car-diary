@@ -349,9 +349,10 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
         />
       )}
 
-      {vehicleFormMode && activeVehicle && (
+      {activeVehicle && (
         <VehicleDialog
-          mode={vehicleFormMode}
+          mode={vehicleFormMode ?? 'add'}
+          open={Boolean(vehicleFormMode)}
           isSaving={
             vehicleFormMode === 'edit'
               ? updateVehicleMutation.isPending
