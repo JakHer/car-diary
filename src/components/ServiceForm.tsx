@@ -1,5 +1,20 @@
 import type { FormEvent } from 'react'
 import type { ServiceRecord, ServiceRecordInput } from '../types'
+import { DatePicker } from './DatePicker'
+import { SelectField } from './SelectField'
+import {
+  cardStyles,
+  eyebrowStyles,
+  fieldStyles,
+  formGridStyles,
+  inputStyles,
+  joinClassNames,
+  primaryButtonStyles,
+  secondaryButtonStyles,
+  sectionHeadingStyles,
+  sectionTitleStyles,
+  textareaStyles,
+} from '../styles'
 
 interface ServiceFormProps {
   currentMileage: number
@@ -7,6 +22,17 @@ interface ServiceFormProps {
   onCancel: () => void
   onSave: (record: ServiceRecordInput) => void
 }
+
+const serviceCategoryOptions: Array<{
+  label: ServiceRecordInput['category']
+  value: ServiceRecordInput['category']
+}> = [
+  { label: 'Maintenance', value: 'Maintenance' },
+  { label: 'Repair', value: 'Repair' },
+  { label: 'Inspection', value: 'Inspection' },
+  { label: 'Tires', value: 'Tires' },
+  { label: 'Other', value: 'Other' },
+]
 
 const getLocalDate = (): string => {
   const now = new Date()
@@ -39,17 +65,28 @@ export const ServiceForm = ({
   }
 
   return (
-    <form className="card service-form" onSubmit={handleSubmit}>
-      <div className="section-heading">
+    <form
+      className={joinClassNames(
+        cardStyles,
+        'sticky top-5 grid gap-5 p-7 max-[980px]:static max-[980px]:row-start-1 max-[700px]:p-[22px]',
+      )}
+      onSubmit={handleSubmit}
+    >
+      <div className={sectionHeadingStyles}>
         <div>
-          <p className="eyebrow">{record ? 'Editing entry' : 'New entry'}</p>
-          <h2>{record ? 'Edit service record' : 'Add service record'}</h2>
+          <p className={eyebrowStyles}>
+            {record ? 'Editing entry' : 'New entry'}
+          </p>
+          <h2 className={sectionTitleStyles}>
+            {record ? 'Edit service record' : 'Add service record'}
+          </h2>
         </div>
       </div>
 
-      <label className="field">
+      <label className={fieldStyles}>
         <span>Service</span>
         <input
+          className={inputStyles}
           name="title"
           defaultValue={record?.title}
           placeholder="e.g. Engine oil change"
@@ -57,31 +94,30 @@ export const ServiceForm = ({
         />
       </label>
 
-      <div className="form-grid form-grid-compact">
-        <label className="field">
+      <div className={joinClassNames(formGridStyles, 'gap-4')}>
+        <label className={fieldStyles}>
           <span>Category</span>
-          <select name="category" defaultValue={record?.category ?? 'Maintenance'}>
-            <option>Maintenance</option>
-            <option>Repair</option>
-            <option>Inspection</option>
-            <option>Tires</option>
-            <option>Other</option>
-          </select>
+          <SelectField
+            ariaLabel="Category"
+            name="category"
+            defaultValue={record?.category ?? 'Maintenance'}
+            options={serviceCategoryOptions}
+          />
         </label>
 
-        <label className="field">
+        <label className={fieldStyles}>
           <span>Date</span>
-          <input
+          <DatePicker
             name="date"
-            type="date"
             defaultValue={record?.date ?? getLocalDate()}
             required
           />
         </label>
 
-        <label className="field">
+        <label className={fieldStyles}>
           <span>Mileage (km)</span>
           <input
+            className={inputStyles}
             name="mileage"
             type="number"
             min="0"
@@ -91,9 +127,10 @@ export const ServiceForm = ({
           />
         </label>
 
-        <label className="field">
+        <label className={fieldStyles}>
           <span>Cost (PLN)</span>
           <input
+            className={inputStyles}
             name="cost"
             type="number"
             min="0"
@@ -107,18 +144,20 @@ export const ServiceForm = ({
         </label>
       </div>
 
-      <label className="field">
+      <label className={fieldStyles}>
         <span>Workshop</span>
         <input
+          className={inputStyles}
           name="workshop"
           defaultValue={record?.workshop}
           placeholder="Optional"
         />
       </label>
 
-      <label className="field">
+      <label className={fieldStyles}>
         <span>Notes</span>
         <textarea
+          className={textareaStyles}
           name="notes"
           rows={3}
           defaultValue={record?.notes}
@@ -126,13 +165,20 @@ export const ServiceForm = ({
         />
       </label>
 
-      <div className="service-form-actions">
+      <div className="flex gap-2.5">
         {record && (
-          <button className="button button-secondary" type="button" onClick={onCancel}>
+          <button
+            className={joinClassNames(secondaryButtonStyles, 'flex-1')}
+            type="button"
+            onClick={onCancel}
+          >
             Cancel
           </button>
         )}
-        <button className="button button-primary" type="submit">
+        <button
+          className={joinClassNames(primaryButtonStyles, 'flex-1')}
+          type="submit"
+        >
           {record ? 'Save changes' : 'Save service record'}
         </button>
       </div>
