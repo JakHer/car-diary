@@ -6,37 +6,34 @@ import type {
   Vehicle,
   VehicleInput,
 } from '../types'
+import type { Database } from '../database.types'
 import { getSupabaseClient } from './supabase'
 
-export interface VehicleRow {
-  id: string
-  make: string
-  model: string
-  year: number
-  registration_number: string
-  vin: string
-  starting_mileage: number
-  created_at: string
-}
+export type VehicleRow = Database['public']['Tables']['vehicles']['Row']
+export type ServiceRecordRow =
+  Database['public']['Tables']['service_records']['Row']
+type VehicleInsert = Database['public']['Tables']['vehicles']['Insert']
+type ServiceRecordInsert =
+  Database['public']['Tables']['service_records']['Insert']
 
-export interface ServiceRecordRow {
-  id: string
-  vehicle_id: string
-  title: string
-  category: string
-  service_date: string
-  mileage: number
-  workshop: string
-  cost_in_cents: number
-  notes: string
-  created_at: string
+const toServiceCategory = (category: string): ServiceCategory => {
+  switch (category) {
+    case 'Maintenance':
+    case 'Repair':
+    case 'Inspection':
+    case 'Tires':
+    case 'Other':
+      return category
+    default:
+      throw new Error(`Unknown service category: ${category}`)
+  }
 }
 
 const mapRecord = (row: ServiceRecordRow): ServiceRecord => ({
   id: row.id,
   vehicleId: row.vehicle_id,
   title: row.title,
-  category: row.category as ServiceCategory,
+  category: toServiceCategory(row.category),
   date: row.service_date,
   mileage: row.mileage,
   workshop: row.workshop,
@@ -66,7 +63,7 @@ const mapVehicle = (
   }
 }
 
-const toVehicleRow = (input: VehicleInput) => ({
+const toVehicleRow = (input: VehicleInput): VehicleInsert => ({
   make: input.make,
   model: input.model,
   year: input.year,
@@ -75,7 +72,9 @@ const toVehicleRow = (input: VehicleInput) => ({
   starting_mileage: input.currentMileage,
 })
 
-const toServiceRecordRow = (input: ServiceRecordInput) => ({
+const toServiceRecordRow = (
+  input: ServiceRecordInput,
+): Omit<ServiceRecordInsert, 'vehicle_id'> => ({
   title: input.title,
   category: input.category,
   service_date: input.date,
@@ -105,25 +104,18 @@ export const fetchCarDiaryState = async (): Promise<CarDiaryState> => {
   const [vehiclesResult, recordsResult] = await Promise.all([
     client
       .from('vehicles')
-      .select(
-        'id, make, model, year, registration_number, vin, starting_mileage, created_at',
-      )
+      .select()
       .order('created_at', { ascending: true }),
     client
       .from('service_records')
-      .select(
-        'id, vehicle_id, title, category, service_date, mileage, workshop, cost_in_cents, notes, created_at',
-      )
+      .select()
       .order('service_date', { ascending: false }),
   ])
 
   if (vehiclesResult.error) throw vehiclesResult.error
   if (recordsResult.error) throw recordsResult.error
 
-  return mapCarDiaryState(
-    vehiclesResult.data as VehicleRow[],
-    recordsResult.data as ServiceRecordRow[],
-  )
+  return mapCarDiaryState(vehiclesResult.data, recordsResult.data)
 }
 
 export const createVehicle = async (input: VehicleInput): Promise<string> => {
@@ -134,7 +126,7 @@ export const createVehicle = async (input: VehicleInput): Promise<string> => {
     .single()
 
   if (error) throw error
-  return (data as { id: string }).id
+  return data.id
 }
 
 export const updateVehicle = async (
