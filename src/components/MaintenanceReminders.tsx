@@ -1,9 +1,14 @@
-import { useState, type FormEvent } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import type {
   MaintenanceReminder,
   MaintenanceReminderInput,
 } from '../types'
 import { DatePicker } from './DatePicker'
+import {
+  maintenanceReminderSchema,
+  type MaintenanceReminderFormValues,
+} from '../lib/validation'
 import {
   getMaintenanceReminderStatus,
   type MaintenanceReminderStatus,
@@ -12,10 +17,12 @@ import {
   cardStyles,
   dangerActionStyles,
   eyebrowStyles,
+  fieldErrorStyles,
   fieldStyles,
   formErrorStyles,
   formGridStyles,
   inputStyles,
+  invalidControlStyles,
   joinClassNames,
   primaryButtonStyles,
   sectionHeadingStyles,
@@ -51,7 +58,21 @@ export const MaintenanceReminders = ({
   onDelete,
   onToggleCompleted,
 }: MaintenanceRemindersProps) => {
-  const [formError, setFormError] = useState<string | null>(null)
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+    reset,
+  } = useForm<MaintenanceReminderFormValues>({
+    resolver: zodResolver(maintenanceReminderSchema),
+    defaultValues: {
+      title: '',
+      dueDate: '',
+      dueMileage: null,
+    },
+    mode: 'onBlur',
+  })
   const orderedReminders = reminders.toSorted((first, second) => {
     const statusOrder: Record<MaintenanceReminderStatus, number> = {
       overdue: 0,
@@ -71,24 +92,17 @@ export const MaintenanceReminders = ({
     )
   })
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    const dueDate = String(data.get('dueDate')) || null
-    const dueMileageValue = String(data.get('dueMileage')).trim()
-    const dueMileage = dueMileageValue ? Number(dueMileageValue) : null
-
-    if (!dueDate && dueMileage === null) {
-      setFormError('Add a due date, due mileage, or both.')
-      return
-    }
-
-    setFormError(null)
+  const createReminder = ({
+    title,
+    dueDate,
+    dueMileage,
+  }: MaintenanceReminderFormValues) => {
     onCreate({
-      title: String(data.get('title')).trim(),
-      dueDate,
+      title,
+      dueDate: dueDate || null,
       dueMileage,
     })
+    reset()
   }
 
   return (
@@ -118,40 +132,70 @@ export const MaintenanceReminders = ({
 
       <div className="mt-[22px] grid grid-cols-[minmax(280px,0.65fr)_minmax(0,1.35fr)] items-start gap-7 max-[980px]:grid-cols-1">
         <form
-          key={reminders.length}
           className="grid gap-4"
-          onSubmit={handleSubmit}
+          noValidate
+          onSubmit={handleSubmit(createReminder)}
         >
           <label className={fieldStyles}>
             <span>Reminder</span>
             <input
-              className={inputStyles}
-              name="title"
+              className={joinClassNames(
+                inputStyles,
+                errors.title && invalidControlStyles,
+              )}
               placeholder="e.g. Replace timing belt"
               maxLength={160}
-              required
+              aria-label="Reminder"
+              aria-invalid={Boolean(errors.title)}
+              {...register('title')}
             />
+            {errors.title && (
+              <p className={fieldErrorStyles} role="alert">
+                {errors.title.message}
+              </p>
+            )}
           </label>
           <div className={joinClassNames(formGridStyles, 'gap-4')}>
             <label className={fieldStyles}>
               <span>Due date</span>
-              <DatePicker name="dueDate" />
+              <Controller
+                control={control}
+                name="dueDate"
+                render={({ field }) => (
+                  <DatePicker
+                    invalid={Boolean(errors.dueDate)}
+                    name={field.name}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                )}
+              />
             </label>
             <label className={fieldStyles}>
               <span>Due mileage (km)</span>
               <input
-                className={inputStyles}
-                name="dueMileage"
+                className={joinClassNames(
+                  inputStyles,
+                  errors.dueMileage && invalidControlStyles,
+                )}
                 type="number"
                 min="0"
                 step="1"
                 placeholder={String(currentMileage + 10_000)}
+                aria-label="Due mileage (km)"
+                aria-invalid={Boolean(errors.dueMileage)}
+                {...register('dueMileage', {
+                  setValueAs: (value) =>
+                    value === null || String(value).trim() === ''
+                      ? null
+                      : Number(value),
+                })}
               />
             </label>
           </div>
-          {formError && (
+          {(errors.dueDate || errors.dueMileage) && (
             <p className={formErrorStyles} role="alert">
-              {formError}
+              {errors.dueDate?.message ?? errors.dueMileage?.message}
             </p>
           )}
           <button

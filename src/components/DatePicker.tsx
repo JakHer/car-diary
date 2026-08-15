@@ -2,12 +2,19 @@ import { useState } from 'react'
 import * as Popover from '@radix-ui/react-popover'
 import { DayPicker } from '@daypicker/react'
 import { enGB } from '@daypicker/react/locale'
-import { inputStyles, joinClassNames } from '../styles'
+import {
+  inputStyles,
+  invalidControlStyles,
+  joinClassNames,
+} from '../styles'
 
 interface DatePickerProps {
   defaultValue?: string
+  invalid?: boolean
   name: string
   required?: boolean
+  value?: string
+  onValueChange?: (value: string) => void
 }
 
 const displayDateFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -61,30 +68,37 @@ const CalendarIcon = () => (
 
 export const DatePicker = ({
   defaultValue,
+  invalid = false,
   name,
   required = false,
+  value,
+  onValueChange,
 }: DatePickerProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() =>
-    parseDate(defaultValue),
-  )
+  const [internalValue, setInternalValue] = useState(defaultValue ?? '')
   const [isOpen, setIsOpen] = useState(false)
+  const dateValue = value ?? internalValue
+  const selectedDate = parseDate(dateValue)
 
   const selectDate = (date: Date | undefined) => {
-    setSelectedDate(date)
+    const nextValue = formatDateValue(date)
+    if (value === undefined) setInternalValue(nextValue)
+    onValueChange?.(nextValue)
     setIsOpen(false)
   }
 
   return (
     <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
-      <input name={name} type="hidden" value={formatDateValue(selectedDate)} />
+      <input name={name} type="hidden" value={dateValue} />
       <Popover.Trigger asChild>
         <button
           className={joinClassNames(
             inputStyles,
             'flex cursor-pointer items-center justify-between gap-3 text-left',
             !selectedDate && 'text-light',
+            invalid && invalidControlStyles,
           )}
           type="button"
+          aria-invalid={invalid}
           aria-label={selectedDate ? 'Change date' : 'Choose date'}
         >
           <span>

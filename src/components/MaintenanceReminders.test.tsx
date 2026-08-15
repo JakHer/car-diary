@@ -54,7 +54,7 @@ describe('MaintenanceReminders', () => {
     await user.type(screen.getByLabelText('Reminder'), 'Oil change')
     await user.click(screen.getByRole('button', { name: 'Add reminder' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent(
+    expect(await screen.findByRole('alert')).toHaveTextContent(
       'Add a due date, due mileage, or both.',
     )
     expect(onCreate).not.toHaveBeenCalled()

@@ -52,3 +52,9 @@ export const dangerActionStyles = `${smallActionStyles} hover:bg-[#fbeaea] hover
 
 export const formErrorStyles =
   'm-0 rounded-[9px] bg-[#fff2f2] px-3 py-[11px] text-[13px] leading-[1.45] text-[#852424]'
+
+export const fieldErrorStyles =
+  'm-0 text-xs font-semibold leading-[1.4] text-[#a62b2b]'
+
+export const invalidControlStyles =
+  'border-[#d78585] shadow-[0_0_0_3px_rgba(166,43,43,0.08)]'

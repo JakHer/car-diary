@@ -1,5 +1,9 @@
 import * as Select from '@radix-ui/react-select'
-import { inputStyles, joinClassNames } from '../styles'
+import {
+  inputStyles,
+  invalidControlStyles,
+  joinClassNames,
+} from '../styles'
 
 export interface SelectOption {
   label: string
@@ -9,6 +13,7 @@ export interface SelectOption {
 interface SelectFieldProps {
   ariaLabel: string
   defaultValue?: string
+  invalid?: boolean
   name?: string
   options: SelectOption[]
   value?: string
@@ -56,6 +61,7 @@ const compactTriggerStyles =
 export const SelectField = ({
   ariaLabel,
   defaultValue,
+  invalid = false,
   name,
   options,
   value,
@@ -75,9 +81,11 @@ export const SelectField = ({
           : joinClassNames(
               inputStyles,
               'flex cursor-pointer items-center justify-between gap-3 text-left',
+              invalid && invalidControlStyles,
             )
       }
       aria-label={ariaLabel}
+      aria-invalid={invalid}
     >
       <Select.Value className="truncate" />
       <Select.Icon className="shrink-0 text-muted">

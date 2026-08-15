@@ -1,5 +1,4 @@
 import { lazy, Suspense } from 'react'
-import { AuthScreen } from './components/AuthScreen'
 import {
   ConfigurationScreen,
   LoadingScreen,
@@ -12,13 +11,24 @@ import {
 } from './lib/supabase'
 
 const CarDiaryApp = lazy(() => import('./CarDiaryApp'))
+const AuthScreen = lazy(() =>
+  import('./components/AuthScreen').then(({ AuthScreen: Component }) => ({
+    default: Component,
+  })),
+)
 
 const App = () => {
   const { session, isLoading } = useAuth()
 
   if (!isSupabaseConfigured) return <ConfigurationScreen />
   if (isLoading) return <LoadingScreen message="Checking your session..." />
-  if (!session) return <AuthScreen />
+  if (!session) {
+    return (
+      <Suspense fallback={<LoadingScreen message="Loading sign in..." />}>
+        <AuthScreen />
+      </Suspense>
+    )
+  }
 
   const signOut = async () => {
     const { error } = await getSupabaseClient().auth.signOut()
