@@ -3,13 +3,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { getSupabaseClient } from '../lib/supabase'
 import { authSchema, type AuthFormValues } from '../lib/validation'
+import { FieldError } from './FieldError'
 import { Loader } from './Loader'
 import {
   brandStyles,
   eyebrowStyles,
   fieldStyles,
   formErrorStyles,
-  fieldErrorStyles,
   inputStyles,
   invalidControlStyles,
   joinClassNames,
@@ -149,11 +149,7 @@ export const AuthScreen = () => {
               aria-invalid={Boolean(errors.email)}
               {...register('email')}
             />
-            {errors.email && (
-              <p className={fieldErrorStyles} role="alert">
-                {errors.email.message}
-              </p>
-            )}
+            <FieldError message={errors.email?.message} />
           </label>
 
           <label className={fieldStyles}>
@@ -172,11 +168,7 @@ export const AuthScreen = () => {
               aria-invalid={Boolean(errors.password)}
               {...register('password')}
             />
-            {errors.password && (
-              <p className={fieldErrorStyles} role="alert">
-                {errors.password.message}
-              </p>
-            )}
+            <FieldError message={errors.password?.message} />
           </label>
 
           {error && <p className={formErrorStyles}>{error}</p>}

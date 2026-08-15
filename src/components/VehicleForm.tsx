@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Vehicle, VehicleInput } from '../types'
+import { FieldError } from './FieldError'
 import { Loader } from './Loader'
 import {
   vehicleSchema,
@@ -8,7 +9,6 @@ import {
 } from '../lib/validation'
 import {
   cardStyles,
-  fieldErrorStyles,
   fieldStyles,
   formGridStyles,
   inputStyles,
@@ -95,11 +95,7 @@ export const VehicleForm = ({
             aria-invalid={Boolean(errors.make)}
             {...register('make')}
           />
-          {errors.make && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.make.message}
-            </p>
-          )}
+          <FieldError message={errors.make?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -114,11 +110,7 @@ export const VehicleForm = ({
             aria-invalid={Boolean(errors.model)}
             {...register('model')}
           />
-          {errors.model && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.model.message}
-            </p>
-          )}
+          <FieldError message={errors.model?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -136,11 +128,7 @@ export const VehicleForm = ({
             aria-invalid={Boolean(errors.year)}
             {...register('year', { valueAsNumber: true })}
           />
-          {errors.year && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.year.message}
-            </p>
-          )}
+          <FieldError message={errors.year?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -160,11 +148,7 @@ export const VehicleForm = ({
             aria-invalid={Boolean(errors.currentMileage)}
             {...register('currentMileage', { valueAsNumber: true })}
           />
-          {errors.currentMileage && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.currentMileage.message}
-            </p>
-          )}
+          <FieldError message={errors.currentMileage?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -179,11 +163,7 @@ export const VehicleForm = ({
             aria-invalid={Boolean(errors.registrationNumber)}
             {...register('registrationNumber')}
           />
-          {errors.registrationNumber && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.registrationNumber.message}
-            </p>
-          )}
+          <FieldError message={errors.registrationNumber?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -199,11 +179,7 @@ export const VehicleForm = ({
             aria-invalid={Boolean(errors.vin)}
             {...register('vin')}
           />
-          {errors.vin && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.vin.message}
-            </p>
-          )}
+          <FieldError message={errors.vin?.message} />
         </label>
       </div>
 
@@ -221,6 +197,7 @@ export const VehicleForm = ({
                 'max-[700px]:w-full',
               )}
               type="button"
+              disabled={isSaving}
               onClick={onCancel}
             >
               Cancel

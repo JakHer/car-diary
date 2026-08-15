@@ -5,6 +5,7 @@ import type {
   MaintenanceReminderInput,
 } from '../types'
 import { DatePicker } from './DatePicker'
+import { FieldError } from './FieldError'
 import { Loader } from './Loader'
 import {
   maintenanceReminderSchema,
@@ -18,9 +19,7 @@ import {
   cardStyles,
   dangerActionStyles,
   eyebrowStyles,
-  fieldErrorStyles,
   fieldStyles,
-  formErrorStyles,
   formGridStyles,
   inputStyles,
   invalidControlStyles,
@@ -153,11 +152,7 @@ export const MaintenanceReminders = ({
               aria-invalid={Boolean(errors.title)}
               {...register('title')}
             />
-            {errors.title && (
-              <p className={fieldErrorStyles} role="alert">
-                {errors.title.message}
-              </p>
-            )}
+            <FieldError message={errors.title?.message} />
           </label>
           <div className={joinClassNames(formGridStyles, 'gap-4')}>
             <label className={fieldStyles}>
@@ -174,6 +169,7 @@ export const MaintenanceReminders = ({
                   />
                 )}
               />
+              <FieldError message={errors.dueDate?.message} />
             </label>
             <label className={fieldStyles}>
               <span>Due mileage (km)</span>
@@ -195,13 +191,9 @@ export const MaintenanceReminders = ({
                       : Number(value),
                 })}
               />
+              <FieldError message={errors.dueMileage?.message} />
             </label>
           </div>
-          {(errors.dueDate || errors.dueMileage) && (
-            <p className={formErrorStyles} role="alert">
-              {errors.dueDate?.message ?? errors.dueMileage?.message}
-            </p>
-          )}
           <button
             className={joinClassNames(primaryButtonStyles, 'justify-self-start')}
             type="submit"

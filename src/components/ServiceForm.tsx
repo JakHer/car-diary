@@ -2,6 +2,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ServiceRecord, ServiceRecordInput } from '../types'
 import { DatePicker } from './DatePicker'
+import { FieldError } from './FieldError'
 import { Loader } from './Loader'
 import { SelectField } from './SelectField'
 import {
@@ -11,7 +12,6 @@ import {
 import {
   cardStyles,
   eyebrowStyles,
-  fieldErrorStyles,
   fieldStyles,
   formGridStyles,
   inputStyles,
@@ -115,11 +115,7 @@ export const ServiceForm = ({
           aria-invalid={Boolean(errors.title)}
           {...register('title')}
         />
-        {errors.title && (
-          <p className={fieldErrorStyles} role="alert">
-            {errors.title.message}
-          </p>
-        )}
+        <FieldError message={errors.title?.message} />
       </label>
 
       <div className={joinClassNames(formGridStyles, 'gap-4')}>
@@ -139,11 +135,7 @@ export const ServiceForm = ({
               />
             )}
           />
-          {errors.category && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.category.message}
-            </p>
-          )}
+          <FieldError message={errors.category?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -161,11 +153,7 @@ export const ServiceForm = ({
               />
             )}
           />
-          {errors.date && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.date.message}
-            </p>
-          )}
+          <FieldError message={errors.date?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -182,11 +170,7 @@ export const ServiceForm = ({
             aria-invalid={Boolean(errors.mileage)}
             {...register('mileage', { valueAsNumber: true })}
           />
-          {errors.mileage && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.mileage.message}
-            </p>
-          )}
+          <FieldError message={errors.mileage?.message} />
         </label>
 
         <label className={fieldStyles}>
@@ -204,11 +188,7 @@ export const ServiceForm = ({
             aria-invalid={Boolean(errors.cost)}
             {...register('cost', { valueAsNumber: true })}
           />
-          {errors.cost && (
-            <p className={fieldErrorStyles} role="alert">
-              {errors.cost.message}
-            </p>
-          )}
+          <FieldError message={errors.cost?.message} />
         </label>
       </div>
 
@@ -224,11 +204,7 @@ export const ServiceForm = ({
           aria-invalid={Boolean(errors.workshop)}
           {...register('workshop')}
         />
-        {errors.workshop && (
-          <p className={fieldErrorStyles} role="alert">
-            {errors.workshop.message}
-          </p>
-        )}
+        <FieldError message={errors.workshop?.message} />
       </label>
 
       <label className={fieldStyles}>
@@ -244,11 +220,7 @@ export const ServiceForm = ({
           aria-invalid={Boolean(errors.notes)}
           {...register('notes')}
         />
-        {errors.notes && (
-          <p className={fieldErrorStyles} role="alert">
-            {errors.notes.message}
-          </p>
-        )}
+        <FieldError message={errors.notes?.message} />
       </label>
 
       <div className="flex gap-2.5">
