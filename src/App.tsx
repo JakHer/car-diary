@@ -1,12 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AuthScreen } from './components/AuthScreen'
 import { ServiceForm } from './components/ServiceForm'
 import { ServiceHistory } from './components/ServiceHistory'
 import { VehicleForm } from './components/VehicleForm'
-import { loadCarDiaryState, saveCarDiaryState } from './lib/storage'
+import { useAuth } from './hooks/useAuth'
+import {
+  createServiceRecord,
+  createVehicle as createVehicleRow,
+  deleteServiceRecord as deleteServiceRecordRow,
+  deleteVehicle as deleteVehicleRow,
+  fetchCarDiaryState,
+  updateServiceRecord,
+  updateVehicle as updateVehicleRow,
+} from './lib/carDiaryRepository'
+import {
+  getSupabaseClient,
+  isSupabaseConfigured,
+} from './lib/supabase'
 import type {
-  ServiceRecord,
+  CarDiaryState,
   ServiceRecordInput,
-  Vehicle,
   VehicleInput,
 } from './types'
 import './App.css'
@@ -22,27 +35,65 @@ const lastServiceFormatter = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
 })
 
-const getVehicleMileage = (
-  vehicle: Vehicle,
-  records: ServiceRecord[],
-): number => {
-  const recordedMileages = records
-    .filter((record) => record.vehicleId === vehicle.id)
-    .map((record) => record.mileage)
-
-  return Math.max(vehicle.startingMileage, ...recordedMileages)
+const emptyState: CarDiaryState = {
+  version: 2,
+  vehicles: [],
+  activeVehicleId: null,
+  serviceRecords: [],
 }
 
-const App = () => {
-  const [state, setState] = useState(loadCarDiaryState)
+const getErrorMessage = (error: unknown): string => {
+  return error instanceof Error
+    ? error.message
+    : 'Something went wrong. Please try again.'
+}
+
+interface CarDiaryAppProps {
+  userEmail: string
+  onSignOut: () => Promise<void>
+}
+
+const CarDiaryApp = ({ userEmail, onSignOut }: CarDiaryAppProps) => {
+  const [state, setState] = useState<CarDiaryState>(emptyState)
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
   const [vehicleFormMode, setVehicleFormMode] = useState<
     'add' | 'edit' | null
   >(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasLoadedState, setHasLoadedState] = useState(false)
+  const [isMutating, setIsMutating] = useState(false)
+  const [dataError, setDataError] = useState<string | null>(null)
+
+  const loadState = useCallback(
+    async (preferredVehicleId?: string | null): Promise<void> => {
+      const nextState = await fetchCarDiaryState()
+
+      setState((currentState) => {
+        const desiredVehicleId =
+          preferredVehicleId === undefined
+            ? currentState.activeVehicleId
+            : preferredVehicleId
+        const activeVehicleId = nextState.vehicles.some(
+          (vehicle) => vehicle.id === desiredVehicleId,
+        )
+          ? desiredVehicleId
+          : (nextState.vehicles[0]?.id ?? null)
+
+        return { ...nextState, activeVehicleId }
+      })
+    },
+    [],
+  )
 
   useEffect(() => {
-    saveCarDiaryState(state)
-  }, [state])
+    setIsLoading(true)
+    setDataError(null)
+
+    void loadState()
+      .then(() => setHasLoadedState(true))
+      .catch((error: unknown) => setDataError(getErrorMessage(error)))
+      .finally(() => setIsLoading(false))
+  }, [loadState])
 
   useEffect(() => {
     if (!vehicleFormMode) return undefined
@@ -75,47 +126,42 @@ const App = () => {
     (record) => record.id === editingRecordId,
   )
 
-  const addVehicle = (input: VehicleInput) => {
-    const vehicle: Vehicle = {
-      ...input,
-      id: crypto.randomUUID(),
-      startingMileage: input.currentMileage,
-      createdAt: new Date().toISOString(),
-    }
+  const executeMutation = async (
+    operation: () => Promise<string | null>,
+  ): Promise<boolean> => {
+    if (isMutating) return false
 
-    setState((currentState) => ({
-      ...currentState,
-      vehicles: [...currentState.vehicles, vehicle],
-      activeVehicleId: vehicle.id,
-    }))
+    setIsMutating(true)
+    setDataError(null)
+
+    try {
+      const preferredVehicleId = await operation()
+      await loadState(preferredVehicleId)
+      return true
+    } catch (error) {
+      setDataError(getErrorMessage(error))
+      return false
+    } finally {
+      setIsMutating(false)
+    }
+  }
+
+  const addVehicle = async (input: VehicleInput) => {
+    const succeeded = await executeMutation(() => createVehicleRow(input))
+    if (!succeeded) return
+
     setEditingRecordId(null)
     setVehicleFormMode(null)
   }
 
-  const updateVehicle = (input: VehicleInput) => {
+  const updateVehicle = async (input: VehicleInput) => {
     if (!activeVehicle) return
 
-    setState((currentState) => ({
-      ...currentState,
-      vehicles: currentState.vehicles.map((vehicle) => {
-        if (vehicle.id !== activeVehicle.id) return vehicle
-
-        const updatedVehicle: Vehicle = {
-          ...vehicle,
-          ...input,
-          startingMileage: input.currentMileage,
-        }
-
-        return {
-          ...updatedVehicle,
-          currentMileage: getVehicleMileage(
-            updatedVehicle,
-            currentState.serviceRecords,
-          ),
-        }
-      }),
-    }))
-    setVehicleFormMode(null)
+    const succeeded = await executeMutation(async () => {
+      await updateVehicleRow(activeVehicle.id, input)
+      return activeVehicle.id
+    })
+    if (succeeded) setVehicleFormMode(null)
   }
 
   const selectVehicle = (vehicleId: string) => {
@@ -126,7 +172,7 @@ const App = () => {
     setEditingRecordId(null)
   }
 
-  const deleteVehicle = () => {
+  const deleteVehicle = async () => {
     if (!activeVehicle) return
 
     const serviceCount = activeRecords.length
@@ -135,60 +181,32 @@ const App = () => {
     )
     if (!shouldDelete) return
 
-    setState((currentState) => {
-      const nextVehicles = currentState.vehicles.filter(
-        (vehicle) => vehicle.id !== activeVehicle.id,
-      )
-
-      return {
-        ...currentState,
-        vehicles: nextVehicles,
-        activeVehicleId: nextVehicles[0]?.id ?? null,
-        serviceRecords: currentState.serviceRecords.filter(
-          (record) => record.vehicleId !== activeVehicle.id,
-        ),
-      }
+    const succeeded = await executeMutation(async () => {
+      await deleteVehicleRow(activeVehicle.id)
+      return null
     })
+    if (!succeeded) return
+
     setEditingRecordId(null)
     setVehicleFormMode(null)
   }
 
-  const saveServiceRecord = (input: ServiceRecordInput) => {
+  const saveServiceRecord = async (input: ServiceRecordInput) => {
     if (!activeVehicle) return
 
-    setState((currentState) => {
-      const nextRecords = editingRecordId
-        ? currentState.serviceRecords.map((record) =>
-            record.id === editingRecordId ? { ...record, ...input } : record,
-          )
-        : [
-            ...currentState.serviceRecords,
-            {
-              ...input,
-              id: crypto.randomUUID(),
-              vehicleId: activeVehicle.id,
-              createdAt: new Date().toISOString(),
-            },
-          ]
-
-      return {
-        ...currentState,
-        vehicles: currentState.vehicles.map((vehicle) =>
-          vehicle.id === activeVehicle.id
-            ? {
-                ...vehicle,
-                currentMileage: getVehicleMileage(vehicle, nextRecords),
-              }
-            : vehicle,
-        ),
-        serviceRecords: nextRecords,
+    const succeeded = await executeMutation(async () => {
+      if (editingRecordId) {
+        await updateServiceRecord(editingRecordId, input)
+      } else {
+        await createServiceRecord(activeVehicle.id, input)
       }
+      return activeVehicle.id
     })
 
-    setEditingRecordId(null)
+    if (succeeded) setEditingRecordId(null)
   }
 
-  const deleteServiceRecord = (recordId: string) => {
+  const deleteServiceRecord = async (recordId: string) => {
     const record = activeRecords.find((entry) => entry.id === recordId)
     if (!activeVehicle || !record) return
 
@@ -197,26 +215,28 @@ const App = () => {
     )
     if (!shouldDelete) return
 
-    setState((currentState) => {
-      const nextRecords = currentState.serviceRecords.filter(
-        (entry) => entry.id !== recordId,
-      )
-
-      return {
-        ...currentState,
-        vehicles: currentState.vehicles.map((vehicle) =>
-          vehicle.id === activeVehicle.id
-            ? {
-                ...vehicle,
-                currentMileage: getVehicleMileage(vehicle, nextRecords),
-              }
-            : vehicle,
-        ),
-        serviceRecords: nextRecords,
-      }
+    const succeeded = await executeMutation(async () => {
+      await deleteServiceRecordRow(recordId)
+      return activeVehicle.id
     })
 
-    if (editingRecordId === recordId) setEditingRecordId(null)
+    if (succeeded && editingRecordId === recordId) {
+      setEditingRecordId(null)
+    }
+  }
+
+  const retryLoading = async () => {
+    setIsLoading(true)
+    setDataError(null)
+
+    try {
+      await loadState()
+      setHasLoadedState(true)
+    } catch (error) {
+      setDataError(getErrorMessage(error))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const totalCost = activeRecords.reduce(
@@ -224,8 +244,27 @@ const App = () => {
     0,
   )
 
+  if (isLoading) {
+    return <LoadingScreen message="Loading your garage..." />
+  }
+
+  if (dataError && !hasLoadedState) {
+    return (
+      <main className="status-screen">
+        <span className="brand-mark" aria-hidden="true">
+          CD
+        </span>
+        <h1>We could not load your garage.</h1>
+        <p>{dataError}</p>
+        <button className="button button-primary" type="button" onClick={retryLoading}>
+          Try again
+        </button>
+      </main>
+    )
+  }
+
   return (
-    <div className="app-shell">
+    <div className="app-shell" aria-busy={isMutating}>
       <header className="app-header">
         <a className="brand" href="/" aria-label="Car Diary home page">
           <span className="brand-mark" aria-hidden="true">
@@ -257,10 +296,31 @@ const App = () => {
             </div>
           )}
           <span className="storage-status">
-            <span aria-hidden="true" /> Local storage
+            <span aria-hidden="true" /> Supabase
           </span>
+          <div className="account-menu">
+            <span title={userEmail}>{userEmail}</span>
+            <button type="button" onClick={() => void onSignOut()}>
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
+
+      {dataError && (
+        <div className="error-banner" role="alert">
+          <span>{dataError}</span>
+          <button type="button" onClick={() => setDataError(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {isMutating && (
+        <div className="sync-indicator" role="status">
+          Syncing changes...
+        </div>
+      )}
 
       {!activeVehicle ? (
         <main className="onboarding">
@@ -296,7 +356,7 @@ const App = () => {
                 <button
                   className="button-danger"
                   type="button"
-                  onClick={deleteVehicle}
+                  onClick={() => void deleteVehicle()}
                 >
                   Delete vehicle
                 </button>
@@ -339,7 +399,7 @@ const App = () => {
             <ServiceHistory
               records={activeRecords}
               editingRecordId={editingRecordId}
-              onDelete={deleteServiceRecord}
+              onDelete={(recordId) => void deleteServiceRecord(recordId)}
               onEdit={setEditingRecordId}
             />
             <ServiceForm
@@ -387,6 +447,50 @@ const App = () => {
         </div>
       )}
     </div>
+  )
+}
+
+interface LoadingScreenProps {
+  message: string
+}
+
+const LoadingScreen = ({ message }: LoadingScreenProps) => (
+  <main className="status-screen">
+    <span className="brand-mark" aria-hidden="true">
+      CD
+    </span>
+    <div className="loading-dot" aria-hidden="true" />
+    <p>{message}</p>
+  </main>
+)
+
+const ConfigurationScreen = () => (
+  <main className="status-screen">
+    <span className="brand-mark" aria-hidden="true">
+      CD
+    </span>
+    <h1>Supabase is not configured.</h1>
+    <p>Add the required values to your `.env.local` file and restart Vite.</p>
+  </main>
+)
+
+const App = () => {
+  const { session, isLoading } = useAuth()
+
+  if (!isSupabaseConfigured) return <ConfigurationScreen />
+  if (isLoading) return <LoadingScreen message="Checking your session..." />
+  if (!session) return <AuthScreen />
+
+  const signOut = async () => {
+    const { error } = await getSupabaseClient().auth.signOut()
+    if (error) window.alert(error.message)
+  }
+
+  return (
+    <CarDiaryApp
+      userEmail={session.user.email ?? 'Signed-in account'}
+      onSignOut={signOut}
+    />
   )
 }
 
