@@ -8,6 +8,7 @@ import {
 const vehicleRows: VehicleRow[] = [
   {
     id: 'vehicle-1',
+    user_id: 'user-1',
     make: 'Volvo',
     model: 'V60',
     year: 2021,
@@ -15,9 +16,11 @@ const vehicleRows: VehicleRow[] = [
     vin: '',
     starting_mileage: 80_000,
     created_at: '2026-08-01T10:00:00.000Z',
+    updated_at: '2026-08-01T10:00:00.000Z',
   },
   {
     id: 'vehicle-2',
+    user_id: 'user-1',
     make: 'Ford',
     model: 'Focus',
     year: 2020,
@@ -25,6 +28,7 @@ const vehicleRows: VehicleRow[] = [
     vin: '',
     starting_mileage: 40_000,
     created_at: '2026-08-02T10:00:00.000Z',
+    updated_at: '2026-08-02T10:00:00.000Z',
   },
 ]
 
@@ -40,6 +44,7 @@ const serviceRecordRows: ServiceRecordRow[] = [
     cost_in_cents: 64_990,
     notes: 'Oil and filter changed.',
     created_at: '2026-08-10T12:00:00.000Z',
+    updated_at: '2026-08-10T12:00:00.000Z',
   },
   {
     id: 'record-2',
@@ -52,6 +57,7 @@ const serviceRecordRows: ServiceRecordRow[] = [
     cost_in_cents: 20_000,
     notes: '',
     created_at: '2026-08-12T12:00:00.000Z',
+    updated_at: '2026-08-12T12:00:00.000Z',
   },
 ]
 
@@ -74,5 +80,13 @@ describe('mapCarDiaryState', () => {
       date: '2026-08-10',
       costInCents: 64_990,
     })
+  })
+
+  it('rejects service categories outside the supported domain', () => {
+    expect(() =>
+      mapCarDiaryState(vehicleRows, [
+        { ...serviceRecordRows[0], category: 'Unsupported' },
+      ]),
+    ).toThrow('Unknown service category: Unsupported')
   })
 })
