@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AppHeader } from './components/AppHeader'
+import { ConfirmDialog } from './components/ConfirmDialog'
 import { ErrorScreen, LoadingScreen } from './components/StatusScreen'
+import { Loader } from './components/Loader'
 import {
   VehicleDialog,
   type VehicleFormMode,
@@ -36,6 +38,13 @@ interface CarDiaryAppProps {
   onSignOut: () => Promise<void>
 }
 
+interface DeleteConfirmation {
+  description: string
+  kind: 'vehicle' | 'service-record' | 'reminder'
+  targetId: string
+  title: string
+}
+
 const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
   const {
     stateQuery,
@@ -55,6 +64,8 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
   const state = stateQuery.data ?? emptyState
   const [activeVehicleId, setActiveVehicleId] = useState<string | null>(null)
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] =
+    useState<DeleteConfirmation | null>(null)
   const [vehicleFormMode, setVehicleFormMode] =
     useState<VehicleFormMode | null>(null)
 
@@ -117,25 +128,17 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     setEditingRecordId(null)
   }
 
-  const deleteVehicle = () => {
+  const requestVehicleDeletion = () => {
     if (!activeVehicle) return
 
     const serviceCount = activeRecords.length
     const reminderCount = activeReminders.length
-    const shouldDelete = window.confirm(
-      `Delete ${activeVehicle.make} ${activeVehicle.model}, ${serviceCount} ${serviceCount === 1 ? 'service record' : 'service records'}, and ${reminderCount} ${reminderCount === 1 ? 'reminder' : 'reminders'}? This action cannot be undone.`,
-    )
-    if (!shouldDelete) return
-
-    resetMutationErrors()
-    void deleteVehicleMutation
-      .mutateAsync(activeVehicle.id)
-      .then(() => {
-        setActiveVehicleId(null)
-        setEditingRecordId(null)
-        setVehicleFormMode(null)
-      })
-      .catch(() => undefined)
+    setDeleteConfirmation({
+      kind: 'vehicle',
+      targetId: activeVehicle.id,
+      title: `Delete ${activeVehicle.make} ${activeVehicle.model}?`,
+      description: `This will permanently remove ${serviceCount} ${serviceCount === 1 ? 'service record' : 'service records'} and ${reminderCount} ${reminderCount === 1 ? 'reminder' : 'reminders'} linked to this vehicle. This action cannot be undone.`,
+    })
   }
 
   const saveServiceRecord = (input: ServiceRecordInput) => {
@@ -157,22 +160,17 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
       .catch(() => undefined)
   }
 
-  const deleteServiceRecord = (recordId: string) => {
+  const requestServiceRecordDeletion = (recordId: string) => {
     const record = activeRecords.find((entry) => entry.id === recordId)
     if (!activeVehicle || !record) return
 
-    const shouldDelete = window.confirm(
-      `Delete "${record.title}"? This action cannot be undone.`,
-    )
-    if (!shouldDelete) return
-
-    resetMutationErrors()
-    void deleteServiceRecordMutation
-      .mutateAsync(recordId)
-      .then(() => {
-        if (editingRecordId === recordId) setEditingRecordId(null)
-      })
-      .catch(() => undefined)
+    setDeleteConfirmation({
+      kind: 'service-record',
+      targetId: recordId,
+      title: `Delete “${record.title}”?`,
+      description:
+        'This service record will be permanently removed from the vehicle history. This action cannot be undone.',
+    })
   }
 
   const createReminder = (input: MaintenanceReminderInput) => {
@@ -191,20 +189,64 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
       .catch(() => undefined)
   }
 
-  const deleteReminder = (reminderId: string) => {
+  const requestReminderDeletion = (reminderId: string) => {
     const reminder = activeReminders.find((entry) => entry.id === reminderId)
     if (!reminder) return
 
-    const shouldDelete = window.confirm(
-      `Delete "${reminder.title}"? This action cannot be undone.`,
-    )
-    if (!shouldDelete) return
+    setDeleteConfirmation({
+      kind: 'reminder',
+      targetId: reminderId,
+      title: `Delete “${reminder.title}”?`,
+      description:
+        'This maintenance reminder will be permanently removed. This action cannot be undone.',
+    })
+  }
+
+  const confirmDeletion = () => {
+    if (!deleteConfirmation) return
 
     resetMutationErrors()
+    const { kind, targetId } = deleteConfirmation
+    const closeDialog = () => setDeleteConfirmation(null)
+
+    if (kind === 'vehicle') {
+      void deleteVehicleMutation
+        .mutateAsync(targetId)
+        .then(() => {
+          setActiveVehicleId(null)
+          setEditingRecordId(null)
+          setVehicleFormMode(null)
+        })
+        .catch(() => undefined)
+        .finally(closeDialog)
+      return
+    }
+
+    if (kind === 'service-record') {
+      void deleteServiceRecordMutation
+        .mutateAsync(targetId)
+        .then(() => {
+          if (editingRecordId === targetId) setEditingRecordId(null)
+        })
+        .catch(() => undefined)
+        .finally(closeDialog)
+      return
+    }
+
     void deleteMaintenanceReminderMutation
-      .mutateAsync(reminderId)
+      .mutateAsync(targetId)
       .catch(() => undefined)
+      .finally(closeDialog)
   }
+
+  const isConfirmingDeletion =
+    deleteConfirmation?.kind === 'vehicle'
+      ? deleteVehicleMutation.isPending
+      : deleteConfirmation?.kind === 'service-record'
+        ? deleteServiceRecordMutation.isPending
+        : deleteConfirmation?.kind === 'reminder'
+          ? deleteMaintenanceReminderMutation.isPending
+          : false
 
   const dataError = stateQuery.error ?? mutationError
   const handleDataError = () => {
@@ -263,7 +305,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
           className="fixed right-5 bottom-5 z-30 rounded-full bg-strong px-4 py-2.5 text-xs font-bold text-white shadow-card"
           role="status"
         >
-          Syncing changes...
+          <Loader label="Syncing changes..." size="small" />
         </div>
       )}
 
@@ -279,19 +321,27 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
               expenses as they happen.
             </p>
           </div>
-          <VehicleForm onSave={addVehicle} />
+          <VehicleForm
+            isSaving={createVehicleMutation.isPending}
+            onSave={addVehicle}
+          />
         </main>
       ) : (
         <VehicleDashboard
           editingRecordId={editingRecordId}
+          isCreatingReminder={createMaintenanceReminderMutation.isPending}
+          isSavingRecord={
+            createServiceRecordMutation.isPending ||
+            updateServiceRecordMutation.isPending
+          }
           reminders={activeReminders}
           records={activeRecords}
           vehicle={activeVehicle}
           onCancelRecordEdit={() => setEditingRecordId(null)}
           onCreateReminder={createReminder}
-          onDeleteRecord={deleteServiceRecord}
-          onDeleteReminder={deleteReminder}
-          onDeleteVehicle={deleteVehicle}
+          onDeleteRecord={requestServiceRecordDeletion}
+          onDeleteReminder={requestReminderDeletion}
+          onDeleteVehicle={requestVehicleDeletion}
           onEditRecord={setEditingRecordId}
           onEditVehicle={() => setVehicleFormMode('edit')}
           onSaveRecord={saveServiceRecord}
@@ -302,11 +352,27 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
       {vehicleFormMode && activeVehicle && (
         <VehicleDialog
           mode={vehicleFormMode}
+          isSaving={
+            vehicleFormMode === 'edit'
+              ? updateVehicleMutation.isPending
+              : createVehicleMutation.isPending
+          }
           vehicle={activeVehicle}
           onClose={() => setVehicleFormMode(null)}
           onSave={vehicleFormMode === 'edit' ? updateVehicle : addVehicle}
         />
       )}
+
+      <ConfirmDialog
+        description={deleteConfirmation?.description ?? ''}
+        isConfirming={isConfirmingDeletion}
+        open={Boolean(deleteConfirmation)}
+        title={deleteConfirmation?.title ?? ''}
+        onConfirm={confirmDeletion}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirmation(null)
+        }}
+      />
     </div>
   )
 }

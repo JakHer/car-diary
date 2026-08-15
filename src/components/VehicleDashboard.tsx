@@ -30,6 +30,8 @@ const lastServiceFormatter = new Intl.DateTimeFormat('en-GB', {
 
 interface VehicleDashboardProps {
   editingRecordId: string | null
+  isCreatingReminder: boolean
+  isSavingRecord: boolean
   reminders: MaintenanceReminder[]
   records: ServiceRecord[]
   vehicle: Vehicle
@@ -46,6 +48,8 @@ interface VehicleDashboardProps {
 
 export const VehicleDashboard = ({
   editingRecordId,
+  isCreatingReminder,
+  isSavingRecord,
   reminders,
   records,
   vehicle,
@@ -158,6 +162,7 @@ export const VehicleDashboard = ({
 
       <MaintenanceReminders
         currentMileage={vehicle.currentMileage}
+        isSaving={isCreatingReminder}
         reminders={reminders}
         onCreate={onCreateReminder}
         onDelete={onDeleteReminder}
@@ -174,6 +179,7 @@ export const VehicleDashboard = ({
         <ServiceForm
           key={editingRecord?.id ?? `new-${records.length}`}
           currentMileage={vehicle.currentMileage}
+          isSaving={isSavingRecord}
           record={editingRecord}
           onCancel={onCancelRecordEdit}
           onSave={onSaveRecord}
