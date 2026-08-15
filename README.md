@@ -58,6 +58,8 @@ repository instead of being made directly in the remote dashboard.
 - `npm run build` - type-check and create a production build
 - `npm run lint` - run static code analysis
 - `npm run preview` - preview the production build locally
+- `npm test` - run the test suite once
+- `npm run test:watch` - run tests in watch mode
 
 ## Current features
 
