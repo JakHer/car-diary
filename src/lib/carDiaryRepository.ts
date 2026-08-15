@@ -8,7 +8,7 @@ import type {
 } from '../types'
 import { getSupabaseClient } from './supabase'
 
-interface VehicleRow {
+export interface VehicleRow {
   id: string
   make: string
   model: string
@@ -19,7 +19,7 @@ interface VehicleRow {
   created_at: string
 }
 
-interface ServiceRecordRow {
+export interface ServiceRecordRow {
   id: string
   vehicle_id: string
   title: string
@@ -85,6 +85,21 @@ const toServiceRecordRow = (input: ServiceRecordInput) => ({
   notes: input.notes,
 })
 
+export const mapCarDiaryState = (
+  vehicleRows: VehicleRow[],
+  serviceRecordRows: ServiceRecordRow[],
+): CarDiaryState => {
+  const records = serviceRecordRows.map(mapRecord)
+  const vehicles = vehicleRows.map((vehicle) => mapVehicle(vehicle, records))
+
+  return {
+    version: 2,
+    vehicles,
+    activeVehicleId: vehicles[0]?.id ?? null,
+    serviceRecords: records,
+  }
+}
+
 export const fetchCarDiaryState = async (): Promise<CarDiaryState> => {
   const client = getSupabaseClient()
   const [vehiclesResult, recordsResult] = await Promise.all([
@@ -105,17 +120,10 @@ export const fetchCarDiaryState = async (): Promise<CarDiaryState> => {
   if (vehiclesResult.error) throw vehiclesResult.error
   if (recordsResult.error) throw recordsResult.error
 
-  const records = (recordsResult.data as ServiceRecordRow[]).map(mapRecord)
-  const vehicles = (vehiclesResult.data as VehicleRow[]).map((vehicle) =>
-    mapVehicle(vehicle, records),
+  return mapCarDiaryState(
+    vehiclesResult.data as VehicleRow[],
+    recordsResult.data as ServiceRecordRow[],
   )
-
-  return {
-    version: 2,
-    vehicles,
-    activeVehicleId: vehicles[0]?.id ?? null,
-    serviceRecords: records,
-  }
 }
 
 export const createVehicle = async (input: VehicleInput): Promise<string> => {
