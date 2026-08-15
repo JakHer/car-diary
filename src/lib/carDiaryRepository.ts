@@ -1,5 +1,7 @@
 import type {
   CarDiaryState,
+  MaintenanceReminder,
+  MaintenanceReminderInput,
   ServiceCategory,
   ServiceRecord,
   ServiceRecordInput,
@@ -10,9 +12,13 @@ import type { Database } from '../database.types'
 import { getSupabaseClient } from './supabase'
 
 export type VehicleRow = Database['public']['Tables']['vehicles']['Row']
+export type MaintenanceReminderRow =
+  Database['public']['Tables']['maintenance_reminders']['Row']
 export type ServiceRecordRow =
   Database['public']['Tables']['service_records']['Row']
 type VehicleInsert = Database['public']['Tables']['vehicles']['Insert']
+type MaintenanceReminderInsert =
+  Database['public']['Tables']['maintenance_reminders']['Insert']
 type ServiceRecordInsert =
   Database['public']['Tables']['service_records']['Insert']
 
@@ -39,6 +45,16 @@ const mapRecord = (row: ServiceRecordRow): ServiceRecord => ({
   workshop: row.workshop,
   costInCents: row.cost_in_cents,
   notes: row.notes,
+  createdAt: row.created_at,
+})
+
+const mapReminder = (row: MaintenanceReminderRow): MaintenanceReminder => ({
+  id: row.id,
+  vehicleId: row.vehicle_id,
+  title: row.title,
+  dueDate: row.due_date,
+  dueMileage: row.due_mileage,
+  completedAt: row.completed_at,
   createdAt: row.created_at,
 })
 
@@ -84,24 +100,35 @@ const toServiceRecordRow = (
   notes: input.notes,
 })
 
+const toMaintenanceReminderRow = (
+  input: MaintenanceReminderInput,
+): Omit<MaintenanceReminderInsert, 'vehicle_id'> => ({
+  title: input.title,
+  due_date: input.dueDate,
+  due_mileage: input.dueMileage,
+})
+
 export const mapCarDiaryState = (
   vehicleRows: VehicleRow[],
   serviceRecordRows: ServiceRecordRow[],
+  reminderRows: MaintenanceReminderRow[] = [],
 ): CarDiaryState => {
   const records = serviceRecordRows.map(mapRecord)
+  const reminders = reminderRows.map(mapReminder)
   const vehicles = vehicleRows.map((vehicle) => mapVehicle(vehicle, records))
 
   return {
-    version: 2,
+    version: 3,
     vehicles,
     activeVehicleId: vehicles[0]?.id ?? null,
     serviceRecords: records,
+    maintenanceReminders: reminders,
   }
 }
 
 export const fetchCarDiaryState = async (): Promise<CarDiaryState> => {
   const client = getSupabaseClient()
-  const [vehiclesResult, recordsResult] = await Promise.all([
+  const [vehiclesResult, recordsResult, remindersResult] = await Promise.all([
     client
       .from('vehicles')
       .select()
@@ -110,12 +137,21 @@ export const fetchCarDiaryState = async (): Promise<CarDiaryState> => {
       .from('service_records')
       .select()
       .order('service_date', { ascending: false }),
+    client
+      .from('maintenance_reminders')
+      .select()
+      .order('created_at', { ascending: true }),
   ])
 
   if (vehiclesResult.error) throw vehiclesResult.error
   if (recordsResult.error) throw recordsResult.error
+  if (remindersResult.error) throw remindersResult.error
 
-  return mapCarDiaryState(vehiclesResult.data, recordsResult.data)
+  return mapCarDiaryState(
+    vehiclesResult.data,
+    recordsResult.data,
+    remindersResult.data,
+  )
 }
 
 export const createVehicle = async (input: VehicleInput): Promise<string> => {
@@ -178,6 +214,40 @@ export const deleteServiceRecord = async (recordId: string): Promise<void> => {
     .from('service_records')
     .delete()
     .eq('id', recordId)
+
+  if (error) throw error
+}
+
+export const createMaintenanceReminder = async (
+  vehicleId: string,
+  input: MaintenanceReminderInput,
+): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('maintenance_reminders')
+    .insert({ vehicle_id: vehicleId, ...toMaintenanceReminderRow(input) })
+
+  if (error) throw error
+}
+
+export const setMaintenanceReminderCompleted = async (
+  reminderId: string,
+  completed: boolean,
+): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('maintenance_reminders')
+    .update({ completed_at: completed ? new Date().toISOString() : null })
+    .eq('id', reminderId)
+
+  if (error) throw error
+}
+
+export const deleteMaintenanceReminder = async (
+  reminderId: string,
+): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('maintenance_reminders')
+    .delete()
+    .eq('id', reminderId)
 
   if (error) throw error
 }

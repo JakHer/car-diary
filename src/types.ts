@@ -37,9 +37,25 @@ export type ServiceRecordInput = Omit<
   'id' | 'vehicleId' | 'createdAt'
 >
 
+export interface MaintenanceReminder {
+  id: string
+  vehicleId: string
+  title: string
+  dueDate: string | null
+  dueMileage: number | null
+  completedAt: string | null
+  createdAt: string
+}
+
+export type MaintenanceReminderInput = Pick<
+  MaintenanceReminder,
+  'title' | 'dueDate' | 'dueMileage'
+>
+
 export interface CarDiaryState {
-  version: 2
+  version: 3
   vehicles: Vehicle[]
   activeVehicleId: string | null
   serviceRecords: ServiceRecord[]
+  maintenanceReminders: MaintenanceReminder[]
 }
