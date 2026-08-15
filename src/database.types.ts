@@ -9,6 +9,47 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      maintenance_reminders: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          due_mileage: number | null
+          id: string
+          title: string
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          due_mileage?: number | null
+          id?: string
+          title: string
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          due_mileage?: number | null
+          id?: string
+          title?: string
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'maintenance_reminders_vehicle_id_fkey'
+            columns: ['vehicle_id']
+            isOneToOne: false
+            referencedRelation: 'vehicles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       service_records: {
         Row: {
           category: string

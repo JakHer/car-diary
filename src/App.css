@@ -433,6 +433,119 @@
   white-space: nowrap;
 }
 
+.reminders-card {
+  margin-top: 24px;
+  padding: 28px;
+}
+
+.reminders-heading {
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reminders-layout {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.65fr) minmax(0, 1.35fr);
+  align-items: start;
+  gap: 28px;
+}
+
+.reminder-form {
+  display: grid;
+  gap: 16px;
+}
+
+.reminder-form .button {
+  justify-self: start;
+}
+
+.reminders-empty {
+  min-height: 160px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.reminders-empty p {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: 700;
+}
+
+.reminders-empty span {
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.reminder-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reminder-item {
+  padding: 16px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.reminder-item:first-child {
+  padding-top: 0;
+}
+
+.reminder-item:not(:last-child) {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reminder-item-completed .reminder-content {
+  opacity: 0.62;
+}
+
+.reminder-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reminder-title-row h3 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 16px;
+}
+
+.reminder-status {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.reminder-status-upcoming {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.reminder-status-overdue {
+  color: #a62b2b;
+  background: #fbeaea;
+}
+
+.reminder-status-completed {
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+}
+
+.reminder-actions {
+  flex: 0 0 auto;
+}
+
 .workspace-grid {
   margin-top: 24px;
   display: grid;
@@ -905,6 +1018,10 @@
     grid-template-columns: 1fr;
   }
 
+  .reminders-layout {
+    grid-template-columns: 1fr;
+  }
+
   .service-form {
     position: static;
     grid-row: 1;
@@ -980,6 +1097,7 @@
   }
 
   .history-card,
+  .reminders-card,
   .service-form,
   .setup-form {
     padding: 22px;
@@ -1009,6 +1127,10 @@
   .record-header {
     flex-direction: column;
     gap: 12px;
+  }
+
+  .reminder-item {
+    flex-direction: column;
   }
 
   .record-side {

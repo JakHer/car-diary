@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   mapCarDiaryState,
+  type MaintenanceReminderRow,
   type ServiceRecordRow,
   type VehicleRow,
 } from './carDiaryRepository'
@@ -61,9 +62,26 @@ const serviceRecordRows: ServiceRecordRow[] = [
   },
 ]
 
+const reminderRows: MaintenanceReminderRow[] = [
+  {
+    id: 'reminder-1',
+    vehicle_id: 'vehicle-1',
+    title: 'Replace timing belt',
+    due_date: '2026-10-01',
+    due_mileage: 100_000,
+    completed_at: null,
+    created_at: '2026-08-15T10:00:00.000Z',
+    updated_at: '2026-08-15T10:00:00.000Z',
+  },
+]
+
 describe('mapCarDiaryState', () => {
   it('maps database rows and derives mileage per vehicle', () => {
-    const state = mapCarDiaryState(vehicleRows, serviceRecordRows)
+    const state = mapCarDiaryState(
+      vehicleRows,
+      serviceRecordRows,
+      reminderRows,
+    )
 
     expect(state.activeVehicleId).toBe('vehicle-1')
     expect(state.vehicles).toHaveLength(2)
@@ -79,6 +97,13 @@ describe('mapCarDiaryState', () => {
       category: 'Maintenance',
       date: '2026-08-10',
       costInCents: 64_990,
+    })
+    expect(state.maintenanceReminders[0]).toMatchObject({
+      vehicleId: 'vehicle-1',
+      title: 'Replace timing belt',
+      dueDate: '2026-10-01',
+      dueMileage: 100_000,
+      completedAt: null,
     })
   })
 

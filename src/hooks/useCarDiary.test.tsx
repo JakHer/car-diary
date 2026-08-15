@@ -6,11 +6,14 @@ import type { CarDiaryState, VehicleInput } from '../types'
 import { useCarDiary } from './useCarDiary'
 
 const repositoryMocks = vi.hoisted(() => ({
+  createMaintenanceReminder: vi.fn(),
   createServiceRecord: vi.fn(),
   createVehicle: vi.fn(),
+  deleteMaintenanceReminder: vi.fn(),
   deleteServiceRecord: vi.fn(),
   deleteVehicle: vi.fn(),
   fetchCarDiaryState: vi.fn(),
+  setMaintenanceReminderCompleted: vi.fn(),
   updateServiceRecord: vi.fn(),
   updateVehicle: vi.fn(),
 }))
@@ -18,10 +21,11 @@ const repositoryMocks = vi.hoisted(() => ({
 vi.mock('../lib/carDiaryRepository', () => repositoryMocks)
 
 const carDiaryState: CarDiaryState = {
-  version: 2,
+  version: 3,
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
+  maintenanceReminders: [],
 }
 
 const vehicleInput: VehicleInput = {

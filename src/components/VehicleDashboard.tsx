@@ -1,6 +1,9 @@
+import { MaintenanceReminders } from './MaintenanceReminders'
 import { ServiceForm } from './ServiceForm'
 import { ServiceHistory } from './ServiceHistory'
 import type {
+  MaintenanceReminder,
+  MaintenanceReminderInput,
   ServiceRecord,
   ServiceRecordInput,
   Vehicle,
@@ -19,26 +22,34 @@ const lastServiceFormatter = new Intl.DateTimeFormat('en-GB', {
 
 interface VehicleDashboardProps {
   editingRecordId: string | null
+  reminders: MaintenanceReminder[]
   records: ServiceRecord[]
   vehicle: Vehicle
   onCancelRecordEdit: () => void
+  onCreateReminder: (input: MaintenanceReminderInput) => void
   onDeleteRecord: (recordId: string) => void
+  onDeleteReminder: (reminderId: string) => void
   onDeleteVehicle: () => void
   onEditRecord: (recordId: string) => void
   onEditVehicle: () => void
   onSaveRecord: (input: ServiceRecordInput) => void
+  onToggleReminder: (reminderId: string, completed: boolean) => void
 }
 
 export const VehicleDashboard = ({
   editingRecordId,
+  reminders,
   records,
   vehicle,
   onCancelRecordEdit,
+  onCreateReminder,
   onDeleteRecord,
+  onDeleteReminder,
   onDeleteVehicle,
   onEditRecord,
   onEditVehicle,
   onSaveRecord,
+  onToggleReminder,
 }: VehicleDashboardProps) => {
   const editingRecord = records.find(
     (record) => record.id === editingRecordId,
@@ -108,6 +119,14 @@ export const VehicleDashboard = ({
           <p>{records[0]?.title ?? 'Add your first record'}</p>
         </article>
       </section>
+
+      <MaintenanceReminders
+        currentMileage={vehicle.currentMileage}
+        reminders={reminders}
+        onCreate={onCreateReminder}
+        onDelete={onDeleteReminder}
+        onToggleCompleted={onToggleReminder}
+      />
 
       <div className="workspace-grid">
         <ServiceHistory

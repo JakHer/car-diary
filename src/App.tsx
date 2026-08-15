@@ -21,16 +21,18 @@ import {
 } from './lib/supabase'
 import type {
   CarDiaryState,
+  MaintenanceReminderInput,
   ServiceRecordInput,
   VehicleInput,
 } from './types'
 import './App.css'
 
 const emptyState: CarDiaryState = {
-  version: 2,
+  version: 3,
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
+  maintenanceReminders: [],
 }
 
 const getErrorMessage = (error: unknown): string => {
@@ -54,6 +56,9 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     createServiceRecordMutation,
     updateServiceRecordMutation,
     deleteServiceRecordMutation,
+    createMaintenanceReminderMutation,
+    setMaintenanceReminderCompletedMutation,
+    deleteMaintenanceReminderMutation,
     mutationError,
     isMutating,
     resetMutationErrors,
@@ -87,6 +92,14 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     [activeVehicleId, state.serviceRecords],
   )
 
+  const activeReminders = useMemo(
+    () =>
+      state.maintenanceReminders.filter(
+        (reminder) => reminder.vehicleId === activeVehicleId,
+      ),
+    [activeVehicleId, state.maintenanceReminders],
+  )
+
   const addVehicle = (input: VehicleInput) => {
     resetMutationErrors()
     void createVehicleMutation
@@ -118,8 +131,9 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     if (!activeVehicle) return
 
     const serviceCount = activeRecords.length
+    const reminderCount = activeReminders.length
     const shouldDelete = window.confirm(
-      `Delete ${activeVehicle.make} ${activeVehicle.model} and ${serviceCount} ${serviceCount === 1 ? 'service record' : 'service records'}? This action cannot be undone.`,
+      `Delete ${activeVehicle.make} ${activeVehicle.model}, ${serviceCount} ${serviceCount === 1 ? 'service record' : 'service records'}, and ${reminderCount} ${reminderCount === 1 ? 'reminder' : 'reminders'}? This action cannot be undone.`,
     )
     if (!shouldDelete) return
 
@@ -168,6 +182,37 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
       .then(() => {
         if (editingRecordId === recordId) setEditingRecordId(null)
       })
+      .catch(() => undefined)
+  }
+
+  const createReminder = (input: MaintenanceReminderInput) => {
+    if (!activeVehicle) return
+
+    resetMutationErrors()
+    void createMaintenanceReminderMutation
+      .mutateAsync({ vehicleId: activeVehicle.id, input })
+      .catch(() => undefined)
+  }
+
+  const toggleReminder = (reminderId: string, completed: boolean) => {
+    resetMutationErrors()
+    void setMaintenanceReminderCompletedMutation
+      .mutateAsync({ reminderId, completed })
+      .catch(() => undefined)
+  }
+
+  const deleteReminder = (reminderId: string) => {
+    const reminder = activeReminders.find((entry) => entry.id === reminderId)
+    if (!reminder) return
+
+    const shouldDelete = window.confirm(
+      `Delete "${reminder.title}"? This action cannot be undone.`,
+    )
+    if (!shouldDelete) return
+
+    resetMutationErrors()
+    void deleteMaintenanceReminderMutation
+      .mutateAsync(reminderId)
       .catch(() => undefined)
   }
 
@@ -231,14 +276,18 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
       ) : (
         <VehicleDashboard
           editingRecordId={editingRecordId}
+          reminders={activeReminders}
           records={activeRecords}
           vehicle={activeVehicle}
           onCancelRecordEdit={() => setEditingRecordId(null)}
+          onCreateReminder={createReminder}
           onDeleteRecord={deleteServiceRecord}
+          onDeleteReminder={deleteReminder}
           onDeleteVehicle={deleteVehicle}
           onEditRecord={setEditingRecordId}
           onEditVehicle={() => setVehicleFormMode('edit')}
           onSaveRecord={saveServiceRecord}
+          onToggleReminder={toggleReminder}
         />
       )}
 

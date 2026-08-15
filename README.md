@@ -36,10 +36,10 @@ http://localhost:5173
 
 ## Supabase database
 
-The initial database schema is stored in
-`supabase/migrations/20260815000000_initial_schema.sql`. It creates the
-`vehicles` and `service_records` tables, indexes, update triggers, and RLS
-policies scoped to the authenticated user.
+Database changes are stored in `supabase/migrations`. The migrations create
+the vehicle, service record, and maintenance reminder tables together with
+their indexes, update triggers, and RLS policies scoped to the authenticated
+user.
 
 After creating a Supabase project, apply the migration:
 
@@ -68,8 +68,10 @@ repository instead of being made directly in the remote dashboard.
 - service records with mileage, workshop, cost, and notes,
 - service record editing and deletion,
 - service timeline and vehicle summary,
+- maintenance reminders based on date, mileage, or both,
+- upcoming, due, completed, and reopened reminder states,
 - email and password authentication,
-- Supabase-backed vehicle and service record storage,
+- Supabase-backed vehicle, service record, and reminder storage,
 - row-level data isolation for every account.
 
 Older local data under `car-diary:data:v2` is left untouched as a backup, but
