@@ -104,4 +104,26 @@ describe('ServiceHistory filters', () => {
       'Annual inspection',
     ])
   })
+
+  it('runs record actions from accessible icon buttons', async () => {
+    const user = userEvent.setup()
+    const onDelete = vi.fn()
+    const onEdit = vi.fn()
+
+    render(
+      <ServiceHistory
+        distanceUnit="km"
+        editingRecordId={null}
+        records={[records[1]]}
+        onDelete={onDelete}
+        onEdit={onEdit}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }))
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+    expect(onEdit).toHaveBeenCalledWith('oil')
+    expect(onDelete).toHaveBeenCalledWith('oil')
+  })
 })

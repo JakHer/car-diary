@@ -39,7 +39,7 @@ export const en = {
       'This maintenance reminder will be permanently removed. This action cannot be undone.',
   },
   header: {
-    add: '+ Add',
+    add: 'Add vehicle',
     settings: 'Settings',
     signOut: 'Sign out',
   },
@@ -307,7 +307,7 @@ export const pl = {
       'To przypomnienie zostanie trwale usunięte. Tej operacji nie można cofnąć.',
   },
   header: {
-    add: '+ Dodaj',
+    add: 'Dodaj pojazd',
     settings: 'Ustawienia',
     signOut: 'Wyloguj się',
   },

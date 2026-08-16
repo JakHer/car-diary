@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Pencil, Trash2 } from 'lucide-react'
 import { MaintenanceReminders } from './MaintenanceReminders'
+import { IconButton } from './IconButton'
 import { MileageDialog } from './MileageDialog'
 import { ServiceForm } from './ServiceForm'
 import { ServiceHistory } from './ServiceHistory'
@@ -13,10 +15,8 @@ import type {
 } from '../types'
 import {
   cardStyles,
-  dangerActionStyles,
   eyebrowStyles,
   joinClassNames,
-  smallActionStyles,
   tagStyles,
 } from '../styles'
 import { getIntlLocale } from '../i18n'
@@ -95,7 +95,7 @@ export const VehicleDashboard = ({
           <h1 className="m-0 text-[clamp(36px,6vw,66px)] leading-[0.98] tracking-[-0.055em] text-strong">
             {vehicle.make} {vehicle.model}
           </h1>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <span className={tagStyles}>{vehicle.year}</span>
             {vehicle.registrationNumber && (
               <span className={tagStyles}>{vehicle.registrationNumber}</span>
@@ -103,22 +103,23 @@ export const VehicleDashboard = ({
             {vehicle.vin && (
               <span className={tagStyles}>VIN {vehicle.vin}</span>
             )}
-          </div>
-          <div className="mt-4 flex gap-1.5">
-            <button
-              className={smallActionStyles}
-              type="button"
-              onClick={onEditVehicle}
-            >
-              {t('dashboard.editVehicle')}
-            </button>
-            <button
-              className={dangerActionStyles}
-              type="button"
-              onClick={onDeleteVehicle}
-            >
-              {t('dashboard.deleteVehicle')}
-            </button>
+            <div className="ml-1 flex gap-1.5 border-l border-border pl-3">
+              <IconButton
+                label={t('dashboard.editVehicle')}
+                tooltipSide="bottom"
+                onClick={onEditVehicle}
+              >
+                <Pencil aria-hidden="true" className="size-4" />
+              </IconButton>
+              <IconButton
+                label={t('dashboard.deleteVehicle')}
+                tooltipSide="bottom"
+                variant="danger"
+                onClick={onDeleteVehicle}
+              >
+                <Trash2 aria-hidden="true" className="size-4" />
+              </IconButton>
+            </div>
           </div>
         </div>
         <div className="grid shrink-0 justify-items-end max-[700px]:justify-items-start">

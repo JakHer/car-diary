@@ -50,6 +50,11 @@ export const smallActionStyles =
 
 export const dangerActionStyles = `${smallActionStyles} hover:bg-[#fbeaea] hover:text-[#a62b2b] focus-visible:bg-[#fbeaea] focus-visible:text-[#a62b2b]`
 
+export const iconActionStyles =
+  'grid size-9 shrink-0 cursor-pointer place-items-center rounded-[9px] border border-border bg-surface p-0 text-muted shadow-sm transition-[border-color,box-shadow,background-color,color] hover:border-border-strong hover:bg-surface-muted hover:text-strong focus-visible:border-accent focus-visible:text-accent focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-accent-soft)] disabled:cursor-wait disabled:opacity-65'
+
+export const dangerIconActionStyles = `${iconActionStyles} hover:border-[#efb4b4] hover:bg-[#fbeaea] hover:text-[#a62b2b] focus-visible:border-[#efb4b4] focus-visible:bg-[#fbeaea] focus-visible:text-[#a62b2b] focus-visible:shadow-[0_0_0_3px_rgba(166,43,43,0.08)]`
+
 export const formErrorStyles =
   'm-0 rounded-[9px] bg-[#fff2f2] px-3 py-[11px] text-[13px] leading-[1.45] text-[#852424]'
 

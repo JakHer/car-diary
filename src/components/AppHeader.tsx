@@ -1,15 +1,16 @@
 import type { Vehicle } from '../types'
 import { useTranslation } from 'react-i18next'
-import { Settings } from 'lucide-react'
+import { LogOut, Plus, Settings } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { VehicleSelect } from './VehicleSelect'
+import { IconButton } from './IconButton'
+import { Tooltip } from './Tooltip'
 import {
   brandMarkStyles,
   brandStyles,
+  iconActionStyles,
   joinClassNames,
-  secondaryButtonStyles,
-  smallActionStyles,
 } from '../styles'
 
 interface AppHeaderProps {
@@ -39,41 +40,35 @@ export const AppHeader = ({
       </span>
       <span>{t('common.appName')}</span>
     </Link>
-    <div className="flex items-center gap-3 max-[700px]:w-full max-[700px]:justify-between max-[700px]:gap-[7px]">
+    <div className="flex shrink-0 items-center gap-3 max-[700px]:w-full max-[700px]:justify-between max-[700px]:gap-[7px]">
       {activeVehicle && onAddVehicle && onSelectVehicle && (
-        <div className="flex items-center gap-3 border-r border-border pr-3 max-[700px]:gap-[7px] max-[700px]:border-r-0 max-[700px]:pr-0">
+        <div className="flex shrink-0 items-center gap-3 border-r border-border pr-3 max-[700px]:gap-[7px] max-[700px]:border-r-0 max-[700px]:pr-0">
           <VehicleSelect
             activeVehicleId={activeVehicle.id}
             vehicles={vehicles}
             onSelect={onSelectVehicle}
           />
-          <button
-            className={joinClassNames(
-              secondaryButtonStyles,
-              'min-h-9 px-3 text-xs',
-            )}
-            type="button"
-            onClick={onAddVehicle}
-          >
-            {t('header.add')}
-          </button>
+          <IconButton label={t('header.add')} onClick={onAddVehicle}>
+            <Plus aria-hidden="true" className="size-4" strokeWidth={2.2} />
+          </IconButton>
         </div>
       )}
       <LanguageSwitcher syncWithAccount />
-      <NavLink
-        className={({ isActive }) =>
-          joinClassNames(
-            smallActionStyles,
-            'inline-flex min-h-9 items-center gap-1.5 px-2.5 no-underline',
-            isActive && 'bg-accent-soft text-accent',
-          )
-        }
-        to="/settings"
-        aria-label={t('header.settings')}
-      >
-        <Settings aria-hidden="true" className="size-3.5" strokeWidth={2} />
-        <span className="max-[700px]:sr-only">{t('header.settings')}</span>
-      </NavLink>
+      <Tooltip label={t('header.settings')}>
+        <NavLink
+          className={({ isActive }) =>
+            joinClassNames(
+              iconActionStyles,
+              'no-underline',
+              isActive && 'border-accent bg-accent-soft text-accent',
+            )
+          }
+          to="/settings"
+          aria-label={t('header.settings')}
+        >
+          <Settings aria-hidden="true" className="size-4" strokeWidth={2} />
+        </NavLink>
+      </Tooltip>
       <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted max-[700px]:hidden">
         <span
           className="size-[7px] rounded-full bg-accent shadow-[0_0_0_4px_var(--color-accent-soft)]"
@@ -82,19 +77,21 @@ export const AppHeader = ({
         Supabase
       </span>
       <div className="flex items-center gap-[9px]">
-        <span
-          className="max-w-[170px] overflow-hidden text-xs text-ellipsis whitespace-nowrap text-muted max-[700px]:hidden"
-          title={userEmail}
-        >
-          {userEmail}
-        </span>
-        <button
-          className="cursor-pointer border-0 bg-transparent p-0 text-xs font-[750] text-strong hover:text-accent focus-visible:text-accent"
-          type="button"
+        <Tooltip label={userEmail} side="bottom">
+          <span
+            className="max-w-[170px] overflow-hidden text-xs text-ellipsis whitespace-nowrap text-muted outline-none focus-visible:text-strong max-[700px]:hidden"
+            tabIndex={0}
+          >
+            {userEmail}
+          </span>
+        </Tooltip>
+        <IconButton
+          className="text-strong"
+          label={t('header.signOut')}
           onClick={() => void onSignOut()}
         >
-          {t('header.signOut')}
-        </button>
+          <LogOut aria-hidden="true" className="size-4" strokeWidth={2} />
+        </IconButton>
       </div>
     </div>
   </header>

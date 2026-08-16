@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Check, RotateCcw, Trash2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type {
@@ -11,6 +12,7 @@ import { DatePicker } from './DatePicker'
 import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { FieldError } from './FieldError'
 import { Loader } from './Loader'
+import { IconButton } from './IconButton'
 import {
   createMaintenanceReminderSchema,
   type MaintenanceReminderFormValues,
@@ -21,7 +23,6 @@ import {
 } from '../lib/maintenanceReminders'
 import {
   cardStyles,
-  dangerActionStyles,
   eyebrowStyles,
   fieldStyles,
   formGridStyles,
@@ -31,7 +32,6 @@ import {
   primaryButtonStyles,
   sectionHeadingStyles,
   sectionTitleStyles,
-  smallActionStyles,
   tagStyles,
 } from '../styles'
 import { getIntlLocale } from '../i18n'
@@ -295,9 +295,12 @@ export const MaintenanceReminders = ({
                     </div>
                   </div>
                   <div className="flex shrink-0 gap-1.5">
-                    <button
-                      className={smallActionStyles}
-                      type="button"
+                    <IconButton
+                      label={
+                        status === 'completed'
+                          ? t('reminders.reopen')
+                          : t('reminders.complete')
+                      }
                       onClick={() =>
                         onToggleCompleted(
                           reminder.id,
@@ -306,16 +309,16 @@ export const MaintenanceReminders = ({
                       }
                     >
                       {status === 'completed'
-                        ? t('reminders.reopen')
-                        : t('reminders.complete')}
-                    </button>
-                    <button
-                      className={dangerActionStyles}
-                      type="button"
+                        ? <RotateCcw aria-hidden="true" className="size-4" />
+                        : <Check aria-hidden="true" className="size-4" />}
+                    </IconButton>
+                    <IconButton
+                      label={t('common.delete')}
+                      variant="danger"
                       onClick={() => onDelete(reminder.id)}
                     >
-                      {t('common.delete')}
-                    </button>
+                      <Trash2 aria-hidden="true" className="size-4" />
+                    </IconButton>
                   </div>
                 </li>
               )
