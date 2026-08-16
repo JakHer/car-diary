@@ -1,0 +1,115 @@
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Fuel, Trash2 } from 'lucide-react'
+import type { DistanceUnit, FuelEntry } from '@/types'
+import { formatDistance } from '@/lib/distance-units'
+import { IconButton } from '@/components/actions/icon-button'
+import { Badge } from '@/components/ui/badge'
+
+interface FuelEntryListProps {
+  distanceUnit: DistanceUnit
+  entries: FuelEntry[]
+  locale: string
+  onDelete: (fuelEntryId: string) => void
+}
+
+export const FuelEntryList = ({
+  distanceUnit,
+  entries,
+  locale,
+  onDelete,
+}: FuelEntryListProps) => {
+  const { t } = useTranslation()
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+    [locale],
+  )
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'PLN',
+      }),
+    [locale],
+  )
+  const volumeFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 3,
+      }),
+    [locale],
+  )
+  const orderedEntries = entries.toSorted(
+    (first, second) =>
+      second.date.localeCompare(first.date) || second.mileage - first.mileage,
+  )
+
+  if (orderedEntries.length === 0) {
+    return (
+      <div className="grid min-h-52 place-content-center text-center">
+        <Fuel aria-hidden="true" className="mx-auto mb-3 size-6 text-muted" />
+        <p className="m-0 font-bold text-strong">{t('fuel.emptyTitle')}</p>
+        <span className="mt-1.5 max-w-sm text-[13px] text-muted">
+          {t('fuel.emptyDescription')}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <ol className="m-0 grid list-none gap-2.5 p-0">
+      {orderedEntries.map((entry) => {
+        const liters = entry.volumeInMilliliters / 1_000
+        const pricePerLiter = entry.totalCostInCents / 100 / liters
+
+        return (
+          <li
+            className="flex items-center justify-between gap-4 rounded-[11px] border border-border bg-surface-muted/35 px-4 py-3.5"
+            key={entry.id}
+          >
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <strong className="text-sm text-strong">
+                  {volumeFormatter.format(liters)} l
+                </strong>
+                <span className="text-sm font-bold text-strong">
+                  {currencyFormatter.format(entry.totalCostInCents / 100)}
+                </span>
+                {entry.fullTank && (
+                  <Badge variant="secondary">{t('fuel.fullTankBadge')}</Badge>
+                )}
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+                <span>
+                  {dateFormatter.format(new Date(`${entry.date}T12:00:00`))}
+                </span>
+                <span>
+                  {formatDistance(entry.mileage, distanceUnit, locale)}
+                </span>
+                <span>
+                  {t('fuel.pricePerLiter', {
+                    price: currencyFormatter.format(pricePerLiter),
+                  })}
+                </span>
+                {entry.station && <span>{entry.station}</span>}
+              </div>
+            </div>
+            <IconButton
+              label={t('common.delete')}
+              variant="danger"
+              onClick={() => onDelete(entry.id)}
+            >
+              <Trash2 aria-hidden="true" className="size-4" />
+            </IconButton>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
