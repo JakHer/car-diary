@@ -14,6 +14,7 @@ import { useCarDiary } from './hooks/useCarDiary'
 import { eyebrowStyles, joinClassNames, smallActionStyles } from './styles'
 import type {
   CarDiaryState,
+  DistanceUnit,
   MaintenanceReminderInput,
   ServiceRecordInput,
   VehicleInput,
@@ -31,6 +32,7 @@ const getErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error ? error.message : fallback
 
 interface CarDiaryAppProps {
+  defaultDistanceUnit: DistanceUnit
   userId: string
   userEmail: string
   onSignOut: () => Promise<void>
@@ -43,7 +45,12 @@ interface DeleteConfirmation {
   title: string
 }
 
-const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
+const CarDiaryApp = ({
+  defaultDistanceUnit,
+  userId,
+  userEmail,
+  onSignOut,
+}: CarDiaryAppProps) => {
   const { t } = useTranslation()
   const {
     stateQuery,
@@ -336,6 +343,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
             </p>
           </div>
           <VehicleForm
+            defaultDistanceUnit={defaultDistanceUnit}
             isSaving={createVehicleMutation.isPending}
             onSave={addVehicle}
           />
@@ -367,6 +375,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
 
       {activeVehicle && (
         <VehicleDialog
+          defaultDistanceUnit={defaultDistanceUnit}
           mode={vehicleFormMode ?? 'add'}
           open={Boolean(vehicleFormMode)}
           isSaving={

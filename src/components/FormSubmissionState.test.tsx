@@ -17,6 +17,7 @@ describe('form submission state', () => {
     render(
       <ServiceForm
         currentMileage={86_200}
+        distanceUnit="km"
         isSaving
         onCancel={vi.fn()}
         onSave={vi.fn()}
@@ -32,6 +33,7 @@ describe('form submission state', () => {
     render(
       <MaintenanceReminders
         currentMileage={86_200}
+        distanceUnit="km"
         isSaving
         reminders={[]}
         onCreate={vi.fn()}

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type {
+  DistanceUnit,
   MaintenanceReminder,
   MaintenanceReminderInput,
 } from '../types'
@@ -34,6 +35,7 @@ import {
   tagStyles,
 } from '../styles'
 import { getIntlLocale } from '../i18n'
+import { formatDistance } from '../lib/distanceUnits'
 
 const reminderStatusStyles: Record<MaintenanceReminderStatus, string> = {
   upcoming: 'bg-accent-soft text-accent',
@@ -43,6 +45,7 @@ const reminderStatusStyles: Record<MaintenanceReminderStatus, string> = {
 
 interface MaintenanceRemindersProps {
   currentMileage: number
+  distanceUnit: DistanceUnit
   isSaving: boolean
   reminders: MaintenanceReminder[]
   onCreate: (input: MaintenanceReminderInput) => void
@@ -52,6 +55,7 @@ interface MaintenanceRemindersProps {
 
 export const MaintenanceReminders = ({
   currentMileage,
+  distanceUnit,
   isSaving,
   reminders,
   onCreate,
@@ -190,7 +194,7 @@ export const MaintenanceReminders = ({
               <FieldError message={errors.dueDate?.message} />
             </label>
             <label className={fieldStyles}>
-              <span>{t('reminders.dueMileage')}</span>
+              <span>{t('reminders.dueMileage', { unit: distanceUnit })}</span>
               <input
                 className={joinClassNames(
                   inputStyles,
@@ -200,7 +204,9 @@ export const MaintenanceReminders = ({
                 min="0"
                 step="1"
                 placeholder={String(currentMileage + 10_000)}
-                aria-label={t('reminders.dueMileage')}
+                aria-label={t('reminders.dueMileage', {
+                  unit: distanceUnit,
+                })}
                 aria-invalid={Boolean(errors.dueMileage)}
                 {...register('dueMileage', {
                   setValueAs: (value) =>
@@ -276,9 +282,15 @@ export const MaintenanceReminders = ({
                         })}</span>
                       )}
                       {reminder.dueMileage !== null && (
-                        <span>{t('reminders.atMileage', {
-                          mileage: reminder.dueMileage.toLocaleString(locale),
-                        })}</span>
+                        <span>
+                          {t('reminders.atMileage', {
+                            distance: formatDistance(
+                              reminder.dueMileage,
+                              distanceUnit,
+                              locale,
+                            ),
+                          })}
+                        </span>
                       )}
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import { z } from 'zod'
 import i18n, { getIntlLocale } from '../i18n'
+import type { DistanceUnit } from '../types'
 
 const currentYear = new Date().getFullYear()
 
@@ -18,7 +19,11 @@ const requiredText = (
       t('validation.maxLength', { field, maximum: maximumLength }),
     )
 
-const mileageSchema = (t: TFunction, minimumMileage = 0) =>
+const mileageSchema = (
+  t: TFunction,
+  minimumMileage = 0,
+  distanceUnit: DistanceUnit = 'km',
+) =>
   z
     .number({ error: t('validation.enterMileage') })
     .int(t('validation.wholeMileage'))
@@ -30,6 +35,7 @@ const mileageSchema = (t: TFunction, minimumMileage = 0) =>
             minimum: minimumMileage.toLocaleString(
               getIntlLocale(i18n.resolvedLanguage),
             ),
+            unit: distanceUnit,
           }),
     )
 
@@ -49,6 +55,7 @@ export const authSchema = createAuthSchema()
 
 export const createVehicleSchema = (
   minimumMileage = 0,
+  distanceUnit: DistanceUnit = 'km',
   t: TFunction = i18n.t,
 ) =>
   z.object({
@@ -62,7 +69,8 @@ export const createVehicleSchema = (
         currentYear + 1,
         t('validation.yearMax', { maximum: currentYear + 1 }),
       ),
-    currentMileage: mileageSchema(t, minimumMileage),
+    distanceUnit: z.enum(['km', 'mi']),
+    currentMileage: mileageSchema(t, minimumMileage, distanceUnit),
     registrationNumber: z
       .string()
       .trim()
@@ -81,8 +89,12 @@ export const vehicleSchema = createVehicleSchema()
 
 export const createMileageSchema = (
   minimumMileage: number,
+  distanceUnit: DistanceUnit = 'km',
   t: TFunction = i18n.t,
-) => z.object({ currentMileage: mileageSchema(t, minimumMileage) })
+) =>
+  z.object({
+    currentMileage: mileageSchema(t, minimumMileage, distanceUnit),
+  })
 
 export const createServiceRecordSchema = (t: TFunction = i18n.t) =>
   z.object({

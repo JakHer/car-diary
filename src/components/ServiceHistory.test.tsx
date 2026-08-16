@@ -46,6 +46,7 @@ const records: ServiceRecord[] = [
 const renderHistory = () =>
   render(
     <ServiceHistory
+      distanceUnit="km"
       editingRecordId={null}
       records={records}
       onDelete={vi.fn()}

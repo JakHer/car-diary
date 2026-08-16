@@ -2,10 +2,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
-import { saveAccountLanguage } from '../lib/accountLanguage'
+import { saveAccountLanguage } from '../lib/accountPreferences'
 import i18n, { resolveInitialLanguage } from '.'
 
-vi.mock('../lib/accountLanguage', () => ({
+vi.mock('../lib/accountPreferences', () => ({
   saveAccountLanguage: vi.fn(),
 }))
 

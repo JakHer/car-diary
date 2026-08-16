@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MaintenanceReminders } from './MaintenanceReminders'
 import { MileageDialog } from './MileageDialog'
 import { ServiceForm } from './ServiceForm'
@@ -125,13 +127,13 @@ export const VehicleDashboard = ({
           </span>
           <strong className="text-[clamp(32px,5vw,48px)] leading-none tracking-[-0.04em] text-strong">
             {vehicle.currentMileage.toLocaleString(locale)}
-            <small className="text-base font-bold tracking-normal text-muted">
-              {' '}
-              km
+            <small className="ml-1 text-[0.45em] tracking-normal text-muted">
+              {vehicle.distanceUnit}
             </small>
           </strong>
           <MileageDialog
             currentMileage={vehicle.currentMileage}
+            distanceUnit={vehicle.distanceUnit}
             isSaving={isUpdatingMileage}
             vehicleName={`${vehicle.make} ${vehicle.model}`}
             onSave={onUpdateMileage}
@@ -184,6 +186,7 @@ export const VehicleDashboard = ({
 
       <MaintenanceReminders
         currentMileage={vehicle.currentMileage}
+        distanceUnit={vehicle.distanceUnit}
         isSaving={isCreatingReminder}
         reminders={reminders}
         onCreate={onCreateReminder}
@@ -193,6 +196,7 @@ export const VehicleDashboard = ({
 
       <div className="mt-6 grid grid-cols-[minmax(0,1.45fr)_minmax(360px,0.75fr)] items-start gap-6 max-[980px]:grid-cols-1">
         <ServiceHistory
+          distanceUnit={vehicle.distanceUnit}
           records={records}
           editingRecordId={editingRecordId}
           onDelete={onDeleteRecord}
@@ -201,6 +205,7 @@ export const VehicleDashboard = ({
         <ServiceForm
           key={editingRecord?.id ?? `new-${records.length}`}
           currentMileage={vehicle.currentMileage}
+          distanceUnit={vehicle.distanceUnit}
           isSaving={isSavingRecord}
           record={editingRecord}
           onCancel={onCancelRecordEdit}
@@ -210,5 +215,3 @@ export const VehicleDashboard = ({
     </main>
   )
 }
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'

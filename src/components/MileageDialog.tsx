@@ -20,9 +20,11 @@ import {
 import { FieldError } from './FieldError'
 import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { Loader } from './Loader'
+import type { DistanceUnit } from '../types'
 
 interface MileageDialogProps {
   currentMileage: number
+  distanceUnit: DistanceUnit
   isSaving: boolean
   vehicleName: string
   onSave: (currentMileage: number) => Promise<void>
@@ -30,6 +32,7 @@ interface MileageDialogProps {
 
 export const MileageDialog = ({
   currentMileage,
+  distanceUnit,
   isSaving,
   vehicleName,
   onSave,
@@ -37,8 +40,8 @@ export const MileageDialog = ({
   const { i18n, t } = useTranslation()
   const [open, setOpen] = useState(false)
   const schema = useMemo(
-    () => createMileageSchema(currentMileage, t),
-    [currentMileage, t],
+    () => createMileageSchema(currentMileage, distanceUnit, t),
+    [currentMileage, distanceUnit, t],
   )
   const {
     formState: { errors, isSubmitting },
@@ -125,7 +128,7 @@ export const MileageDialog = ({
             onSubmit={handleSubmit(saveMileage)}
           >
             <label className={fieldStyles}>
-              <span>{t('mileage.current')}</span>
+              <span>{t('mileage.current', { unit: distanceUnit })}</span>
               <input
                 className={joinClassNames(
                   inputStyles,
@@ -135,7 +138,7 @@ export const MileageDialog = ({
                 min={currentMileage}
                 step="1"
                 autoFocus
-                aria-label={t('mileage.current')}
+                aria-label={t('mileage.current', { unit: distanceUnit })}
                 aria-invalid={Boolean(errors.currentMileage)}
                 {...register('currentMileage', { valueAsNumber: true })}
               />

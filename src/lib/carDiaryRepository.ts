@@ -1,5 +1,6 @@
 import type {
   CarDiaryState,
+  DistanceUnit,
   MaintenanceReminder,
   MaintenanceReminderInput,
   ServiceCategory,
@@ -10,6 +11,7 @@ import type {
 } from '../types'
 import type { Database } from '../database.types'
 import { getSupabaseClient } from './supabase'
+import { isDistanceUnit } from './distanceUnits'
 
 export type VehicleRow = Database['public']['Tables']['vehicles']['Row']
 export type MaintenanceReminderRow =
@@ -34,6 +36,11 @@ const toServiceCategory = (category: string): ServiceCategory => {
     default:
       throw new Error(`Unknown service category: ${category}`)
   }
+}
+
+const toDistanceUnit = (unit: string): DistanceUnit => {
+  if (isDistanceUnit(unit)) return unit
+  throw new Error(`Unknown distance unit: ${unit}`)
 }
 
 const mapRecord = (row: ServiceRecordRow): ServiceRecord => ({
@@ -66,6 +73,7 @@ const mapVehicle = (row: VehicleRow): Vehicle => ({
   year: row.year,
   registrationNumber: row.registration_number,
   vin: row.vin,
+  distanceUnit: toDistanceUnit(row.distance_unit),
   startingMileage: row.starting_mileage,
   currentMileage: row.current_mileage,
   createdAt: row.created_at,
@@ -77,6 +85,7 @@ const toVehicleInsertRow = (input: VehicleInput): VehicleInsert => ({
   year: input.year,
   registration_number: input.registrationNumber,
   vin: input.vin,
+  distance_unit: input.distanceUnit,
   starting_mileage: input.currentMileage,
   current_mileage: input.currentMileage,
 })

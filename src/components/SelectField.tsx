@@ -14,6 +14,7 @@ export interface SelectOption {
 interface SelectFieldProps {
   ariaLabel: string
   defaultValue?: string
+  disabled?: boolean
   invalid?: boolean
   name?: string
   options: SelectOption[]
@@ -31,6 +32,7 @@ const toolbarTriggerStyles =
 export const SelectField = ({
   ariaLabel,
   defaultValue,
+  disabled = false,
   invalid = false,
   name,
   options,
@@ -58,6 +60,7 @@ export const SelectField = ({
       }
       aria-label={ariaLabel}
       aria-invalid={invalid}
+      disabled={disabled}
     >
       <Select.Value className="truncate" />
       <Select.Icon className="shrink-0 text-muted">

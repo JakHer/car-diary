@@ -17,6 +17,7 @@ const vehicleRows: VehicleRow[] = [
     vin: '',
     starting_mileage: 80_000,
     current_mileage: 86_200,
+    distance_unit: 'km',
     created_at: '2026-08-01T10:00:00.000Z',
     updated_at: '2026-08-01T10:00:00.000Z',
   },
@@ -30,6 +31,7 @@ const vehicleRows: VehicleRow[] = [
     vin: '',
     starting_mileage: 40_000,
     current_mileage: 40_000,
+    distance_unit: 'mi',
     created_at: '2026-08-02T10:00:00.000Z',
     updated_at: '2026-08-02T10:00:00.000Z',
   },
@@ -92,8 +94,12 @@ describe('mapCarDiaryState', () => {
       registrationNumber: 'WX 1234A',
       startingMileage: 80_000,
       currentMileage: 86_200,
+      distanceUnit: 'km',
     })
-    expect(state.vehicles[1]?.currentMileage).toBe(40_000)
+    expect(state.vehicles[1]).toMatchObject({
+      currentMileage: 40_000,
+      distanceUnit: 'mi',
+    })
     expect(state.serviceRecords[0]).toMatchObject({
       vehicleId: 'vehicle-1',
       category: 'Maintenance',

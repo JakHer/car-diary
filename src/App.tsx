@@ -5,7 +5,7 @@ import {
   LoadingScreen,
 } from './components/StatusScreen'
 import { useAuth } from './hooks/useAuth'
-import { useAccountLanguage } from './hooks/useAccountLanguage'
+import { useAccountPreferences } from './hooks/useAccountPreferences'
 import { queryClient } from './lib/queryClient'
 import {
   getSupabaseClient,
@@ -22,7 +22,7 @@ const AuthScreen = lazy(() =>
 const App = () => {
   const { t } = useTranslation()
   const { session, isLoading } = useAuth()
-  useAccountLanguage(session?.user)
+  const defaultDistanceUnit = useAccountPreferences(session?.user)
 
   if (!isSupabaseConfigured) return <ConfigurationScreen />
   if (isLoading) return <LoadingScreen message={t('app.checkingSession')} />
@@ -47,6 +47,7 @@ const App = () => {
   return (
     <Suspense fallback={<LoadingScreen message={t('app.loadingGarage')} />}>
       <CarDiaryApp
+        defaultDistanceUnit={defaultDistanceUnit}
         userId={session.user.id}
         userEmail={session.user.email ?? t('app.signedInAccount')}
         onSignOut={signOut}

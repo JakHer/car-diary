@@ -104,6 +104,7 @@ export interface Database {
         Row: {
           created_at: string
           current_mileage: number
+          distance_unit: string
           id: string
           make: string
           model: string
@@ -117,6 +118,7 @@ export interface Database {
         Insert: {
           created_at?: string
           current_mileage: number
+          distance_unit?: string
           id?: string
           make: string
           model: string
@@ -130,6 +132,7 @@ export interface Database {
         Update: {
           created_at?: string
           current_mileage?: number
+          distance_unit?: string
           id?: string
           make?: string
           model?: string

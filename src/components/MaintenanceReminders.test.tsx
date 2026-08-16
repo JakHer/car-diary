@@ -44,6 +44,7 @@ describe('MaintenanceReminders', () => {
     render(
       <MaintenanceReminders
         currentMileage={86_200}
+        distanceUnit="km"
         isSaving={false}
         reminders={[]}
         onCreate={onCreate}

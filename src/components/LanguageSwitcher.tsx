@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { changeAppLanguage, type AppLanguage } from '../i18n'
-import { saveAccountLanguage } from '../lib/accountLanguage'
+import { saveAccountLanguage } from '../lib/accountPreferences'
 import { joinClassNames } from '../styles'
 
 interface LanguageSwitcherProps {

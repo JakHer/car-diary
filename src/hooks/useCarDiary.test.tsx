@@ -36,6 +36,7 @@ const vehicleInput: VehicleInput = {
   registrationNumber: 'WX 1234A',
   vin: '',
   currentMileage: 86_200,
+  distanceUnit: 'km',
 }
 
 const createWrapper = () => {
