@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Link } from 'react-router-dom'
 import { getSupabaseClient } from '../lib/supabase'
 import { createAuthSchema, type AuthFormValues } from '../lib/validation'
 import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
@@ -93,18 +94,20 @@ export const AuthScreen = () => {
 
   return (
     <main className="relative grid min-h-svh grid-cols-[minmax(0,1.15fr)_minmax(430px,0.85fr)] bg-surface max-[900px]:grid-cols-1">
-      <LanguageSwitcher className="absolute top-6 right-6 z-10 max-[700px]:top-5 max-[700px]:right-5" />
+      <div className="absolute top-6 right-6 z-10 max-[700px]:top-5 max-[700px]:right-5">
+        <LanguageSwitcher />
+      </div>
       <section className="flex flex-col justify-between gap-20 bg-[#123d2c] bg-[radial-gradient(circle_at_85%_15%,rgba(77,177,127,0.28),transparent_32%)] p-[clamp(36px,6vw,80px)] text-[#dce9e2] max-[900px]:min-h-[430px] max-[900px]:gap-[70px] max-[700px]:min-h-[390px] max-[700px]:p-7">
-        <a
+        <Link
           className={joinClassNames(brandStyles, 'text-white')}
-          href="/"
+          to="/"
           aria-label={t('common.homeAria')}
         >
           <span className={inverseBrandMarkStyles} aria-hidden="true">
             CD
           </span>
           <span>{t('common.appName')}</span>
-        </a>
+        </Link>
         <div>
           <p className={joinClassNames(eyebrowStyles, 'text-[#77d5a7]')}>
             {t('auth.eyebrow')}

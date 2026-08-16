@@ -1,5 +1,6 @@
 import type { Vehicle } from '../types'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { VehicleSelect } from './VehicleSelect'
 import {
@@ -30,12 +31,12 @@ export const AppHeader = ({
 
   return (
   <header className="flex min-h-20 items-center justify-between gap-6 border-b border-border max-[700px]:min-h-0 max-[700px]:flex-wrap max-[700px]:gap-3 max-[700px]:py-3">
-    <a className={brandStyles} href="/" aria-label={t('common.homeAria')}>
+    <Link className={brandStyles} to="/" aria-label={t('common.homeAria')}>
       <span className={brandMarkStyles} aria-hidden="true">
         CD
       </span>
       <span>{t('common.appName')}</span>
-    </a>
+    </Link>
     <div className="flex items-center gap-3 max-[700px]:w-full max-[700px]:justify-between max-[700px]:gap-[7px]">
       {activeVehicle && (
         <div className="flex items-center gap-3 border-r border-border pr-3 max-[700px]:gap-[7px] max-[700px]:border-r-0 max-[700px]:pr-0">

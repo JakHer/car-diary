@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { AuthScreen } from './AuthScreen'
@@ -6,7 +7,11 @@ import { AuthScreen } from './AuthScreen'
 describe('AuthScreen', () => {
   it('switches between sign-in and sign-up modes', async () => {
     const user = userEvent.setup()
-    render(<AuthScreen />)
+    render(
+      <MemoryRouter>
+        <AuthScreen />
+      </MemoryRouter>,
+    )
 
     expect(
       screen.getByRole('heading', { name: 'Sign in to Car Diary' }),
