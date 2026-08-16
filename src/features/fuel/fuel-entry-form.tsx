@@ -6,7 +6,7 @@ import type { DistanceUnit, FuelEntryInput } from '@/types'
 import {
   createFuelEntrySchema,
   type FuelEntryFormValues,
-} from '@/lib/validation'
+} from './fuel-entry-schema'
 import { useTranslatedFormErrors } from '@/hooks/use-translated-form-errors'
 import { DatePicker } from '@/components/forms/date-picker'
 import { FieldError } from '@/components/forms/field-error'

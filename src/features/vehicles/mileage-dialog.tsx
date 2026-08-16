@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import {
   createMileageSchema,
   type MileageFormValues,
-} from '@/lib/validation'
+} from './vehicle-schema'
 import { FieldError } from '@/components/forms/field-error'
 import { useTranslatedFormErrors } from '@/hooks/use-translated-form-errors'
 import { Loader } from '@/components/feedback/loader'
