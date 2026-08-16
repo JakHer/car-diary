@@ -20,6 +20,7 @@ import {
 import type {
   CarDiaryState,
   DistanceUnit,
+  FuelEntryInput,
   MaintenanceReminderInput,
   ServiceRecordInput,
   VehicleInput,
@@ -30,6 +31,7 @@ const emptyState: CarDiaryState = {
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
+  fuelEntries: [],
   maintenanceReminders: [],
 }
 
@@ -45,7 +47,7 @@ interface CarDiaryAppProps {
 
 interface DeleteConfirmation {
   description: string
-  kind: 'vehicle' | 'service-record' | 'reminder'
+  kind: 'vehicle' | 'service-record' | 'fuel-entry' | 'reminder'
   targetId: string
   title: string
 }
@@ -68,6 +70,8 @@ const CarDiaryApp = ({
     createServiceRecordMutation,
     updateServiceRecordMutation,
     deleteServiceRecordMutation,
+    createFuelEntryMutation,
+    deleteFuelEntryMutation,
     createMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,
@@ -105,6 +109,14 @@ const CarDiaryApp = ({
         (reminder) => reminder.vehicleId === activeVehicleId,
       ),
     [activeVehicleId, state.maintenanceReminders],
+  )
+
+  const activeFuelEntries = useMemo(
+    () =>
+      state.fuelEntries.filter(
+        (entry) => entry.vehicleId === activeVehicleId,
+      ),
+    [activeVehicleId, state.fuelEntries],
   )
 
   const addVehicle = (input: VehicleInput) => {
@@ -149,6 +161,7 @@ const CarDiaryApp = ({
 
     const serviceCount = activeRecords.length
     const reminderCount = activeReminders.length
+    const fuelEntryCount = activeFuelEntries.length
     setDeleteConfirmation({
       kind: 'vehicle',
       targetId: activeVehicle.id,
@@ -158,6 +171,9 @@ const CarDiaryApp = ({
       description: t('app.deleteVehicleDescription', {
         serviceCountText: t('app.serviceRecordCount', {
           count: serviceCount,
+        }),
+        fuelEntryCountText: t('app.fuelEntryCount', {
+          count: fuelEntryCount,
         }),
         reminderCountText: t('app.reminderCount', { count: reminderCount }),
       }),
@@ -202,6 +218,27 @@ const CarDiaryApp = ({
     void createMaintenanceReminderMutation
       .mutateAsync({ vehicleId: activeVehicle.id, input })
       .catch(() => undefined)
+  }
+
+  const createFuel = async (input: FuelEntryInput) => {
+    if (!activeVehicle) return
+
+    resetMutationErrors()
+    await createFuelEntryMutation.mutateAsync({
+      vehicleId: activeVehicle.id,
+      input,
+    })
+  }
+
+  const requestFuelEntryDeletion = (fuelEntryId: string) => {
+    if (!activeFuelEntries.some((entry) => entry.id === fuelEntryId)) return
+
+    setDeleteConfirmation({
+      kind: 'fuel-entry',
+      targetId: fuelEntryId,
+      title: t('app.deleteFuelEntryTitle'),
+      description: t('app.deleteFuelEntryDescription'),
+    })
   }
 
   const toggleReminder = (reminderId: string, completed: boolean) => {
@@ -261,6 +298,14 @@ const CarDiaryApp = ({
       return
     }
 
+    if (kind === 'fuel-entry') {
+      void deleteFuelEntryMutation
+        .mutateAsync(targetId)
+        .catch(() => undefined)
+        .finally(closeDialog)
+      return
+    }
+
     void deleteMaintenanceReminderMutation
       .mutateAsync(targetId)
       .catch(() => undefined)
@@ -272,9 +317,11 @@ const CarDiaryApp = ({
       ? deleteVehicleMutation.isPending
       : deleteConfirmation?.kind === 'service-record'
         ? deleteServiceRecordMutation.isPending
-        : deleteConfirmation?.kind === 'reminder'
-          ? deleteMaintenanceReminderMutation.isPending
-          : false
+        : deleteConfirmation?.kind === 'fuel-entry'
+          ? deleteFuelEntryMutation.isPending
+          : deleteConfirmation?.kind === 'reminder'
+            ? deleteMaintenanceReminderMutation.isPending
+            : false
 
   const dataError = stateQuery.error ?? mutationError
   const handleDataError = () => {
@@ -367,16 +414,20 @@ const CarDiaryApp = ({
         <VehicleDashboard
           editingRecordId={editingRecordId}
           isCreatingReminder={createMaintenanceReminderMutation.isPending}
+          isCreatingFuelEntry={createFuelEntryMutation.isPending}
           isSavingRecord={
             createServiceRecordMutation.isPending ||
             updateServiceRecordMutation.isPending
           }
           isUpdatingMileage={updateVehicleMileageMutation.isPending}
           reminders={activeReminders}
+          fuelEntries={activeFuelEntries}
           records={activeRecords}
           vehicle={activeVehicle}
           onCancelRecordEdit={() => setEditingRecordId(null)}
           onCreateReminder={createReminder}
+          onCreateFuelEntry={createFuel}
+          onDeleteFuelEntry={requestFuelEntryDeletion}
           onDeleteRecord={requestServiceRecordDeletion}
           onDeleteReminder={requestReminderDeletion}
           onDeleteVehicle={requestVehicleDeletion}

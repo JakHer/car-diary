@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Pencil, Trash2 } from 'lucide-react'
 import { MaintenanceReminders } from './MaintenanceReminders'
+import { FuelLog } from './FuelLog'
 import { IconButton } from './IconButton'
 import { MileageDialog } from './MileageDialog'
 import { ServiceForm } from './ServiceForm'
@@ -9,6 +10,8 @@ import { ServiceHistory } from './ServiceHistory'
 import type {
   MaintenanceReminder,
   MaintenanceReminderInput,
+  FuelEntry,
+  FuelEntryInput,
   ServiceRecord,
   ServiceRecordInput,
   Vehicle,
@@ -24,13 +27,17 @@ import { getIntlLocale } from '../i18n'
 interface VehicleDashboardProps {
   editingRecordId: string | null
   isCreatingReminder: boolean
+  isCreatingFuelEntry: boolean
   isSavingRecord: boolean
   isUpdatingMileage: boolean
   reminders: MaintenanceReminder[]
+  fuelEntries: FuelEntry[]
   records: ServiceRecord[]
   vehicle: Vehicle
   onCancelRecordEdit: () => void
   onCreateReminder: (input: MaintenanceReminderInput) => void
+  onCreateFuelEntry: (input: FuelEntryInput) => Promise<void>
+  onDeleteFuelEntry: (fuelEntryId: string) => void
   onDeleteRecord: (recordId: string) => void
   onDeleteReminder: (reminderId: string) => void
   onDeleteVehicle: () => void
@@ -44,13 +51,17 @@ interface VehicleDashboardProps {
 export const VehicleDashboard = ({
   editingRecordId,
   isCreatingReminder,
+  isCreatingFuelEntry,
   isSavingRecord,
   isUpdatingMileage,
   reminders,
+  fuelEntries,
   records,
   vehicle,
   onCancelRecordEdit,
   onCreateReminder,
+  onCreateFuelEntry,
+  onDeleteFuelEntry,
   onDeleteRecord,
   onDeleteReminder,
   onDeleteVehicle,
@@ -184,6 +195,16 @@ export const VehicleDashboard = ({
           </p>
         </article>
       </section>
+
+      <FuelLog
+        key={vehicle.id}
+        currentMileage={vehicle.currentMileage}
+        distanceUnit={vehicle.distanceUnit}
+        entries={fuelEntries}
+        isSaving={isCreatingFuelEntry}
+        onCreate={onCreateFuelEntry}
+        onDelete={onDeleteFuelEntry}
+      />
 
       <MaintenanceReminders
         currentMileage={vehicle.currentMileage}

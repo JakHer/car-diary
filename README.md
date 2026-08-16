@@ -68,6 +68,8 @@ repository instead of being made directly in the remote dashboard.
 - service records with mileage, workshop, cost, and notes,
 - service record editing and deletion,
 - service timeline and vehicle summary,
+- fuel fill-ups with mileage, volume, cost, station, and full-tank tracking,
+- automatic forward-only mileage updates from service and fuel entries,
 - maintenance reminders based on date, mileage, or both,
 - upcoming, due, completed, and reopened reminder states,
 - email and password authentication,

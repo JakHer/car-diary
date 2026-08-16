@@ -2,13 +2,15 @@ import type { PropsWithChildren } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CarDiaryState, VehicleInput } from '../types'
+import type { CarDiaryState, FuelEntryInput, VehicleInput } from '../types'
 import { useCarDiary } from './useCarDiary'
 
 const repositoryMocks = vi.hoisted(() => ({
+  createFuelEntry: vi.fn(),
   createMaintenanceReminder: vi.fn(),
   createServiceRecord: vi.fn(),
   createVehicle: vi.fn(),
+  deleteFuelEntry: vi.fn(),
   deleteMaintenanceReminder: vi.fn(),
   deleteServiceRecord: vi.fn(),
   deleteVehicle: vi.fn(),
@@ -26,6 +28,7 @@ const carDiaryState: CarDiaryState = {
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
+  fuelEntries: [],
   maintenanceReminders: [],
 }
 
@@ -37,6 +40,15 @@ const vehicleInput: VehicleInput = {
   vin: '',
   currentMileage: 86_200,
   distanceUnit: 'km',
+}
+
+const fuelEntryInput: FuelEntryInput = {
+  date: '2026-08-16',
+  mileage: 86_500,
+  volumeInMilliliters: 42_750,
+  totalCostInCents: 27_500,
+  station: 'Orlen',
+  fullTank: true,
 }
 
 const createWrapper = () => {
@@ -94,6 +106,30 @@ describe('useCarDiary', () => {
     expect(repositoryMocks.updateVehicleMileage).toHaveBeenCalledWith(
       'vehicle-1',
       90_000,
+    )
+    await waitFor(() =>
+      expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),
+    )
+  })
+
+  it('creates a fuel entry and refreshes the state', async () => {
+    repositoryMocks.createFuelEntry.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useCarDiary('user-1'), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => expect(result.current.stateQuery.isSuccess).toBe(true))
+
+    await act(async () => {
+      await result.current.createFuelEntryMutation.mutateAsync({
+        vehicleId: 'vehicle-1',
+        input: fuelEntryInput,
+      })
+    })
+
+    expect(repositoryMocks.createFuelEntry).toHaveBeenCalledWith(
+      'vehicle-1',
+      fuelEntryInput,
     )
     await waitFor(() =>
       expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),

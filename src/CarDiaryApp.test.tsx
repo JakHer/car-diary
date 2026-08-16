@@ -89,6 +89,7 @@ const state: CarDiaryState = {
   vehicles,
   activeVehicleId: null,
   serviceRecords: [],
+  fuelEntries: [],
   maintenanceReminders: [],
 }
 
@@ -112,6 +113,8 @@ const createHookResult = () => ({
   createServiceRecordMutation: createMutation(),
   updateServiceRecordMutation: createMutation(),
   deleteServiceRecordMutation: createMutation(),
+  createFuelEntryMutation: createMutation(),
+  deleteFuelEntryMutation: createMutation(),
   createMaintenanceReminderMutation: createMutation(),
   setMaintenanceReminderCompletedMutation: createMutation(),
   deleteMaintenanceReminderMutation: createMutation(),

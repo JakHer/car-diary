@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   mapCarDiaryState,
+  type FuelEntryRow,
   type MaintenanceReminderRow,
   type ServiceRecordRow,
   type VehicleRow,
@@ -79,12 +80,28 @@ const reminderRows: MaintenanceReminderRow[] = [
   },
 ]
 
+const fuelEntryRows: FuelEntryRow[] = [
+  {
+    id: 'fuel-1',
+    vehicle_id: 'vehicle-1',
+    fueled_at: '2026-08-16',
+    mileage: 86_500,
+    volume_milliliters: 42_750,
+    total_cost_in_cents: 27_500,
+    station: 'Orlen',
+    full_tank: true,
+    created_at: '2026-08-16T12:00:00.000Z',
+    updated_at: '2026-08-16T12:00:00.000Z',
+  },
+]
+
 describe('mapCarDiaryState', () => {
   it('maps database rows including the persisted current mileage', () => {
     const state = mapCarDiaryState(
       vehicleRows,
       serviceRecordRows,
       reminderRows,
+      fuelEntryRows,
     )
 
     expect(state.activeVehicleId).toBe('vehicle-1')
@@ -112,6 +129,15 @@ describe('mapCarDiaryState', () => {
       dueDate: '2026-10-01',
       dueMileage: 100_000,
       completedAt: null,
+    })
+    expect(state.fuelEntries[0]).toMatchObject({
+      vehicleId: 'vehicle-1',
+      date: '2026-08-16',
+      mileage: 86_500,
+      volumeInMilliliters: 42_750,
+      totalCostInCents: 27_500,
+      station: 'Orlen',
+      fullTank: true,
     })
   })
 
