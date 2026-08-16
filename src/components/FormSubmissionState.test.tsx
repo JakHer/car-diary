@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { MaintenanceReminders } from './MaintenanceReminders'
+import { FuelLog } from './FuelLog'
 import { ServiceForm } from './ServiceForm'
 import { VehicleForm } from './VehicleForm'
 
@@ -44,6 +45,23 @@ describe('form submission state', () => {
 
     expect(
       screen.getByRole('button', { name: 'Adding reminder...' }),
+    ).toBeDisabled()
+  })
+
+  it('disables fuel submission while saving', () => {
+    render(
+      <FuelLog
+        currentMileage={86_200}
+        distanceUnit="km"
+        entries={[]}
+        isSaving
+        onCreate={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Adding fill-up...' }),
     ).toBeDisabled()
   })
 })

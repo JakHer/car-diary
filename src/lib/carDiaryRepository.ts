@@ -1,6 +1,8 @@
 import type {
   CarDiaryState,
   DistanceUnit,
+  FuelEntry,
+  FuelEntryInput,
   MaintenanceReminder,
   MaintenanceReminderInput,
   ServiceCategory,
@@ -14,12 +16,14 @@ import { getSupabaseClient } from './supabase'
 import { isDistanceUnit } from './distanceUnits'
 
 export type VehicleRow = Database['public']['Tables']['vehicles']['Row']
+export type FuelEntryRow = Database['public']['Tables']['fuel_entries']['Row']
 export type MaintenanceReminderRow =
   Database['public']['Tables']['maintenance_reminders']['Row']
 export type ServiceRecordRow =
   Database['public']['Tables']['service_records']['Row']
 type VehicleInsert = Database['public']['Tables']['vehicles']['Insert']
 type VehicleUpdate = Database['public']['Tables']['vehicles']['Update']
+type FuelEntryInsert = Database['public']['Tables']['fuel_entries']['Insert']
 type MaintenanceReminderInsert =
   Database['public']['Tables']['maintenance_reminders']['Insert']
 type ServiceRecordInsert =
@@ -63,6 +67,18 @@ const mapReminder = (row: MaintenanceReminderRow): MaintenanceReminder => ({
   dueDate: row.due_date,
   dueMileage: row.due_mileage,
   completedAt: row.completed_at,
+  createdAt: row.created_at,
+})
+
+const mapFuelEntry = (row: FuelEntryRow): FuelEntry => ({
+  id: row.id,
+  vehicleId: row.vehicle_id,
+  date: row.fueled_at,
+  mileage: row.mileage,
+  volumeInMilliliters: row.volume_milliliters,
+  totalCostInCents: row.total_cost_in_cents,
+  station: row.station,
+  fullTank: row.full_tank,
   createdAt: row.created_at,
 })
 
@@ -119,49 +135,70 @@ const toMaintenanceReminderRow = (
   due_mileage: input.dueMileage,
 })
 
+const toFuelEntryRow = (
+  input: FuelEntryInput,
+): Omit<FuelEntryInsert, 'vehicle_id'> => ({
+  fueled_at: input.date,
+  mileage: input.mileage,
+  volume_milliliters: input.volumeInMilliliters,
+  total_cost_in_cents: input.totalCostInCents,
+  station: input.station,
+  full_tank: input.fullTank,
+})
+
 export const mapCarDiaryState = (
   vehicleRows: VehicleRow[],
   serviceRecordRows: ServiceRecordRow[],
   reminderRows: MaintenanceReminderRow[] = [],
+  fuelEntryRows: FuelEntryRow[] = [],
 ): CarDiaryState => {
   const records = serviceRecordRows.map(mapRecord)
   const reminders = reminderRows.map(mapReminder)
   const vehicles = vehicleRows.map(mapVehicle)
+  const fuelEntries = fuelEntryRows.map(mapFuelEntry)
 
   return {
     version: 3,
     vehicles,
     activeVehicleId: vehicles[0]?.id ?? null,
     serviceRecords: records,
+    fuelEntries,
     maintenanceReminders: reminders,
   }
 }
 
 export const fetchCarDiaryState = async (): Promise<CarDiaryState> => {
   const client = getSupabaseClient()
-  const [vehiclesResult, recordsResult, remindersResult] = await Promise.all([
-    client
-      .from('vehicles')
-      .select()
-      .order('created_at', { ascending: true }),
-    client
-      .from('service_records')
-      .select()
-      .order('service_date', { ascending: false }),
-    client
-      .from('maintenance_reminders')
-      .select()
-      .order('created_at', { ascending: true }),
-  ])
+  const [vehiclesResult, recordsResult, remindersResult, fuelEntriesResult] =
+    await Promise.all([
+      client
+        .from('vehicles')
+        .select()
+        .order('created_at', { ascending: true }),
+      client
+        .from('service_records')
+        .select()
+        .order('service_date', { ascending: false }),
+      client
+        .from('maintenance_reminders')
+        .select()
+        .order('created_at', { ascending: true }),
+      client
+        .from('fuel_entries')
+        .select()
+        .order('fueled_at', { ascending: false }),
+    ])
 
   if (vehiclesResult.error) throw vehiclesResult.error
   if (recordsResult.error) throw recordsResult.error
   if (remindersResult.error) throw remindersResult.error
+  if (fuelEntriesResult.error) throw fuelEntriesResult.error
 
   return mapCarDiaryState(
     vehiclesResult.data,
     recordsResult.data,
     remindersResult.data,
+    fuelEntriesResult.data,
   )
 }
 
@@ -237,6 +274,26 @@ export const deleteServiceRecord = async (recordId: string): Promise<void> => {
     .from('service_records')
     .delete()
     .eq('id', recordId)
+
+  if (error) throw error
+}
+
+export const createFuelEntry = async (
+  vehicleId: string,
+  input: FuelEntryInput,
+): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('fuel_entries')
+    .insert({ vehicle_id: vehicleId, ...toFuelEntryRow(input) })
+
+  if (error) throw error
+}
+
+export const deleteFuelEntry = async (fuelEntryId: string): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('fuel_entries')
+    .delete()
+    .eq('id', fuelEntryId)
 
   if (error) throw error
 }

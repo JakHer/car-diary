@@ -120,6 +120,26 @@ export const createServiceRecordSchema = (t: TFunction = i18n.t) =>
 
 export const serviceRecordSchema = createServiceRecordSchema()
 
+export const createFuelEntrySchema = (t: TFunction = i18n.t) =>
+  z.object({
+    date: z.iso.date({ error: t('validation.fuelDate') }),
+    mileage: z
+      .number({ error: t('validation.enterMileage') })
+      .int(t('validation.wholeMileage'))
+      .min(0, t('validation.negativeMileage')),
+    liters: z
+      .number({ error: t('validation.enterFuelVolume') })
+      .positive(t('validation.positiveFuelVolume'))
+      .max(500, t('validation.fuelVolumeMax')),
+    totalCost: z
+      .number({ error: t('validation.enterFuelCost') })
+      .positive(t('validation.positiveFuelCost')),
+    station: z.string().trim().max(160, t('validation.stationMax')),
+    fullTank: z.boolean(),
+  })
+
+export const fuelEntrySchema = createFuelEntrySchema()
+
 export const createMaintenanceReminderSchema = (t: TFunction = i18n.t) =>
   z
     .object({
@@ -151,6 +171,9 @@ export type VehicleFormValues = z.infer<ReturnType<typeof createVehicleSchema>>
 export type MileageFormValues = z.infer<ReturnType<typeof createMileageSchema>>
 export type ServiceRecordFormValues = z.infer<
   ReturnType<typeof createServiceRecordSchema>
+>
+export type FuelEntryFormValues = z.infer<
+  ReturnType<typeof createFuelEntrySchema>
 >
 export type MaintenanceReminderFormValues = z.infer<
   ReturnType<typeof createMaintenanceReminderSchema>

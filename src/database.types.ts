@@ -9,6 +9,53 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      fuel_entries: {
+        Row: {
+          created_at: string
+          fueled_at: string
+          full_tank: boolean
+          id: string
+          mileage: number
+          station: string
+          total_cost_in_cents: number
+          updated_at: string
+          vehicle_id: string
+          volume_milliliters: number
+        }
+        Insert: {
+          created_at?: string
+          fueled_at: string
+          full_tank?: boolean
+          id?: string
+          mileage: number
+          station?: string
+          total_cost_in_cents: number
+          updated_at?: string
+          vehicle_id: string
+          volume_milliliters: number
+        }
+        Update: {
+          created_at?: string
+          fueled_at?: string
+          full_tank?: boolean
+          id?: string
+          mileage?: number
+          station?: string
+          total_cost_in_cents?: number
+          updated_at?: string
+          vehicle_id?: string
+          volume_milliliters?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'fuel_entries_vehicle_id_fkey'
+            columns: ['vehicle_id']
+            isOneToOne: false
+            referencedRelation: 'vehicles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       maintenance_reminders: {
         Row: {
           completed_at: string | null

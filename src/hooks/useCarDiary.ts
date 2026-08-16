@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  createFuelEntry,
   createMaintenanceReminder,
   createServiceRecord,
   createVehicle,
+  deleteFuelEntry,
   deleteMaintenanceReminder,
   deleteServiceRecord,
   deleteVehicle,
@@ -13,6 +15,7 @@ import {
   updateVehicleMileage,
 } from '../lib/carDiaryRepository'
 import type {
+  FuelEntryInput,
   MaintenanceReminderInput,
   ServiceRecordInput,
   VehicleInput,
@@ -36,6 +39,11 @@ interface UpdateVehicleMileageVariables {
 interface CreateServiceRecordVariables {
   vehicleId: string
   input: ServiceRecordInput
+}
+
+interface CreateFuelEntryVariables {
+  vehicleId: string
+  input: FuelEntryInput
 }
 
 interface UpdateServiceRecordVariables {
@@ -112,6 +120,19 @@ export const useCarDiary = (userId: string) => {
     onSuccess: invalidateState,
   })
 
+  const createFuelEntryMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'create-fuel-entry'],
+    mutationFn: ({ vehicleId, input }: CreateFuelEntryVariables) =>
+      createFuelEntry(vehicleId, input),
+    onSuccess: invalidateState,
+  })
+
+  const deleteFuelEntryMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'delete-fuel-entry'],
+    mutationFn: (fuelEntryId: string) => deleteFuelEntry(fuelEntryId),
+    onSuccess: invalidateState,
+  })
+
   const createMaintenanceReminderMutation = useMutation({
     mutationKey: [...carDiaryKeys.all, 'create-maintenance-reminder'],
     mutationFn: ({ vehicleId, input }: CreateMaintenanceReminderVariables) =>
@@ -144,6 +165,8 @@ export const useCarDiary = (userId: string) => {
     createServiceRecordMutation,
     updateServiceRecordMutation,
     deleteServiceRecordMutation,
+    createFuelEntryMutation,
+    deleteFuelEntryMutation,
     createMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,
@@ -164,6 +187,8 @@ export const useCarDiary = (userId: string) => {
     createServiceRecordMutation,
     updateServiceRecordMutation,
     deleteServiceRecordMutation,
+    createFuelEntryMutation,
+    deleteFuelEntryMutation,
     createMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,
