@@ -9,7 +9,7 @@ interface AccountPreferencesUpdate {
   preferred_language?: AppLanguage
 }
 
-const isAppLanguage = (value: unknown): value is AppLanguage =>
+export const isAppLanguage = (value: unknown): value is AppLanguage =>
   value === 'en' || value === 'pl'
 
 export const getAccountLanguage = (user: User): AppLanguage | null => {

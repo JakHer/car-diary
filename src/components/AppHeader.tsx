@@ -1,6 +1,7 @@
 import type { Vehicle } from '../types'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Settings } from 'lucide-react'
+import { Link, NavLink } from 'react-router-dom'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { VehicleSelect } from './VehicleSelect'
 import {
@@ -8,21 +9,22 @@ import {
   brandStyles,
   joinClassNames,
   secondaryButtonStyles,
+  smallActionStyles,
 } from '../styles'
 
 interface AppHeaderProps {
-  activeVehicle: Vehicle | undefined
+  activeVehicle?: Vehicle
   userEmail: string
-  vehicles: Vehicle[]
-  onAddVehicle: () => void
-  onSelectVehicle: (vehicleId: string) => void
+  vehicles?: Vehicle[]
+  onAddVehicle?: () => void
+  onSelectVehicle?: (vehicleId: string) => void
   onSignOut: () => Promise<void>
 }
 
 export const AppHeader = ({
   activeVehicle,
   userEmail,
-  vehicles,
+  vehicles = [],
   onAddVehicle,
   onSelectVehicle,
   onSignOut,
@@ -38,7 +40,7 @@ export const AppHeader = ({
       <span>{t('common.appName')}</span>
     </Link>
     <div className="flex items-center gap-3 max-[700px]:w-full max-[700px]:justify-between max-[700px]:gap-[7px]">
-      {activeVehicle && (
+      {activeVehicle && onAddVehicle && onSelectVehicle && (
         <div className="flex items-center gap-3 border-r border-border pr-3 max-[700px]:gap-[7px] max-[700px]:border-r-0 max-[700px]:pr-0">
           <VehicleSelect
             activeVehicleId={activeVehicle.id}
@@ -58,6 +60,20 @@ export const AppHeader = ({
         </div>
       )}
       <LanguageSwitcher syncWithAccount />
+      <NavLink
+        className={({ isActive }) =>
+          joinClassNames(
+            smallActionStyles,
+            'inline-flex min-h-9 items-center gap-1.5 px-2.5 no-underline',
+            isActive && 'bg-accent-soft text-accent',
+          )
+        }
+        to="/settings"
+        aria-label={t('header.settings')}
+      >
+        <Settings aria-hidden="true" className="size-3.5" strokeWidth={2} />
+        <span className="max-[700px]:sr-only">{t('header.settings')}</span>
+      </NavLink>
       <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted max-[700px]:hidden">
         <span
           className="size-[7px] rounded-full bg-accent shadow-[0_0_0_4px_var(--color-accent-soft)]"
