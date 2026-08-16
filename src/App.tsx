@@ -1,9 +1,12 @@
 import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import {
   ConfigurationScreen,
   LoadingScreen,
 } from './components/StatusScreen'
+import { ProtectedRoute } from './routing/ProtectedRoute'
+import { PublicOnlyRoute } from './routing/PublicOnlyRoute'
 import { useAuth } from './hooks/useAuth'
 import { useAccountPreferences } from './hooks/useAccountPreferences'
 import { queryClient } from './lib/queryClient'
@@ -26,14 +29,6 @@ const App = () => {
 
   if (!isSupabaseConfigured) return <ConfigurationScreen />
   if (isLoading) return <LoadingScreen message={t('app.checkingSession')} />
-  if (!session) {
-    return (
-      <Suspense fallback={<LoadingScreen message={t('app.loadingSignIn')} />}>
-        <AuthScreen />
-      </Suspense>
-    )
-  }
-
   const signOut = async () => {
     const { error } = await getSupabaseClient().auth.signOut()
     if (error) {
@@ -45,13 +40,45 @@ const App = () => {
   }
 
   return (
-    <Suspense fallback={<LoadingScreen message={t('app.loadingGarage')} />}>
-      <CarDiaryApp
-        defaultDistanceUnit={defaultDistanceUnit}
-        userId={session.user.id}
-        userEmail={session.user.email ?? t('app.signedInAccount')}
-        onSignOut={signOut}
-      />
+    <Suspense
+      fallback={
+        <LoadingScreen
+          message={session ? t('app.loadingGarage') : t('app.loadingSignIn')}
+        />
+      }
+    >
+      <Routes>
+        <Route
+          element={<PublicOnlyRoute isAuthenticated={Boolean(session)} />}
+        >
+          <Route path="/login" element={<AuthScreen />} />
+        </Route>
+
+        <Route
+          element={<ProtectedRoute isAuthenticated={Boolean(session)} />}
+        >
+          <Route
+            path="/"
+            element={
+              session ? (
+                <CarDiaryApp
+                  defaultDistanceUnit={defaultDistanceUnit}
+                  userId={session.user.id}
+                  userEmail={
+                    session.user.email ?? t('app.signedInAccount')
+                  }
+                  onSignOut={signOut}
+                />
+              ) : null
+            }
+          />
+        </Route>
+
+        <Route
+          path="*"
+          element={<Navigate replace to={session ? '/' : '/login'} />}
+        />
+      </Routes>
     </Suspense>
   )
 }
