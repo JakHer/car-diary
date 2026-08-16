@@ -85,6 +85,21 @@ const App = () => {
             }
           />
           <Route
+            path="/vehicles/:vehicleId"
+            element={
+              session ? (
+                <CarDiaryApp
+                  defaultDistanceUnit={defaultDistanceUnit}
+                  userId={session.user.id}
+                  userEmail={
+                    session.user.email ?? t('app.signedInAccount')
+                  }
+                  onSignOut={signOut}
+                />
+              ) : null
+            }
+          />
+          <Route
             path="/settings"
             element={
               session ? (

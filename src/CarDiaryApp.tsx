@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AppHeader } from './components/AppHeader'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { ErrorScreen, LoadingScreen } from './components/StatusScreen'
@@ -12,6 +13,10 @@ import { VehicleDashboard } from './components/VehicleDashboard'
 import { VehicleForm } from './components/VehicleForm'
 import { useCarDiary } from './hooks/useCarDiary'
 import { eyebrowStyles, joinClassNames, smallActionStyles } from './styles'
+import {
+  getVehiclePath,
+  getVehicleRouteRedirect,
+} from './routing/vehicleRoutes'
 import type {
   CarDiaryState,
   DistanceUnit,
@@ -52,6 +57,8 @@ const CarDiaryApp = ({
   onSignOut,
 }: CarDiaryAppProps) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { vehicleId } = useParams<{ vehicleId: string }>()
   const {
     stateQuery,
     createVehicleMutation,
@@ -69,24 +76,16 @@ const CarDiaryApp = ({
     resetMutationErrors,
   } = useCarDiary(userId)
   const state = stateQuery.data ?? emptyState
-  const [activeVehicleId, setActiveVehicleId] = useState<string | null>(null)
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
   const [deleteConfirmation, setDeleteConfirmation] =
     useState<DeleteConfirmation | null>(null)
   const [vehicleFormMode, setVehicleFormMode] =
     useState<VehicleFormMode | null>(null)
 
-  useEffect(() => {
-    setActiveVehicleId((currentVehicleId) =>
-      state.vehicles.some((vehicle) => vehicle.id === currentVehicleId)
-        ? currentVehicleId
-        : (state.vehicles[0]?.id ?? null),
-    )
-  }, [state.vehicles])
-
   const activeVehicle = state.vehicles.find(
-    (vehicle) => vehicle.id === activeVehicleId,
+    (vehicle) => vehicle.id === vehicleId,
   )
+  const activeVehicleId = activeVehicle?.id ?? null
 
   const activeRecords = useMemo(
     () =>
@@ -112,8 +111,8 @@ const CarDiaryApp = ({
     resetMutationErrors()
     void createVehicleMutation
       .mutateAsync(input)
-      .then((vehicleId) => {
-        setActiveVehicleId(vehicleId)
+      .then((createdVehicleId) => {
+        navigate(getVehiclePath(createdVehicleId))
         setEditingRecordId(null)
         setVehicleFormMode(null)
       })
@@ -141,7 +140,7 @@ const CarDiaryApp = ({
   }
 
   const selectVehicle = (vehicleId: string) => {
-    setActiveVehicleId(vehicleId)
+    navigate(getVehiclePath(vehicleId))
     setEditingRecordId(null)
   }
 
@@ -232,10 +231,17 @@ const CarDiaryApp = ({
     const closeDialog = () => setDeleteConfirmation(null)
 
     if (kind === 'vehicle') {
+      const fallbackVehicle = state.vehicles.find(
+        (vehicle) => vehicle.id !== targetId,
+      )
+
       void deleteVehicleMutation
         .mutateAsync(targetId)
         .then(() => {
-          setActiveVehicleId(null)
+          navigate(
+            fallbackVehicle ? getVehiclePath(fallbackVehicle.id) : '/',
+            { replace: true },
+          )
           setEditingRecordId(null)
           setVehicleFormMode(null)
         })
@@ -287,6 +293,15 @@ const CarDiaryApp = ({
         onRetry={() => void stateQuery.refetch()}
       />
     )
+  }
+
+  const vehicleRouteRedirect = getVehicleRouteRedirect(
+    state.vehicles,
+    vehicleId,
+  )
+
+  if (vehicleRouteRedirect) {
+    return <Navigate replace to={vehicleRouteRedirect} />
   }
 
   return (
