@@ -228,7 +228,7 @@ export const pl = {
     add: 'Dodaj tankowanie',
     addDescription: 'Wprowadź dane z ostatniego paragonu za paliwo.',
     close: 'Zamknij formularz tankowania',
-    emptyTitle: 'Brak wpisów tankowania.',
+    emptyTitle: 'Brak wpisów tankowania',
     emptyDescription:
       'Dodaj tankowanie, aby śledzić wydatki i aktualizować przebieg.',
     pricePerLiter: '{{price}}/l',
@@ -259,7 +259,7 @@ export const pl = {
     add: 'Dodaj przypomnienie',
     addDescription: 'Ustaw termin, przebieg docelowy lub obie wartości.',
     close: 'Zamknij formularz przypomnienia',
-    emptyTitle: 'Brak przypomnień.',
+    emptyTitle: 'Brak przypomnień',
     emptyDescription: 'Dodaj datę lub przebieg planowanego serwisu.',
     completed: 'Ukończone',
     dueNow: 'Do zrobienia',

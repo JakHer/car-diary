@@ -8,9 +8,9 @@ import type {
 } from '@/types'
 import { getIntlLocale } from '@/i18n'
 import { IconButton } from '@/components/actions/icon-button'
+import { DashboardSection } from '@/components/layout/dashboard-section'
 import { FormDialog } from '@/components/overlays/form-dialog'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 import { MaintenanceReminderForm } from './maintenance-reminder-form'
 import { MaintenanceReminderList } from './maintenance-reminder-list'
 
@@ -41,31 +41,9 @@ export const MaintenanceReminders = ({
   ).length
 
   return (
-    <section
-      className={cn(
-        'rounded-large border border-border bg-surface shadow-card',
-        'mt-6 p-7 max-[700px]:p-[22px]',
-      )}
-      aria-labelledby="reminders-title"
-    >
-      <div
-        className={cn(
-          'flex items-start justify-between gap-5',
-          'border-b border-border pb-[22px]',
-        )}
-      >
-        <div>
-          <p className="m-0 mb-2.5 text-xs font-extrabold tracking-[0.09em] text-accent uppercase">
-            {t('reminders.eyebrow')}
-          </p>
-          <h2
-            className="m-0 text-[22px] font-bold tracking-[-0.025em] text-strong"
-            id="reminders-title"
-          >
-            {t('reminders.title')}
-          </h2>
-        </div>
-        <div className="flex items-center justify-end gap-2">
+    <DashboardSection
+      actions={
+        <>
           <Badge className="whitespace-nowrap" variant="secondary">
             {t('reminders.active', { count: activeReminderCount })}
           </Badge>
@@ -77,19 +55,22 @@ export const MaintenanceReminders = ({
           >
             <Plus aria-hidden="true" className="size-4" />
           </IconButton>
-        </div>
-      </div>
-
-      <div className="mt-[22px]">
-        <MaintenanceReminderList
-          currentMileage={currentMileage}
-          distanceUnit={distanceUnit}
-          locale={locale}
-          reminders={reminders}
-          onDelete={onDelete}
-          onToggleCompleted={onToggleCompleted}
-        />
-      </div>
+        </>
+      }
+      className="mt-6"
+      contentClassName="mt-[22px]"
+      eyebrow={t('reminders.eyebrow')}
+      title={t('reminders.title')}
+      titleId="reminders-title"
+    >
+      <MaintenanceReminderList
+        currentMileage={currentMileage}
+        distanceUnit={distanceUnit}
+        locale={locale}
+        reminders={reminders}
+        onDelete={onDelete}
+        onToggleCompleted={onToggleCompleted}
+      />
 
       <FormDialog
         closeLabel={t('reminders.close')}
@@ -107,6 +88,6 @@ export const MaintenanceReminders = ({
           onCreated={() => setFormOpen(false)}
         />
       </FormDialog>
-    </section>
+    </DashboardSection>
   )
 }

@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { User } from '@supabase/supabase-js'
 import { AppHeader } from '@/components/layout/app-header'
+import { PageHeader } from '@/components/layout/page-header'
+import { PageLayout } from '@/components/layout/page-layout'
 import { Loader } from '@/components/feedback/loader'
 import { SelectField } from '@/components/forms/select-field'
 import {
@@ -72,14 +74,12 @@ export const SettingsPage = ({
     <div className="mx-auto flex min-h-svh w-[calc(100%_-_40px)] max-w-[1180px] flex-col max-[700px]:w-[calc(100%_-_28px)]">
       <AppHeader userEmail={userEmail} onSignOut={onSignOut} />
 
-      <main className="mx-auto w-full max-w-[760px] py-14 pb-20 max-[700px]:py-10 max-[700px]:pb-14">
-        <p className="m-0 mb-2.5 text-xs font-extrabold tracking-[0.09em] text-accent uppercase">{t('settings.eyebrow')}</p>
-        <h1 className="m-0 text-[clamp(36px,6vw,58px)] leading-none tracking-[-0.05em] text-strong">
-          {t('settings.title')}
-        </h1>
-        <p className="mt-4 mb-0 max-w-[620px] text-sm leading-[1.65] text-muted">
-          {t('settings.description')}
-        </p>
+      <PageLayout className="mx-auto w-full max-w-[760px] max-[700px]:py-10">
+        <PageHeader
+          description={t('settings.description')}
+          eyebrow={t('settings.eyebrow')}
+          title={t('settings.title')}
+        />
 
         <form
           className="mt-9 overflow-hidden rounded-large border border-border bg-surface shadow-card"
@@ -165,7 +165,7 @@ export const SettingsPage = ({
             </Button>
           </div>
         </form>
-      </main>
+      </PageLayout>
     </div>
   )
 }

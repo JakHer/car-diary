@@ -4,9 +4,9 @@ import { Plus } from 'lucide-react'
 import type { DistanceUnit, FuelEntry, FuelEntryInput } from '@/types'
 import { getIntlLocale } from '@/i18n'
 import { IconButton } from '@/components/actions/icon-button'
+import { DashboardSection } from '@/components/layout/dashboard-section'
 import { FormDialog } from '@/components/overlays/form-dialog'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 import { FuelEntryForm } from './fuel-entry-form'
 import { FuelEntryList } from './fuel-entry-list'
 import { FuelSummary } from './fuel-summary'
@@ -33,31 +33,9 @@ export const FuelLog = ({
   const locale = getIntlLocale(i18n.resolvedLanguage)
 
   return (
-    <section
-      className={cn(
-        'rounded-large border border-border bg-surface shadow-card',
-        'mt-6 p-7 max-[700px]:p-[22px]',
-      )}
-      aria-labelledby="fuel-log-title"
-    >
-      <div
-        className={cn(
-          'flex items-start justify-between gap-5',
-          'border-b border-border pb-[22px]',
-        )}
-      >
-        <div>
-          <p className="m-0 mb-2.5 text-xs font-extrabold tracking-[0.09em] text-accent uppercase">
-            {t('fuel.eyebrow')}
-          </p>
-          <h2
-            className="m-0 text-[22px] font-bold tracking-[-0.025em] text-strong"
-            id="fuel-log-title"
-          >
-            {t('fuel.title')}
-          </h2>
-        </div>
-        <div className="flex items-center justify-end gap-2">
+    <DashboardSection
+      actions={
+        <>
           <Badge className="whitespace-nowrap" variant="secondary">
             {t('fuel.entryCount', { count: entries.length })}
           </Badge>
@@ -69,24 +47,27 @@ export const FuelLog = ({
           >
             <Plus aria-hidden="true" className="size-4" />
           </IconButton>
-        </div>
-      </div>
-
-      <div className="mt-[22px]">
-        {entries.length > 0 && (
-          <FuelSummary
-            distanceUnit={distanceUnit}
-            entries={entries}
-            locale={locale}
-          />
-        )}
-        <FuelEntryList
+        </>
+      }
+      className="mt-6"
+      contentClassName="mt-[22px]"
+      eyebrow={t('fuel.eyebrow')}
+      title={t('fuel.title')}
+      titleId="fuel-log-title"
+    >
+      {entries.length > 0 && (
+        <FuelSummary
           distanceUnit={distanceUnit}
           entries={entries}
           locale={locale}
-          onDelete={onDelete}
         />
-      </div>
+      )}
+      <FuelEntryList
+        distanceUnit={distanceUnit}
+        entries={entries}
+        locale={locale}
+        onDelete={onDelete}
+      />
 
       <FormDialog
         closeLabel={t('fuel.close')}
@@ -104,6 +85,6 @@ export const FuelLog = ({
           onCreated={() => setFormOpen(false)}
         />
       </FormDialog>
-    </section>
+    </DashboardSection>
   )
 }

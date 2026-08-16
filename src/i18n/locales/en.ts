@@ -220,7 +220,7 @@ export const en = {
     add: 'Add fill-up',
     addDescription: 'Enter the details from your latest fuel receipt.',
     close: 'Close fuel form',
-    emptyTitle: 'No fuel entries yet.',
+    emptyTitle: 'No fuel entries yet',
     emptyDescription:
       'Add a fill-up to track fuel expenses and keep mileage current.',
     pricePerLiter: '{{price}}/l',
@@ -249,7 +249,7 @@ export const en = {
     add: 'Add reminder',
     addDescription: 'Set a date, mileage target, or both.',
     close: 'Close reminder form',
-    emptyTitle: 'No reminders yet.',
+    emptyTitle: 'No reminders yet',
     emptyDescription: 'Add a date or mileage target for the next service.',
     completed: 'Completed',
     dueNow: 'Due now',
