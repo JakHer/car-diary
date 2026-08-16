@@ -5,14 +5,16 @@ import { BrowserRouter } from 'react-router-dom'
 import '@fontsource-variable/manrope/wght.css'
 import './index.css'
 import './i18n'
-import App from './App.tsx'
-import { queryClient } from './lib/queryClient'
+import App from './app/app.tsx'
+import { AppToaster } from './components/feedback/app-toaster'
+import { queryClient } from './lib/query-client'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <App />
+        <AppToaster />
       </QueryClientProvider>
     </BrowserRouter>
   </StrictMode>,
