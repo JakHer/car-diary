@@ -6,6 +6,7 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { VehicleSelect } from './VehicleSelect'
 import { IconButton } from './IconButton'
 import { Tooltip } from './Tooltip'
+import { getVehiclePath } from '../routing/vehicleRoutes'
 import {
   brandMarkStyles,
   brandStyles,
@@ -34,7 +35,11 @@ export const AppHeader = ({
 
   return (
   <header className="flex min-h-20 items-center justify-between gap-6 border-b border-border max-[700px]:min-h-0 max-[700px]:flex-wrap max-[700px]:gap-3 max-[700px]:py-3">
-    <Link className={brandStyles} to="/" aria-label={t('common.homeAria')}>
+    <Link
+      className={brandStyles}
+      to={activeVehicle ? getVehiclePath(activeVehicle.id) : '/'}
+      aria-label={t('common.homeAria')}
+    >
       <span className={brandMarkStyles} aria-hidden="true">
         CD
       </span>
