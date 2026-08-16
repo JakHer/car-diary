@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   authSchema,
+  createMileageSchema,
   maintenanceReminderSchema,
   serviceRecordSchema,
   vehicleSchema,
@@ -59,5 +60,12 @@ describe('validation schemas', () => {
         dueMileage: 100_000,
       }).success,
     ).toBe(true)
+  })
+
+  it('does not allow the odometer to move backwards', () => {
+    const schema = createMileageSchema(86_200)
+
+    expect(schema.safeParse({ currentMileage: 86_199 }).success).toBe(false)
+    expect(schema.safeParse({ currentMileage: 90_000 }).success).toBe(true)
   })
 })

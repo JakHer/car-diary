@@ -9,6 +9,17 @@ const requiredText = (field: string, maximumLength: number) =>
     .min(1, `${field} is required.`)
     .max(maximumLength, `${field} must be at most ${maximumLength} characters.`)
 
+const mileageSchema = (minimumMileage = 0) =>
+  z
+    .number({ error: 'Enter the mileage.' })
+    .int('Mileage must be a whole number.')
+    .min(
+      minimumMileage,
+      minimumMileage === 0
+        ? 'Mileage cannot be negative.'
+        : `Mileage cannot be lower than ${minimumMileage.toLocaleString('en-GB')} km.`,
+    )
+
 export const authSchema = z.object({
   email: z
     .string()
@@ -20,31 +31,34 @@ export const authSchema = z.object({
     .max(128, 'Password must be at most 128 characters.'),
 })
 
-export const vehicleSchema = z.object({
-  make: requiredText('Make', 80),
-  model: requiredText('Model', 80),
-  year: z
-    .number({ error: 'Enter a valid year.' })
-    .int('Year must be a whole number.')
-    .min(1886, 'Year must be 1886 or later.')
-    .max(currentYear + 1, `Year must be ${currentYear + 1} or earlier.`),
-  currentMileage: z
-    .number({ error: 'Enter the mileage.' })
-    .int('Mileage must be a whole number.')
-    .min(0, 'Mileage cannot be negative.'),
-  registrationNumber: z
-    .string()
-    .trim()
-    .max(32, 'Registration number must be at most 32 characters.'),
-  vin: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .refine(
-      (value) => value.length === 0 || value.length === 17,
-      'VIN must contain exactly 17 characters.',
-    ),
-})
+export const createVehicleSchema = (minimumMileage = 0) =>
+  z.object({
+    make: requiredText('Make', 80),
+    model: requiredText('Model', 80),
+    year: z
+      .number({ error: 'Enter a valid year.' })
+      .int('Year must be a whole number.')
+      .min(1886, 'Year must be 1886 or later.')
+      .max(currentYear + 1, `Year must be ${currentYear + 1} or earlier.`),
+    currentMileage: mileageSchema(minimumMileage),
+    registrationNumber: z
+      .string()
+      .trim()
+      .max(32, 'Registration number must be at most 32 characters.'),
+    vin: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .refine(
+        (value) => value.length === 0 || value.length === 17,
+        'VIN must contain exactly 17 characters.',
+      ),
+  })
+
+export const vehicleSchema = createVehicleSchema()
+
+export const createMileageSchema = (minimumMileage: number) =>
+  z.object({ currentMileage: mileageSchema(minimumMileage) })
 
 export const serviceRecordSchema = z.object({
   title: requiredText('Service', 160),
@@ -98,6 +112,7 @@ export const maintenanceReminderSchema = z
 
 export type AuthFormValues = z.infer<typeof authSchema>
 export type VehicleFormValues = z.infer<typeof vehicleSchema>
+export type MileageFormValues = z.infer<ReturnType<typeof createMileageSchema>>
 export type ServiceRecordFormValues = z.infer<typeof serviceRecordSchema>
 export type MaintenanceReminderFormValues = z.infer<
   typeof maintenanceReminderSchema

@@ -16,6 +16,7 @@ const vehicleRows: VehicleRow[] = [
     registration_number: 'WX 1234A',
     vin: '',
     starting_mileage: 80_000,
+    current_mileage: 86_200,
     created_at: '2026-08-01T10:00:00.000Z',
     updated_at: '2026-08-01T10:00:00.000Z',
   },
@@ -28,6 +29,7 @@ const vehicleRows: VehicleRow[] = [
     registration_number: '',
     vin: '',
     starting_mileage: 40_000,
+    current_mileage: 40_000,
     created_at: '2026-08-02T10:00:00.000Z',
     updated_at: '2026-08-02T10:00:00.000Z',
   },
@@ -76,7 +78,7 @@ const reminderRows: MaintenanceReminderRow[] = [
 ]
 
 describe('mapCarDiaryState', () => {
-  it('maps database rows and derives mileage per vehicle', () => {
+  it('maps database rows including the persisted current mileage', () => {
     const state = mapCarDiaryState(
       vehicleRows,
       serviceRecordRows,

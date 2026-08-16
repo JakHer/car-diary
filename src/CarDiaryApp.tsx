@@ -50,6 +50,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     stateQuery,
     createVehicleMutation,
     updateVehicleMutation,
+    updateVehicleMileageMutation,
     deleteVehicleMutation,
     createServiceRecordMutation,
     updateServiceRecordMutation,
@@ -121,6 +122,16 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
       .mutateAsync({ vehicleId: activeVehicle.id, input })
       .then(() => setVehicleFormMode(null))
       .catch(() => undefined)
+  }
+
+  const updateMileage = async (currentMileage: number) => {
+    if (!activeVehicle) return
+
+    resetMutationErrors()
+    await updateVehicleMileageMutation.mutateAsync({
+      vehicleId: activeVehicle.id,
+      currentMileage,
+    })
   }
 
   const selectVehicle = (vehicleId: string) => {
@@ -334,6 +345,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
             createServiceRecordMutation.isPending ||
             updateServiceRecordMutation.isPending
           }
+          isUpdatingMileage={updateVehicleMileageMutation.isPending}
           reminders={activeReminders}
           records={activeRecords}
           vehicle={activeVehicle}
@@ -346,6 +358,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
           onEditVehicle={() => setVehicleFormMode('edit')}
           onSaveRecord={saveServiceRecord}
           onToggleReminder={toggleReminder}
+          onUpdateMileage={updateMileage}
         />
       )}
 

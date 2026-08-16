@@ -103,6 +103,7 @@ export interface Database {
       vehicles: {
         Row: {
           created_at: string
+          current_mileage: number
           id: string
           make: string
           model: string
@@ -115,6 +116,7 @@ export interface Database {
         }
         Insert: {
           created_at?: string
+          current_mileage: number
           id?: string
           make: string
           model: string
@@ -127,6 +129,7 @@ export interface Database {
         }
         Update: {
           created_at?: string
+          current_mileage?: number
           id?: string
           make?: string
           model?: string
