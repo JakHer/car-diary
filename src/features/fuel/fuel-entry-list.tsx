@@ -4,6 +4,7 @@ import { Fuel, Trash2 } from 'lucide-react'
 import type { DistanceUnit, FuelEntry } from '@/types'
 import { formatDistance } from '@/lib/distance-units'
 import { IconButton } from '@/components/actions/icon-button'
+import { EmptyState } from '@/components/feedback/empty-state'
 import { Badge } from '@/components/ui/badge'
 
 interface FuelEntryListProps {
@@ -52,13 +53,11 @@ export const FuelEntryList = ({
 
   if (orderedEntries.length === 0) {
     return (
-      <div className="grid min-h-52 place-content-center text-center">
-        <Fuel aria-hidden="true" className="mx-auto mb-3 size-6 text-muted" />
-        <p className="m-0 font-bold text-strong">{t('fuel.emptyTitle')}</p>
-        <span className="mt-1.5 max-w-sm text-[13px] text-muted">
-          {t('fuel.emptyDescription')}
-        </span>
-      </div>
+      <EmptyState
+        description={t('fuel.emptyDescription')}
+        icon={Fuel}
+        title={t('fuel.emptyTitle')}
+      />
     )
   }
 

@@ -5,6 +5,9 @@ import { MaintenanceReminders } from '@/features/reminders/maintenance-reminders
 import { FuelLog } from '@/features/fuel/fuel-log'
 import { FormDialog } from '@/components/overlays/form-dialog'
 import { IconButton } from '@/components/actions/icon-button'
+import { StatCard } from '@/components/data-display/stat-card'
+import { PageHeader } from '@/components/layout/page-header'
+import { PageLayout } from '@/components/layout/page-layout'
 import { MileageDialog } from './mileage-dialog'
 import { ServiceForm } from '@/features/service-records/service-form'
 import { ServiceHistory } from '@/features/service-records/service-history'
@@ -119,13 +122,32 @@ export const VehicleDashboard = ({
   }
 
   return (
-    <main className="py-14 pb-20 max-[700px]:py-12 max-[700px]:pb-14">
-      <section className="flex items-end justify-between gap-10 max-[700px]:flex-col max-[700px]:items-start">
-        <div>
-          <p className="m-0 mb-2.5 text-xs font-extrabold tracking-[0.09em] text-accent uppercase">{t('dashboard.activeVehicle')}</p>
-          <h1 className="m-0 text-[clamp(36px,6vw,66px)] leading-[0.98] tracking-[-0.055em] text-strong">
-            {vehicle.make} {vehicle.model}
-          </h1>
+    <PageLayout>
+      <PageHeader
+        aside={
+          <div className="grid shrink-0 justify-items-end max-[700px]:justify-items-start">
+            <span className="mb-1.5 text-xs font-bold tracking-[0.04em] text-muted uppercase">
+              {t('dashboard.currentMileage')}
+            </span>
+            <strong className="text-[clamp(32px,5vw,48px)] leading-none tracking-[-0.04em] text-strong">
+              {vehicle.currentMileage.toLocaleString(locale)}
+              <small className="ml-1 text-[0.45em] tracking-normal text-muted">
+                {vehicle.distanceUnit}
+              </small>
+            </strong>
+            <MileageDialog
+              currentMileage={vehicle.currentMileage}
+              distanceUnit={vehicle.distanceUnit}
+              isSaving={isUpdatingMileage}
+              vehicleName={`${vehicle.make} ${vehicle.model}`}
+              onSave={onUpdateMileage}
+            />
+          </div>
+        }
+        eyebrow={t('dashboard.activeVehicle')}
+        size="display"
+        title={`${vehicle.make} ${vehicle.model}`}
+      >
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{vehicle.year}</Badge>
             {vehicle.registrationNumber && (
@@ -152,68 +174,33 @@ export const VehicleDashboard = ({
               </IconButton>
             </div>
           </div>
-        </div>
-        <div className="grid shrink-0 justify-items-end max-[700px]:justify-items-start">
-          <span className="mb-1.5 text-xs font-bold tracking-[0.04em] text-muted uppercase">
-            {t('dashboard.currentMileage')}
-          </span>
-          <strong className="text-[clamp(32px,5vw,48px)] leading-none tracking-[-0.04em] text-strong">
-            {vehicle.currentMileage.toLocaleString(locale)}
-            <small className="ml-1 text-[0.45em] tracking-normal text-muted">
-              {vehicle.distanceUnit}
-            </small>
-          </strong>
-          <MileageDialog
-            currentMileage={vehicle.currentMileage}
-            distanceUnit={vehicle.distanceUnit}
-            isSaving={isUpdatingMileage}
-            vehicleName={`${vehicle.make} ${vehicle.model}`}
-            onSave={onUpdateMileage}
-          />
-        </div>
-      </section>
+      </PageHeader>
 
       <section
         className="mt-11 grid grid-cols-3 gap-4 max-[700px]:grid-cols-1 max-[700px]:gap-3"
         aria-label={t('dashboard.summaryAria')}
       >
-        <article className="rounded-large border border-border bg-surface p-[22px] shadow-card">
-          <span className="text-xs font-bold tracking-[0.03em] text-muted uppercase">
-            {t('dashboard.serviceEntries')}
-          </span>
-          <strong className="mt-3 block text-[30px] tracking-[-0.03em] text-strong">
-            {records.length}
-          </strong>
-          <p className="mt-1 mb-0 text-xs text-muted">
-            {t('dashboard.recordedForVehicle')}
-          </p>
-        </article>
-        <article className="rounded-large border border-border bg-surface p-[22px] shadow-card">
-          <span className="text-xs font-bold tracking-[0.03em] text-muted uppercase">
-            {t('dashboard.totalServiceCost')}
-          </span>
-          <strong className="mt-3 block text-[30px] tracking-[-0.03em] text-strong">
-            {currencyFormatter.format(totalCost / 100)}
-          </strong>
-          <p className="mt-1 mb-0 text-xs text-muted">
-            {t('dashboard.acrossEntries')}
-          </p>
-        </article>
-        <article className="rounded-large border border-border bg-surface p-[22px] shadow-card">
-          <span className="text-xs font-bold tracking-[0.03em] text-muted uppercase">
-            {t('dashboard.lastService')}
-          </span>
-          <strong className="mt-3 block text-[30px] tracking-[-0.03em] text-strong">
-            {records[0]
+        <StatCard
+          description={t('dashboard.recordedForVehicle')}
+          label={t('dashboard.serviceEntries')}
+          value={records.length}
+        />
+        <StatCard
+          description={t('dashboard.acrossEntries')}
+          label={t('dashboard.totalServiceCost')}
+          value={currencyFormatter.format(totalCost / 100)}
+        />
+        <StatCard
+          description={records[0]?.title ?? t('dashboard.addFirstRecord')}
+          label={t('dashboard.lastService')}
+          value={
+            records[0]
               ? lastServiceFormatter.format(
                   new Date(`${records[0].date}T12:00:00`),
                 )
-              : t('dashboard.notYet')}
-          </strong>
-          <p className="mt-1 mb-0 text-xs text-muted">
-            {records[0]?.title ?? t('dashboard.addFirstRecord')}
-          </p>
-        </article>
+              : t('dashboard.notYet')
+          }
+        />
       </section>
 
       <FuelLog
@@ -272,6 +259,6 @@ export const VehicleDashboard = ({
           onSave={saveServiceRecord}
         />
       </FormDialog>
-    </main>
+    </PageLayout>
   )
 }

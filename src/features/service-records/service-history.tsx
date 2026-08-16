@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, SearchX } from 'lucide-react'
+import { Plus, SearchX, Wrench } from 'lucide-react'
 import type { DistanceUnit, ServiceRecord } from '@/types'
 import { getIntlLocale } from '@/i18n'
 import { IconButton } from '@/components/actions/icon-button'
+import { EmptyState } from '@/components/feedback/empty-state'
+import { DashboardSection } from '@/components/layout/dashboard-section'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import {
   ServiceHistoryFilters,
   type CategoryFilter,
@@ -78,26 +79,9 @@ export const ServiceHistory = ({
   }
 
   return (
-    <section
-      className={cn(
-        'rounded-large border border-border bg-surface p-7 shadow-card max-[700px]:p-[22px]',
-      )}
-    >
-      <div
-        className={cn(
-          'flex items-start justify-between gap-5',
-          'border-b border-border pb-[22px]',
-        )}
-      >
-        <div>
-          <p className="m-0 mb-2.5 text-xs font-extrabold tracking-[0.09em] text-accent uppercase">
-            {t('history.eyebrow')}
-          </p>
-          <h2 className="m-0 text-[22px] font-bold tracking-[-0.025em] text-strong">
-            {t('history.title')}
-          </h2>
-        </div>
-        <div className="flex items-center justify-end gap-2">
+    <DashboardSection
+      actions={
+        <>
           <Badge variant="secondary">
             {hasActiveFilters && visibleRecords.length !== records.length
               ? t('history.filteredEntries', {
@@ -114,34 +98,18 @@ export const ServiceHistory = ({
           >
             <Plus aria-hidden="true" className="size-4" />
           </IconButton>
-        </div>
-      </div>
-
+        </>
+      }
+      eyebrow={t('history.eyebrow')}
+      title={t('history.title')}
+      titleId="service-history-title"
+    >
       {records.length === 0 ? (
-        <div className="grid min-h-[370px] place-content-center justify-items-center px-5 py-12 text-center">
-          <span
-            className="mb-5 grid size-12 place-items-center rounded-full bg-accent-soft text-2xl text-accent"
-            aria-hidden="true"
-          >
-            +
-          </span>
-          <h3 className="m-0 text-lg text-strong">
-            {t('history.emptyTitle')}
-          </h3>
-          <p className="mt-2 mb-0 max-w-[360px] text-sm leading-[1.6] text-muted">
-            {t('history.emptyDescription')}
-          </p>
-          <Button
-            className="mt-5 gap-1.5"
-            size="sm"
-            variant="secondary"
-            type="button"
-            onClick={onAdd}
-          >
-            <Plus aria-hidden="true" className="size-4" />
-            {t('history.add')}
-          </Button>
-        </div>
+        <EmptyState
+          description={t('history.emptyDescription')}
+          icon={Wrench}
+          title={t('history.emptyTitle')}
+        />
       ) : (
         <>
           <ServiceHistoryFilters
@@ -186,6 +154,6 @@ export const ServiceHistory = ({
           )}
         </>
       )}
-    </section>
+    </DashboardSection>
   )
 }

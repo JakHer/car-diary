@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, RotateCcw, Trash2 } from 'lucide-react'
+import { BellRing, Check, RotateCcw, Trash2 } from 'lucide-react'
 import type { DistanceUnit, MaintenanceReminder } from '@/types'
 import { IconButton } from '@/components/actions/icon-button'
+import { EmptyState } from '@/components/feedback/empty-state'
 import { Badge } from '@/components/ui/badge'
 import { formatDistance } from '@/lib/distance-units'
 import {
@@ -59,14 +60,11 @@ export const MaintenanceReminderList = ({
 
   if (orderedReminders.length === 0) {
     return (
-      <div className="grid min-h-40 place-content-center text-center">
-        <p className="m-0 font-bold text-strong">
-          {t('reminders.emptyTitle')}
-        </p>
-        <span className="mt-1.5 text-[13px] text-muted">
-          {t('reminders.emptyDescription')}
-        </span>
-      </div>
+      <EmptyState
+        description={t('reminders.emptyDescription')}
+        icon={BellRing}
+        title={t('reminders.emptyTitle')}
+      />
     )
   }
 

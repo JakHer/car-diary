@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/app-header'
+import { PageHeader } from '@/components/layout/page-header'
 import { ConfirmDialog } from '@/components/overlays/confirm-dialog'
 import { ErrorScreen, LoadingScreen } from '@/components/feedback/status-screen'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ import {
 import { VehicleDashboard } from '@/features/vehicles/vehicle-dashboard'
 import { VehicleForm } from '@/features/vehicles/vehicle-form'
 import { useCarDiary } from '@/hooks/use-car-diary'
+import { useDeleteConfirmation } from '@/hooks/use-delete-confirmation'
 import { appToast } from '@/lib/app-toast'
 import {
   getVehiclePath,
@@ -45,13 +47,6 @@ interface CarDiaryAppProps {
   onSignOut: () => Promise<void>
 }
 
-interface DeleteConfirmation {
-  description: string
-  kind: 'vehicle' | 'service-record' | 'fuel-entry' | 'reminder'
-  targetId: string
-  title: string
-}
-
 const CarDiaryApp = ({
   defaultDistanceUnit,
   userId,
@@ -79,10 +74,15 @@ const CarDiaryApp = ({
     isMutating,
     resetMutationErrors,
   } = useCarDiary(userId)
+  const {
+    closeDeleteConfirmation,
+    confirmation: deleteConfirmation,
+    confirmDeletion,
+    isConfirming: isConfirmingDeletion,
+    requestDeletion,
+  } = useDeleteConfirmation()
   const state = stateQuery.data ?? emptyState
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
-  const [deleteConfirmation, setDeleteConfirmation] =
-    useState<DeleteConfirmation | null>(null)
   const [vehicleFormMode, setVehicleFormMode] =
     useState<VehicleFormMode | null>(null)
 
@@ -167,11 +167,10 @@ const CarDiaryApp = ({
     const serviceCount = activeRecords.length
     const reminderCount = activeReminders.length
     const fuelEntryCount = activeFuelEntries.length
-    setDeleteConfirmation({
-      kind: 'vehicle',
-      targetId: activeVehicle.id,
+    const vehicleToDelete = activeVehicle
+    requestDeletion({
       title: t('app.deleteVehicleTitle', {
-        vehicle: `${activeVehicle.make} ${activeVehicle.model}`,
+        vehicle: `${vehicleToDelete.make} ${vehicleToDelete.model}`,
       }),
       description: t('app.deleteVehicleDescription', {
         serviceCountText: t('app.serviceRecordCount', {
@@ -182,6 +181,20 @@ const CarDiaryApp = ({
         }),
         reminderCountText: t('app.reminderCount', { count: reminderCount }),
       }),
+      onConfirm: async () => {
+        resetMutationErrors()
+        const fallbackVehicle = state.vehicles.find(
+          (vehicle) => vehicle.id !== vehicleToDelete.id,
+        )
+
+        await deleteVehicleMutation.mutateAsync(vehicleToDelete.id)
+        navigate(fallbackVehicle ? getVehiclePath(fallbackVehicle.id) : '/', {
+          replace: true,
+        })
+        setEditingRecordId(null)
+        setVehicleFormMode(null)
+        appToast.success(t('notifications.vehicleDeleted'))
+      },
     })
   }
 
@@ -215,11 +228,15 @@ const CarDiaryApp = ({
     const record = activeRecords.find((entry) => entry.id === recordId)
     if (!activeVehicle || !record) return
 
-    setDeleteConfirmation({
-      kind: 'service-record',
-      targetId: recordId,
+    requestDeletion({
       title: t('app.deleteRecordTitle', { title: record.title }),
       description: t('app.deleteRecordDescription'),
+      onConfirm: async () => {
+        resetMutationErrors()
+        await deleteServiceRecordMutation.mutateAsync(recordId)
+        if (editingRecordId === recordId) setEditingRecordId(null)
+        appToast.success(t('notifications.serviceDeleted'))
+      },
     })
   }
 
@@ -248,11 +265,14 @@ const CarDiaryApp = ({
   const requestFuelEntryDeletion = (fuelEntryId: string) => {
     if (!activeFuelEntries.some((entry) => entry.id === fuelEntryId)) return
 
-    setDeleteConfirmation({
-      kind: 'fuel-entry',
-      targetId: fuelEntryId,
+    requestDeletion({
       title: t('app.deleteFuelEntryTitle'),
       description: t('app.deleteFuelEntryDescription'),
+      onConfirm: async () => {
+        resetMutationErrors()
+        await deleteFuelEntryMutation.mutateAsync(fuelEntryId)
+        appToast.success(t('notifications.fuelDeleted'))
+      },
     })
   }
 
@@ -276,80 +296,16 @@ const CarDiaryApp = ({
     const reminder = activeReminders.find((entry) => entry.id === reminderId)
     if (!reminder) return
 
-    setDeleteConfirmation({
-      kind: 'reminder',
-      targetId: reminderId,
+    requestDeletion({
       title: t('app.deleteReminderTitle', { title: reminder.title }),
       description: t('app.deleteReminderDescription'),
+      onConfirm: async () => {
+        resetMutationErrors()
+        await deleteMaintenanceReminderMutation.mutateAsync(reminderId)
+        appToast.success(t('notifications.reminderDeleted'))
+      },
     })
   }
-
-  const confirmDeletion = () => {
-    if (!deleteConfirmation) return
-
-    resetMutationErrors()
-    const { kind, targetId } = deleteConfirmation
-    const closeDialog = () => setDeleteConfirmation(null)
-
-    if (kind === 'vehicle') {
-      const fallbackVehicle = state.vehicles.find(
-        (vehicle) => vehicle.id !== targetId,
-      )
-
-      void deleteVehicleMutation
-        .mutateAsync(targetId)
-        .then(() => {
-          navigate(
-            fallbackVehicle ? getVehiclePath(fallbackVehicle.id) : '/',
-            { replace: true },
-          )
-          setEditingRecordId(null)
-          setVehicleFormMode(null)
-          appToast.success(t('notifications.vehicleDeleted'))
-        })
-        .catch(() => undefined)
-        .finally(closeDialog)
-      return
-    }
-
-    if (kind === 'service-record') {
-      void deleteServiceRecordMutation
-        .mutateAsync(targetId)
-        .then(() => {
-          if (editingRecordId === targetId) setEditingRecordId(null)
-          appToast.success(t('notifications.serviceDeleted'))
-        })
-        .catch(() => undefined)
-        .finally(closeDialog)
-      return
-    }
-
-    if (kind === 'fuel-entry') {
-      void deleteFuelEntryMutation
-        .mutateAsync(targetId)
-        .then(() => appToast.success(t('notifications.fuelDeleted')))
-        .catch(() => undefined)
-        .finally(closeDialog)
-      return
-    }
-
-    void deleteMaintenanceReminderMutation
-      .mutateAsync(targetId)
-      .then(() => appToast.success(t('notifications.reminderDeleted')))
-      .catch(() => undefined)
-      .finally(closeDialog)
-  }
-
-  const isConfirmingDeletion =
-    deleteConfirmation?.kind === 'vehicle'
-      ? deleteVehicleMutation.isPending
-      : deleteConfirmation?.kind === 'service-record'
-        ? deleteServiceRecordMutation.isPending
-        : deleteConfirmation?.kind === 'fuel-entry'
-          ? deleteFuelEntryMutation.isPending
-          : deleteConfirmation?.kind === 'reminder'
-            ? deleteMaintenanceReminderMutation.isPending
-            : false
 
   const dataError = stateQuery.error ?? mutationError
   const handleDataError = () => {
@@ -413,15 +369,13 @@ const CarDiaryApp = ({
 
       {!activeVehicle ? (
         <main className="grid flex-1 grid-cols-[minmax(0,1fr)_minmax(420px,0.78fr)] items-center gap-[clamp(48px,8vw,110px)] py-16 max-[900px]:grid-cols-1 max-[900px]:items-start max-[900px]:gap-10 max-[900px]:py-12">
-          <div className="max-w-[590px]">
-            <p className="m-0 mb-2.5 text-xs font-extrabold tracking-[0.09em] text-accent uppercase">{t('app.emptyEyebrow')}</p>
-            <h1 className="m-0 text-[clamp(44px,7vw,78px)] leading-[0.98] tracking-[-0.06em] text-strong">
-              {t('app.emptyTitle')}
-            </h1>
-            <p className="mt-6 mb-0 max-w-[520px] text-base leading-[1.7] text-muted">
-              {t('app.emptyDescription')}
-            </p>
-          </div>
+          <PageHeader
+            className="max-w-[590px]"
+            description={t('app.emptyDescription')}
+            eyebrow={t('app.emptyEyebrow')}
+            size="hero"
+            title={t('app.emptyTitle')}
+          />
           <VehicleForm
             defaultDistanceUnit={defaultDistanceUnit}
             isSaving={createVehicleMutation.isPending}
@@ -480,7 +434,7 @@ const CarDiaryApp = ({
         title={deleteConfirmation?.title ?? ''}
         onConfirm={confirmDeletion}
         onOpenChange={(open) => {
-          if (!open) setDeleteConfirmation(null)
+          if (!open) closeDeleteConfirmation()
         }}
       />
     </div>
