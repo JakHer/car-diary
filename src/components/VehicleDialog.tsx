@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { VehicleForm } from './VehicleForm'
@@ -23,6 +24,7 @@ export const VehicleDialog = ({
   onClose,
   onSave,
 }: VehicleDialogProps) => {
+  const { t } = useTranslation()
   const returnFocusRef = useRef<HTMLElement | null>(null)
   const wasOpenRef = useRef(open)
 
@@ -59,18 +61,20 @@ export const VehicleDialog = ({
           }}
         >
           <Dialog.Title className="sr-only">
-            {mode === 'edit' ? 'Edit vehicle' : 'Add vehicle'}
+            {mode === 'edit' ? t('vehicle.editTitle') : t('vehicle.addTitle')}
           </Dialog.Title>
           <Dialog.Description className="sr-only">
             {mode === 'edit'
-              ? 'Update the vehicle profile details.'
-              : 'Enter the details for the new vehicle.'}
+              ? t('vehicle.editDialogDescription')
+              : t('vehicle.addDialogDescription')}
           </Dialog.Description>
           <Dialog.Close asChild>
             <button
               className="absolute top-4 right-4 z-10 grid size-8 cursor-pointer place-items-center rounded-full border-0 bg-surface-muted text-xs font-extrabold text-muted transition-colors hover:bg-border hover:text-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent-soft disabled:cursor-wait disabled:opacity-65"
               type="button"
-              aria-label="Close vehicle form"
+              aria-label={
+                mode === 'edit' ? t('vehicle.closeEdit') : t('vehicle.closeAdd')
+              }
               disabled={isSaving}
             >
               <X aria-hidden="true" className="size-4" strokeWidth={2} />

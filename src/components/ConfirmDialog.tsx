@@ -1,5 +1,6 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import { Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { joinClassNames, secondaryButtonStyles } from '../styles'
 import { Loader } from './Loader'
 
@@ -14,14 +15,17 @@ interface ConfirmDialogProps {
 }
 
 export const ConfirmDialog = ({
-  confirmLabel = 'Delete',
+  confirmLabel,
   description,
   isConfirming = false,
   open,
   title,
   onConfirm,
   onOpenChange,
-}: ConfirmDialogProps) => (
+}: ConfirmDialogProps) => {
+  const { t } = useTranslation()
+
+  return (
   <AlertDialog.Root
     open={open}
     onOpenChange={(nextOpen) => {
@@ -55,7 +59,7 @@ export const ConfirmDialog = ({
               type="button"
               disabled={isConfirming}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </AlertDialog.Cancel>
           <AlertDialog.Action asChild>
@@ -69,14 +73,15 @@ export const ConfirmDialog = ({
               }}
             >
               {isConfirming ? (
-                <Loader label="Deleting..." size="small" />
+                <Loader label={t('confirm.confirming')} size="small" />
               ) : (
-                confirmLabel
+                (confirmLabel ?? t('common.delete'))
               )}
             </button>
           </AlertDialog.Action>
         </div>
       </AlertDialog.Content>
     </AlertDialog.Portal>
-  </AlertDialog.Root>
-)
+    </AlertDialog.Root>
+  )
+}

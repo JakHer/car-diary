@@ -1,119 +1,145 @@
+import type { TFunction } from 'i18next'
 import { z } from 'zod'
+import i18n, { getIntlLocale } from '../i18n'
 
 const currentYear = new Date().getFullYear()
 
-const requiredText = (field: string, maximumLength: number) =>
+const requiredText = (
+  t: TFunction,
+  field: string,
+  maximumLength: number,
+) =>
   z
     .string()
     .trim()
-    .min(1, `${field} is required.`)
-    .max(maximumLength, `${field} must be at most ${maximumLength} characters.`)
+    .min(1, t('validation.required', { field }))
+    .max(
+      maximumLength,
+      t('validation.maxLength', { field, maximum: maximumLength }),
+    )
 
-const mileageSchema = (minimumMileage = 0) =>
+const mileageSchema = (t: TFunction, minimumMileage = 0) =>
   z
-    .number({ error: 'Enter the mileage.' })
-    .int('Mileage must be a whole number.')
+    .number({ error: t('validation.enterMileage') })
+    .int(t('validation.wholeMileage'))
     .min(
       minimumMileage,
       minimumMileage === 0
-        ? 'Mileage cannot be negative.'
-        : `Mileage cannot be lower than ${minimumMileage.toLocaleString('en-GB')} km.`,
+        ? t('validation.negativeMileage')
+        : t('validation.lowerMileage', {
+            minimum: minimumMileage.toLocaleString(
+              getIntlLocale(i18n.resolvedLanguage),
+            ),
+          }),
     )
 
-export const authSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .pipe(z.email({ error: 'Enter a valid email address.' })),
-  password: z
-    .string()
-    .min(6, 'Password must contain at least 6 characters.')
-    .max(128, 'Password must be at most 128 characters.'),
-})
-
-export const createVehicleSchema = (minimumMileage = 0) =>
+export const createAuthSchema = (t: TFunction = i18n.t) =>
   z.object({
-    make: requiredText('Make', 80),
-    model: requiredText('Model', 80),
+    email: z
+      .string()
+      .trim()
+      .pipe(z.email({ error: t('validation.email') })),
+    password: z
+      .string()
+      .min(6, t('validation.passwordMin'))
+      .max(128, t('validation.passwordMax')),
+  })
+
+export const authSchema = createAuthSchema()
+
+export const createVehicleSchema = (
+  minimumMileage = 0,
+  t: TFunction = i18n.t,
+) =>
+  z.object({
+    make: requiredText(t, t('validation.fields.make'), 80),
+    model: requiredText(t, t('validation.fields.model'), 80),
     year: z
-      .number({ error: 'Enter a valid year.' })
-      .int('Year must be a whole number.')
-      .min(1886, 'Year must be 1886 or later.')
-      .max(currentYear + 1, `Year must be ${currentYear + 1} or earlier.`),
-    currentMileage: mileageSchema(minimumMileage),
+      .number({ error: t('validation.validYear') })
+      .int(t('validation.wholeYear'))
+      .min(1886, t('validation.yearMin'))
+      .max(
+        currentYear + 1,
+        t('validation.yearMax', { maximum: currentYear + 1 }),
+      ),
+    currentMileage: mileageSchema(t, minimumMileage),
     registrationNumber: z
       .string()
       .trim()
-      .max(32, 'Registration number must be at most 32 characters.'),
+      .max(32, t('validation.registrationMax')),
     vin: z
       .string()
       .trim()
       .toUpperCase()
       .refine(
         (value) => value.length === 0 || value.length === 17,
-        'VIN must contain exactly 17 characters.',
+        t('validation.vinLength'),
       ),
   })
 
 export const vehicleSchema = createVehicleSchema()
 
-export const createMileageSchema = (minimumMileage: number) =>
-  z.object({ currentMileage: mileageSchema(minimumMileage) })
+export const createMileageSchema = (
+  minimumMileage: number,
+  t: TFunction = i18n.t,
+) => z.object({ currentMileage: mileageSchema(t, minimumMileage) })
 
-export const serviceRecordSchema = z.object({
-  title: requiredText('Service', 160),
-  category: z.enum([
-    'Maintenance',
-    'Repair',
-    'Inspection',
-    'Tires',
-    'Other',
-  ]),
-  date: z.iso.date({ error: 'Choose a valid service date.' }),
-  mileage: z
-    .number({ error: 'Enter the mileage.' })
-    .int('Mileage must be a whole number.')
-    .min(0, 'Mileage cannot be negative.'),
-  cost: z
-    .number({ error: 'Enter the service cost.' })
-    .min(0, 'Cost cannot be negative.'),
-  workshop: z
-    .string()
-    .trim()
-    .max(160, 'Workshop must be at most 160 characters.'),
-  notes: z
-    .string()
-    .trim()
-    .max(2_000, 'Notes must be at most 2000 characters.'),
-})
-
-export const maintenanceReminderSchema = z
-  .object({
-    title: requiredText('Reminder', 160),
-    dueDate: z
-      .string()
-      .refine(
-        (value) => value === '' || z.iso.date().safeParse(value).success,
-        'Choose a valid due date.',
-      ),
-    dueMileage: z
-      .number({ error: 'Enter a valid due mileage.' })
-      .int('Due mileage must be a whole number.')
-      .min(0, 'Due mileage cannot be negative.')
-      .nullable(),
+export const createServiceRecordSchema = (t: TFunction = i18n.t) =>
+  z.object({
+    title: requiredText(t, t('validation.fields.service'), 160),
+    category: z.enum([
+      'Maintenance',
+      'Repair',
+      'Inspection',
+      'Tires',
+      'Other',
+    ]),
+    date: z.iso.date({ error: t('validation.serviceDate') }),
+    mileage: z
+      .number({ error: t('validation.enterMileage') })
+      .int(t('validation.wholeMileage'))
+      .min(0, t('validation.negativeMileage')),
+    cost: z
+      .number({ error: t('validation.enterCost') })
+      .min(0, t('validation.negativeCost')),
+    workshop: z.string().trim().max(160, t('validation.workshopMax')),
+    notes: z.string().trim().max(2_000, t('validation.notesMax')),
   })
-  .refine(
-    ({ dueDate, dueMileage }) => dueDate !== '' || dueMileage !== null,
-    {
-      message: 'Add a due date, due mileage, or both.',
-      path: ['dueDate'],
-    },
-  )
 
-export type AuthFormValues = z.infer<typeof authSchema>
-export type VehicleFormValues = z.infer<typeof vehicleSchema>
+export const serviceRecordSchema = createServiceRecordSchema()
+
+export const createMaintenanceReminderSchema = (t: TFunction = i18n.t) =>
+  z
+    .object({
+      title: requiredText(t, t('validation.fields.reminder'), 160),
+      dueDate: z
+        .string()
+        .refine(
+          (value) => value === '' || z.iso.date().safeParse(value).success,
+          t('validation.dueDate'),
+        ),
+      dueMileage: z
+        .number({ error: t('validation.enterDueMileage') })
+        .int(t('validation.wholeDueMileage'))
+        .min(0, t('validation.negativeDueMileage'))
+        .nullable(),
+    })
+    .refine(
+      ({ dueDate, dueMileage }) => dueDate !== '' || dueMileage !== null,
+      {
+        message: t('validation.reminderTarget'),
+        path: ['dueDate'],
+      },
+    )
+
+export const maintenanceReminderSchema = createMaintenanceReminderSchema()
+
+export type AuthFormValues = z.infer<ReturnType<typeof createAuthSchema>>
+export type VehicleFormValues = z.infer<ReturnType<typeof createVehicleSchema>>
 export type MileageFormValues = z.infer<ReturnType<typeof createMileageSchema>>
-export type ServiceRecordFormValues = z.infer<typeof serviceRecordSchema>
+export type ServiceRecordFormValues = z.infer<
+  ReturnType<typeof createServiceRecordSchema>
+>
 export type MaintenanceReminderFormValues = z.infer<
-  typeof maintenanceReminderSchema
+  ReturnType<typeof createMaintenanceReminderSchema>
 >

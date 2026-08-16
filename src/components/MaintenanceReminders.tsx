@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type {
@@ -5,10 +7,11 @@ import type {
   MaintenanceReminderInput,
 } from '../types'
 import { DatePicker } from './DatePicker'
+import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { FieldError } from './FieldError'
 import { Loader } from './Loader'
 import {
-  maintenanceReminderSchema,
+  createMaintenanceReminderSchema,
   type MaintenanceReminderFormValues,
 } from '../lib/validation'
 import {
@@ -30,12 +33,7 @@ import {
   smallActionStyles,
   tagStyles,
 } from '../styles'
-
-const dateFormatter = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-})
+import { getIntlLocale } from '../i18n'
 
 const reminderStatusStyles: Record<MaintenanceReminderStatus, string> = {
   upcoming: 'bg-accent-soft text-accent',
@@ -60,14 +58,30 @@ export const MaintenanceReminders = ({
   onDelete,
   onToggleCompleted,
 }: MaintenanceRemindersProps) => {
+  const { i18n, t } = useTranslation()
+  const locale = getIntlLocale(i18n.resolvedLanguage)
+  const schema = useMemo(
+    () => createMaintenanceReminderSchema(t),
+    [t],
+  )
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+    [locale],
+  )
   const {
     control,
     formState: { errors },
     handleSubmit,
     register,
     reset,
+    trigger,
   } = useForm<MaintenanceReminderFormValues>({
-    resolver: zodResolver(maintenanceReminderSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       title: '',
       dueDate: '',
@@ -75,6 +89,7 @@ export const MaintenanceReminders = ({
     },
     mode: 'onBlur',
   })
+  useTranslatedFormErrors(i18n.resolvedLanguage, errors, trigger)
   const orderedReminders = reminders.toSorted((first, second) => {
     const statusOrder: Record<MaintenanceReminderStatus, number> = {
       overdue: 0,
@@ -122,13 +137,16 @@ export const MaintenanceReminders = ({
         )}
       >
         <div>
-          <p className={eyebrowStyles}>Plan ahead</p>
+          <p className={eyebrowStyles}>{t('reminders.eyebrow')}</p>
           <h2 className={sectionTitleStyles} id="reminders-title">
-            Maintenance reminders
+            {t('reminders.title')}
           </h2>
         </div>
         <span className={joinClassNames(tagStyles, 'whitespace-nowrap')}>
-          {reminders.filter((reminder) => !reminder.completedAt).length} active
+          {t('reminders.active', {
+            count: reminders.filter((reminder) => !reminder.completedAt)
+              .length,
+          })}
         </span>
       </div>
 
@@ -140,15 +158,15 @@ export const MaintenanceReminders = ({
           onSubmit={handleSubmit(createReminder)}
         >
           <label className={fieldStyles}>
-            <span>Reminder</span>
+            <span>{t('reminders.reminder')}</span>
             <input
               className={joinClassNames(
                 inputStyles,
                 errors.title && invalidControlStyles,
               )}
-              placeholder="e.g. Replace timing belt"
+              placeholder={t('reminders.placeholder')}
               maxLength={160}
-              aria-label="Reminder"
+              aria-label={t('reminders.reminder')}
               aria-invalid={Boolean(errors.title)}
               {...register('title')}
             />
@@ -156,7 +174,7 @@ export const MaintenanceReminders = ({
           </label>
           <div className={joinClassNames(formGridStyles, 'gap-4')}>
             <label className={fieldStyles}>
-              <span>Due date</span>
+              <span>{t('reminders.dueDate')}</span>
               <Controller
                 control={control}
                 name="dueDate"
@@ -172,7 +190,7 @@ export const MaintenanceReminders = ({
               <FieldError message={errors.dueDate?.message} />
             </label>
             <label className={fieldStyles}>
-              <span>Due mileage (km)</span>
+              <span>{t('reminders.dueMileage')}</span>
               <input
                 className={joinClassNames(
                   inputStyles,
@@ -182,7 +200,7 @@ export const MaintenanceReminders = ({
                 min="0"
                 step="1"
                 placeholder={String(currentMileage + 10_000)}
-                aria-label="Due mileage (km)"
+                aria-label={t('reminders.dueMileage')}
                 aria-invalid={Boolean(errors.dueMileage)}
                 {...register('dueMileage', {
                   setValueAs: (value) =>
@@ -200,18 +218,20 @@ export const MaintenanceReminders = ({
             disabled={isSaving}
           >
             {isSaving ? (
-              <Loader label="Adding reminder..." size="small" />
+              <Loader label={t('reminders.adding')} size="small" />
             ) : (
-              'Add reminder'
+              t('reminders.add')
             )}
           </button>
         </form>
 
         {orderedReminders.length === 0 ? (
           <div className="grid min-h-40 place-content-center text-center">
-            <p className="m-0 font-bold text-strong">No reminders yet.</p>
+            <p className="m-0 font-bold text-strong">
+              {t('reminders.emptyTitle')}
+            </p>
             <span className="mt-1.5 text-[13px] text-muted">
-              Add a date or mileage target for the next service.
+              {t('reminders.emptyDescription')}
             </span>
           </div>
         ) : (
@@ -241,25 +261,24 @@ export const MaintenanceReminders = ({
                         )}
                       >
                         {status === 'completed'
-                          ? 'Completed'
+                          ? t('reminders.completed')
                           : status === 'overdue'
-                            ? 'Due now'
-                            : 'Upcoming'}
+                            ? t('reminders.dueNow')
+                            : t('reminders.upcoming')}
                       </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-x-[18px] gap-y-2 text-[13px] text-muted">
                       {reminder.dueDate && (
-                        <span>
-                          Due{' '}
-                          {dateFormatter.format(
+                        <span>{t('reminders.due', {
+                          date: dateFormatter.format(
                             new Date(`${reminder.dueDate}T12:00:00`),
-                          )}
-                        </span>
+                          ),
+                        })}</span>
                       )}
                       {reminder.dueMileage !== null && (
-                        <span>
-                          At {reminder.dueMileage.toLocaleString('en-GB')} km
-                        </span>
+                        <span>{t('reminders.atMileage', {
+                          mileage: reminder.dueMileage.toLocaleString(locale),
+                        })}</span>
                       )}
                     </div>
                   </div>
@@ -274,14 +293,16 @@ export const MaintenanceReminders = ({
                         )
                       }
                     >
-                      {status === 'completed' ? 'Reopen' : 'Complete'}
+                      {status === 'completed'
+                        ? t('reminders.reopen')
+                        : t('reminders.complete')}
                     </button>
                     <button
                       className={dangerActionStyles}
                       type="button"
                       onClick={() => onDelete(reminder.id)}
                     >
-                      Delete
+                      {t('common.delete')}
                     </button>
                   </div>
                 </li>

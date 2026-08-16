@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Vehicle } from '../types'
 import { SelectField } from './SelectField'
 
@@ -11,9 +12,12 @@ export const VehicleSelect = ({
   activeVehicleId,
   vehicles,
   onSelect,
-}: VehicleSelectProps) => (
-  <SelectField
-    ariaLabel="Active vehicle"
+}: VehicleSelectProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <SelectField
+    ariaLabel={t('vehicle.select')}
     options={vehicles.map((vehicle) => ({
       label: `${vehicle.make} ${vehicle.model}`,
       value: vehicle.id,
@@ -21,5 +25,6 @@ export const VehicleSelect = ({
     value={activeVehicleId}
     variant="compact"
     onValueChange={onSelect}
-  />
-)
+    />
+  )
+}
