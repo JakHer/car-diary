@@ -5,6 +5,8 @@ export type ServiceCategory =
   | 'Tires'
   | 'Other'
 
+export type DistanceUnit = 'km' | 'mi'
+
 export interface Vehicle {
   id: string
   make: string
@@ -12,6 +14,7 @@ export interface Vehicle {
   year: number
   registrationNumber: string
   vin: string
+  distanceUnit: DistanceUnit
   startingMileage: number
   currentMileage: number
   createdAt: string

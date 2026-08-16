@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { VehicleForm } from './VehicleForm'
-import type { Vehicle, VehicleInput } from '../types'
+import type { DistanceUnit, Vehicle, VehicleInput } from '../types'
 
 export type VehicleFormMode = 'add' | 'edit'
 
 interface VehicleDialogProps {
+  defaultDistanceUnit: DistanceUnit
   isSaving: boolean
   mode: VehicleFormMode
   open: boolean
@@ -17,6 +18,7 @@ interface VehicleDialogProps {
 }
 
 export const VehicleDialog = ({
+  defaultDistanceUnit,
   isSaving,
   mode,
   open,
@@ -83,6 +85,7 @@ export const VehicleDialog = ({
           <VehicleForm
             className="max-h-[calc(100svh-48px)] overflow-y-auto max-[700px]:max-h-[calc(100svh-24px)]"
             isSaving={isSaving}
+            defaultDistanceUnit={defaultDistanceUnit}
             key={mode === 'edit' ? vehicle.id : 'new'}
             vehicle={mode === 'edit' ? vehicle : undefined}
             onCancel={onClose}

@@ -2,7 +2,11 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Search, SearchX, X } from 'lucide-react'
 import { SelectField } from './SelectField'
-import type { ServiceCategory, ServiceRecord } from '../types'
+import type {
+  DistanceUnit,
+  ServiceCategory,
+  ServiceRecord,
+} from '../types'
 import {
   cardStyles,
   dangerActionStyles,
@@ -14,8 +18,10 @@ import {
   tagStyles,
 } from '../styles'
 import { getIntlLocale } from '../i18n'
+import { formatDistance } from '../lib/distanceUnits'
 
 interface ServiceHistoryProps {
+  distanceUnit: DistanceUnit
   records: ServiceRecord[]
   editingRecordId: string | null
   onDelete: (recordId: string) => void
@@ -35,6 +41,7 @@ const categories: CategoryFilter[] = [
 ]
 
 export const ServiceHistory = ({
+  distanceUnit,
   records,
   editingRecordId,
   onDelete,
@@ -280,7 +287,7 @@ export const ServiceHistory = ({
                         )}
                       </span>
                       <span>
-                        {record.mileage.toLocaleString(locale)} km
+                        {formatDistance(record.mileage, distanceUnit, locale)}
                       </span>
                       {record.workshop && <span>{record.workshop}</span>}
                     </div>

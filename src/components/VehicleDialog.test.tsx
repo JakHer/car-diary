@@ -14,6 +14,7 @@ const vehicle: Vehicle = {
   vin: '',
   startingMileage: 80_000,
   currentMileage: 86_200,
+  distanceUnit: 'km',
   createdAt: '2026-08-01T10:00:00.000Z',
 }
 
@@ -26,6 +27,7 @@ const VehicleDialogHarness = () => {
         Open vehicle editor
       </button>
       <VehicleDialog
+        defaultDistanceUnit="km"
         isSaving={false}
         mode="edit"
         open={isOpen}
@@ -44,6 +46,7 @@ describe('VehicleDialog', () => {
 
     render(
       <VehicleDialog
+        defaultDistanceUnit="km"
         isSaving={false}
         mode="edit"
         open
@@ -68,6 +71,7 @@ describe('VehicleDialog', () => {
 
     render(
       <VehicleDialog
+        defaultDistanceUnit="km"
         isSaving
         mode="edit"
         open

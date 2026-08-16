@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { Vehicle, VehicleInput } from '../types'
+import type { DistanceUnit, Vehicle, VehicleInput } from '../types'
 import { FieldError } from './FieldError'
 import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { Loader } from './Loader'
+import { SelectField } from './SelectField'
 import {
   createVehicleSchema,
   type VehicleFormValues,
@@ -23,6 +24,7 @@ import {
 
 interface VehicleFormProps {
   className?: string
+  defaultDistanceUnit?: DistanceUnit
   isSaving: boolean
   vehicle?: Vehicle
   onCancel?: () => void
@@ -31,6 +33,7 @@ interface VehicleFormProps {
 
 export const VehicleForm = ({
   className,
+  defaultDistanceUnit = 'km',
   isSaving,
   vehicle,
   onCancel,
@@ -39,27 +42,37 @@ export const VehicleForm = ({
   const { i18n, t } = useTranslation()
   const currentYear = new Date().getFullYear()
   const isEditing = Boolean(vehicle)
+  const initialDistanceUnit = vehicle?.distanceUnit ?? defaultDistanceUnit
   const schema = useMemo(
-    () => createVehicleSchema(vehicle?.currentMileage ?? 0, t),
-    [t, vehicle?.currentMileage],
+    () =>
+      createVehicleSchema(
+        vehicle?.currentMileage ?? 0,
+        initialDistanceUnit,
+        t,
+      ),
+    [initialDistanceUnit, t, vehicle?.currentMileage],
   )
   const {
+    control,
     formState: { errors },
     handleSubmit,
     register,
     trigger,
+    watch,
   } = useForm<VehicleFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       make: vehicle?.make ?? '',
       model: vehicle?.model ?? '',
       year: vehicle?.year,
+      distanceUnit: initialDistanceUnit,
       currentMileage: vehicle?.currentMileage,
       registrationNumber: vehicle?.registrationNumber ?? '',
       vin: vehicle?.vin ?? '',
     },
     mode: 'onBlur',
   })
+  const selectedDistanceUnit = watch('distanceUnit')
   useTranslatedFormErrors(i18n.resolvedLanguage, errors, trigger)
 
   const saveVehicle = (values: VehicleFormValues) => onSave(values)
@@ -142,7 +155,40 @@ export const VehicleForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>{t('vehicle.currentMileage')}</span>
+          <span>{t('vehicle.distanceUnit')}</span>
+          <Controller
+            control={control}
+            name="distanceUnit"
+            render={({ field }) => (
+              <SelectField
+                ariaLabel={t('vehicle.distanceUnit')}
+                disabled={isEditing}
+                invalid={Boolean(errors.distanceUnit)}
+                name={field.name}
+                options={[
+                  { label: t('vehicle.kilometers'), value: 'km' },
+                  { label: t('vehicle.miles'), value: 'mi' },
+                ]}
+                value={field.value}
+                onValueChange={field.onChange}
+              />
+            )}
+          />
+          <span
+            className={joinClassNames(
+              'block min-h-[17px] text-xs font-semibold leading-[1.4] text-muted',
+              !isEditing && 'invisible',
+            )}
+            aria-hidden={!isEditing}
+          >
+            {isEditing ? t('vehicle.distanceUnitLocked') : '\u00a0'}
+          </span>
+        </label>
+
+        <label className={fieldStyles}>
+          <span>
+            {t('vehicle.currentMileage', { unit: selectedDistanceUnit })}
+          </span>
           <input
             className={joinClassNames(
               inputStyles,
@@ -152,7 +198,9 @@ export const VehicleForm = ({
             min="0"
             step="1"
             placeholder="125000"
-            aria-label={t('vehicle.currentMileage')}
+            aria-label={t('vehicle.currentMileage', {
+              unit: selectedDistanceUnit,
+            })}
             aria-invalid={Boolean(errors.currentMileage)}
             {...register('currentMileage', { valueAsNumber: true })}
           />

@@ -15,6 +15,7 @@ describe('validation schemas', () => {
         model: ' V60 ',
         year: 2021,
         currentMileage: 86_200,
+        distanceUnit: 'km',
         registrationNumber: ' WA 12345 ',
         vin: 'yv1zwbmv1m1234567',
       }),
@@ -23,6 +24,7 @@ describe('validation schemas', () => {
       model: 'V60',
       year: 2021,
       currentMileage: 86_200,
+      distanceUnit: 'km',
       registrationNumber: 'WA 12345',
       vin: 'YV1ZWBMV1M1234567',
     })
@@ -67,5 +69,13 @@ describe('validation schemas', () => {
 
     expect(schema.safeParse({ currentMileage: 86_199 }).success).toBe(false)
     expect(schema.safeParse({ currentMileage: 90_000 }).success).toBe(true)
+  })
+
+  it('uses the vehicle unit in mileage validation messages', () => {
+    const result = createMileageSchema(50_000, 'mi').safeParse({
+      currentMileage: 49_999,
+    })
+
+    expect(result.error?.issues[0]?.message).toContain('50,000 mi')
   })
 })

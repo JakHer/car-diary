@@ -2,7 +2,11 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { ServiceRecord, ServiceRecordInput } from '../types'
+import type {
+  DistanceUnit,
+  ServiceRecord,
+  ServiceRecordInput,
+} from '../types'
 import { DatePicker } from './DatePicker'
 import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { FieldError } from './FieldError'
@@ -29,6 +33,7 @@ import {
 
 interface ServiceFormProps {
   currentMileage: number
+  distanceUnit: DistanceUnit
   isSaving: boolean
   record?: ServiceRecord
   onCancel: () => void
@@ -51,6 +56,7 @@ const getLocalDate = (): string => {
 
 export const ServiceForm = ({
   currentMileage,
+  distanceUnit,
   isSaving,
   record,
   onCancel,
@@ -168,7 +174,7 @@ export const ServiceForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>{t('service.mileage')}</span>
+          <span>{t('service.mileage', { unit: distanceUnit })}</span>
           <input
             className={joinClassNames(
               inputStyles,
@@ -177,7 +183,7 @@ export const ServiceForm = ({
             type="number"
             min="0"
             step="1"
-            aria-label={t('service.mileage')}
+            aria-label={t('service.mileage', { unit: distanceUnit })}
             aria-invalid={Boolean(errors.mileage)}
             {...register('mileage', { valueAsNumber: true })}
           />

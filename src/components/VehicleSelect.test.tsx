@@ -14,6 +14,7 @@ const vehicles: Vehicle[] = [
     vin: '',
     startingMileage: 20_000,
     currentMileage: 32_000,
+    distanceUnit: 'km',
     createdAt: '2026-01-01T00:00:00.000Z',
   },
   {
@@ -25,6 +26,7 @@ const vehicles: Vehicle[] = [
     vin: '',
     startingMileage: 80_000,
     currentMileage: 126_000,
+    distanceUnit: 'km',
     createdAt: '2026-01-01T00:00:00.000Z',
   },
 ]

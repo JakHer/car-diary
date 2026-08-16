@@ -11,6 +11,7 @@ describe('MileageDialog', () => {
     render(
       <MileageDialog
         currentMileage={86_200}
+        distanceUnit="km"
         isSaving={false}
         vehicleName="Volvo V60"
         onSave={onSave}
@@ -38,6 +39,7 @@ describe('MileageDialog', () => {
     render(
       <MileageDialog
         currentMileage={86_200}
+        distanceUnit="km"
         isSaving={false}
         vehicleName="Volvo V60"
         onSave={onSave}
