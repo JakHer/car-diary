@@ -1,10 +1,11 @@
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Vehicle, VehicleInput } from '../types'
 import { FieldError } from './FieldError'
 import { Loader } from './Loader'
 import {
-  vehicleSchema,
+  createVehicleSchema,
   type VehicleFormValues,
 } from '../lib/validation'
 import {
@@ -35,17 +36,21 @@ export const VehicleForm = ({
 }: VehicleFormProps) => {
   const currentYear = new Date().getFullYear()
   const isEditing = Boolean(vehicle)
+  const schema = useMemo(
+    () => createVehicleSchema(vehicle?.currentMileage ?? 0),
+    [vehicle?.currentMileage],
+  )
   const {
     formState: { errors },
     handleSubmit,
     register,
   } = useForm<VehicleFormValues>({
-    resolver: zodResolver(vehicleSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       make: vehicle?.make ?? '',
       model: vehicle?.model ?? '',
       year: vehicle?.year,
-      currentMileage: vehicle?.startingMileage,
+      currentMileage: vehicle?.currentMileage,
       registrationNumber: vehicle?.registrationNumber ?? '',
       vin: vehicle?.vin ?? '',
     },
@@ -75,7 +80,7 @@ export const VehicleForm = ({
           </h2>
           <p className="mt-1.5 mb-0 text-sm text-muted">
             {isEditing
-              ? 'Update the profile details and starting mileage.'
+              ? 'Update the profile details and current mileage.'
               : 'Start with the details you use most often.'}
           </p>
         </div>
@@ -132,7 +137,7 @@ export const VehicleForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>{isEditing ? 'Starting mileage (km)' : 'Current mileage (km)'}</span>
+          <span>Current mileage (km)</span>
           <input
             className={joinClassNames(
               inputStyles,
@@ -142,9 +147,7 @@ export const VehicleForm = ({
             min="0"
             step="1"
             placeholder="125000"
-            aria-label={
-              isEditing ? 'Starting mileage (km)' : 'Current mileage (km)'
-            }
+            aria-label="Current mileage (km)"
             aria-invalid={Boolean(errors.currentMileage)}
             {...register('currentMileage', { valueAsNumber: true })}
           />

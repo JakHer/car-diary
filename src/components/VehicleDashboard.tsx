@@ -1,4 +1,5 @@
 import { MaintenanceReminders } from './MaintenanceReminders'
+import { MileageDialog } from './MileageDialog'
 import { ServiceForm } from './ServiceForm'
 import { ServiceHistory } from './ServiceHistory'
 import type {
@@ -32,6 +33,7 @@ interface VehicleDashboardProps {
   editingRecordId: string | null
   isCreatingReminder: boolean
   isSavingRecord: boolean
+  isUpdatingMileage: boolean
   reminders: MaintenanceReminder[]
   records: ServiceRecord[]
   vehicle: Vehicle
@@ -44,12 +46,14 @@ interface VehicleDashboardProps {
   onEditVehicle: () => void
   onSaveRecord: (input: ServiceRecordInput) => void
   onToggleReminder: (reminderId: string, completed: boolean) => void
+  onUpdateMileage: (currentMileage: number) => Promise<void>
 }
 
 export const VehicleDashboard = ({
   editingRecordId,
   isCreatingReminder,
   isSavingRecord,
+  isUpdatingMileage,
   reminders,
   records,
   vehicle,
@@ -62,6 +66,7 @@ export const VehicleDashboard = ({
   onEditVehicle,
   onSaveRecord,
   onToggleReminder,
+  onUpdateMileage,
 }: VehicleDashboardProps) => {
   const editingRecord = records.find(
     (record) => record.id === editingRecordId,
@@ -116,6 +121,12 @@ export const VehicleDashboard = ({
               km
             </small>
           </strong>
+          <MileageDialog
+            currentMileage={vehicle.currentMileage}
+            isSaving={isUpdatingMileage}
+            vehicleName={`${vehicle.make} ${vehicle.model}`}
+            onSave={onUpdateMileage}
+          />
         </div>
       </section>
 

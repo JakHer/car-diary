@@ -16,6 +16,7 @@ const repositoryMocks = vi.hoisted(() => ({
   setMaintenanceReminderCompleted: vi.fn(),
   updateServiceRecord: vi.fn(),
   updateVehicle: vi.fn(),
+  updateVehicleMileage: vi.fn(),
 }))
 
 vi.mock('../lib/carDiaryRepository', () => repositoryMocks)
@@ -69,6 +70,30 @@ describe('useCarDiary', () => {
     })
 
     expect(repositoryMocks.createVehicle).toHaveBeenCalledWith(vehicleInput)
+    await waitFor(() =>
+      expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),
+    )
+  })
+
+  it('updates mileage and refreshes the state', async () => {
+    repositoryMocks.updateVehicleMileage.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useCarDiary('user-1'), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => expect(result.current.stateQuery.isSuccess).toBe(true))
+
+    await act(async () => {
+      await result.current.updateVehicleMileageMutation.mutateAsync({
+        vehicleId: 'vehicle-1',
+        currentMileage: 90_000,
+      })
+    })
+
+    expect(repositoryMocks.updateVehicleMileage).toHaveBeenCalledWith(
+      'vehicle-1',
+      90_000,
+    )
     await waitFor(() =>
       expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),
     )

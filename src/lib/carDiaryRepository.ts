@@ -17,6 +17,7 @@ export type MaintenanceReminderRow =
 export type ServiceRecordRow =
   Database['public']['Tables']['service_records']['Row']
 type VehicleInsert = Database['public']['Tables']['vehicles']['Insert']
+type VehicleUpdate = Database['public']['Tables']['vehicles']['Update']
 type MaintenanceReminderInsert =
   Database['public']['Tables']['maintenance_reminders']['Insert']
 type ServiceRecordInsert =
@@ -58,34 +59,35 @@ const mapReminder = (row: MaintenanceReminderRow): MaintenanceReminder => ({
   createdAt: row.created_at,
 })
 
-const mapVehicle = (
-  row: VehicleRow,
-  records: ServiceRecord[],
-): Vehicle => {
-  const recordedMileages = records
-    .filter((record) => record.vehicleId === row.id)
-    .map((record) => record.mileage)
+const mapVehicle = (row: VehicleRow): Vehicle => ({
+  id: row.id,
+  make: row.make,
+  model: row.model,
+  year: row.year,
+  registrationNumber: row.registration_number,
+  vin: row.vin,
+  startingMileage: row.starting_mileage,
+  currentMileage: row.current_mileage,
+  createdAt: row.created_at,
+})
 
-  return {
-    id: row.id,
-    make: row.make,
-    model: row.model,
-    year: row.year,
-    registrationNumber: row.registration_number,
-    vin: row.vin,
-    startingMileage: row.starting_mileage,
-    currentMileage: Math.max(row.starting_mileage, ...recordedMileages),
-    createdAt: row.created_at,
-  }
-}
-
-const toVehicleRow = (input: VehicleInput): VehicleInsert => ({
+const toVehicleInsertRow = (input: VehicleInput): VehicleInsert => ({
   make: input.make,
   model: input.model,
   year: input.year,
   registration_number: input.registrationNumber,
   vin: input.vin,
   starting_mileage: input.currentMileage,
+  current_mileage: input.currentMileage,
+})
+
+const toVehicleUpdateRow = (input: VehicleInput): VehicleUpdate => ({
+  make: input.make,
+  model: input.model,
+  year: input.year,
+  registration_number: input.registrationNumber,
+  vin: input.vin,
+  current_mileage: input.currentMileage,
 })
 
 const toServiceRecordRow = (
@@ -115,7 +117,7 @@ export const mapCarDiaryState = (
 ): CarDiaryState => {
   const records = serviceRecordRows.map(mapRecord)
   const reminders = reminderRows.map(mapReminder)
-  const vehicles = vehicleRows.map((vehicle) => mapVehicle(vehicle, records))
+  const vehicles = vehicleRows.map(mapVehicle)
 
   return {
     version: 3,
@@ -157,7 +159,7 @@ export const fetchCarDiaryState = async (): Promise<CarDiaryState> => {
 export const createVehicle = async (input: VehicleInput): Promise<string> => {
   const { data, error } = await getSupabaseClient()
     .from('vehicles')
-    .insert(toVehicleRow(input))
+    .insert(toVehicleInsertRow(input))
     .select('id')
     .single()
 
@@ -171,7 +173,19 @@ export const updateVehicle = async (
 ): Promise<void> => {
   const { error } = await getSupabaseClient()
     .from('vehicles')
-    .update(toVehicleRow(input))
+    .update(toVehicleUpdateRow(input))
+    .eq('id', vehicleId)
+
+  if (error) throw error
+}
+
+export const updateVehicleMileage = async (
+  vehicleId: string,
+  currentMileage: number,
+): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('vehicles')
+    .update({ current_mileage: currentMileage })
     .eq('id', vehicleId)
 
   if (error) throw error

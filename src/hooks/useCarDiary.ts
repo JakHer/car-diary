@@ -10,6 +10,7 @@ import {
   setMaintenanceReminderCompleted,
   updateServiceRecord,
   updateVehicle,
+  updateVehicleMileage,
 } from '../lib/carDiaryRepository'
 import type {
   MaintenanceReminderInput,
@@ -25,6 +26,11 @@ export const carDiaryKeys = {
 interface UpdateVehicleVariables {
   vehicleId: string
   input: VehicleInput
+}
+
+interface UpdateVehicleMileageVariables {
+  vehicleId: string
+  currentMileage: number
 }
 
 interface CreateServiceRecordVariables {
@@ -67,6 +73,16 @@ export const useCarDiary = (userId: string) => {
     mutationKey: [...carDiaryKeys.all, 'update-vehicle'],
     mutationFn: ({ vehicleId, input }: UpdateVehicleVariables) =>
       updateVehicle(vehicleId, input),
+    onSuccess: invalidateState,
+  })
+
+  const updateVehicleMileageMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'update-vehicle-mileage'],
+    mutationFn: ({
+      vehicleId,
+      currentMileage,
+    }: UpdateVehicleMileageVariables) =>
+      updateVehicleMileage(vehicleId, currentMileage),
     onSuccess: invalidateState,
   })
 
@@ -123,6 +139,7 @@ export const useCarDiary = (userId: string) => {
   const mutations = [
     createVehicleMutation,
     updateVehicleMutation,
+    updateVehicleMileageMutation,
     deleteVehicleMutation,
     createServiceRecordMutation,
     updateServiceRecordMutation,
@@ -142,6 +159,7 @@ export const useCarDiary = (userId: string) => {
     stateQuery,
     createVehicleMutation,
     updateVehicleMutation,
+    updateVehicleMileageMutation,
     deleteVehicleMutation,
     createServiceRecordMutation,
     updateServiceRecordMutation,
