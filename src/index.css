@@ -15,6 +15,24 @@
   --color-accent: #16744a;
   --color-accent-hover: #105f3c;
   --color-accent-soft: rgba(22, 116, 74, 0.1);
+  --color-background: #f4f6f4;
+  --color-foreground: #18201c;
+  --color-primary: #16744a;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f0f3f1;
+  --color-secondary-foreground: #18201c;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #a62b2b;
+  --color-destructive-foreground: #ffffff;
+  --color-input: #cbd3ce;
+  --color-ring: #16744a;
+  --color-success: #16744a;
+  --color-success-soft: #e9f5ee;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #fff4d6;
+  --color-danger: #a62b2b;
+  --color-danger-soft: #fbeaea;
+  --color-danger-ring: rgba(166, 43, 43, 0.08);
   --radius-large: 18px;
   --shadow-card: 0 14px 36px rgba(24, 32, 28, 0.055);
 }
