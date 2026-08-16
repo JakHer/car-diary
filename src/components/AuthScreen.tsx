@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { getSupabaseClient } from '../lib/supabase'
-import { authSchema, type AuthFormValues } from '../lib/validation'
+import { createAuthSchema, type AuthFormValues } from '../lib/validation'
+import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { FieldError } from './FieldError'
 import { Loader } from './Loader'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import {
   brandStyles,
   eyebrowStyles,
@@ -20,22 +23,29 @@ import {
 type AuthMode = 'sign-in' | 'sign-up'
 
 export const AuthScreen = () => {
+  const { i18n, t } = useTranslation()
   const [mode, setMode] = useState<AuthMode>('sign-in')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const schema = useMemo(
+    () => createAuthSchema(t),
+    [t],
+  )
   const {
     clearErrors,
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
+    trigger,
   } = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       email: '',
       password: '',
     },
     mode: 'onBlur',
   })
+  useTranslatedFormErrors(i18n.resolvedLanguage, errors, trigger)
 
   const switchMode = () => {
     setMode((currentMode) =>
@@ -69,41 +79,41 @@ export const AuthScreen = () => {
 
         if (signUpError) throw signUpError
         if (!signUpData.session) {
-          setNotice('Check your inbox to confirm your email, then sign in.')
+          setNotice(t('auth.confirmationNotice'))
         }
       }
     } catch (authError) {
       setError(
         authError instanceof Error
           ? authError.message
-          : 'Authentication failed. Please try again.',
+          : t('auth.failed'),
       )
     }
   }
 
   return (
-    <main className="grid min-h-svh grid-cols-[minmax(0,1.15fr)_minmax(430px,0.85fr)] bg-surface max-[900px]:grid-cols-1">
+    <main className="relative grid min-h-svh grid-cols-[minmax(0,1.15fr)_minmax(430px,0.85fr)] bg-surface max-[900px]:grid-cols-1">
+      <LanguageSwitcher className="absolute top-6 right-6 z-10 max-[700px]:top-5 max-[700px]:right-5" />
       <section className="flex flex-col justify-between gap-20 bg-[#123d2c] bg-[radial-gradient(circle_at_85%_15%,rgba(77,177,127,0.28),transparent_32%)] p-[clamp(36px,6vw,80px)] text-[#dce9e2] max-[900px]:min-h-[430px] max-[900px]:gap-[70px] max-[700px]:min-h-[390px] max-[700px]:p-7">
         <a
           className={joinClassNames(brandStyles, 'text-white')}
           href="/"
-          aria-label="Car Diary home page"
+          aria-label={t('common.homeAria')}
         >
           <span className={inverseBrandMarkStyles} aria-hidden="true">
             CD
           </span>
-          <span>Car Diary</span>
+          <span>{t('common.appName')}</span>
         </a>
         <div>
           <p className={joinClassNames(eyebrowStyles, 'text-[#77d5a7]')}>
-            Your complete vehicle history
+            {t('auth.eyebrow')}
           </p>
           <h1 className="m-0 max-w-[760px] text-[clamp(50px,6vw,78px)] leading-[1.02] font-bold tracking-[-0.055em] text-white max-[900px]:text-[clamp(42px,9vw,64px)]">
-            Every service record, available wherever you are.
+            {t('auth.heroTitle')}
           </h1>
           <p className="mt-[26px] mb-0 max-w-[580px] text-lg leading-[1.65] max-[700px]:text-base">
-            Sign in to keep your vehicles, maintenance history, and expenses
-            securely synced.
+            {t('auth.heroDescription')}
           </p>
         </div>
       </section>
@@ -114,18 +124,22 @@ export const AuthScreen = () => {
       >
         <div>
           <p className={eyebrowStyles}>
-            {mode === 'sign-in' ? 'Welcome back' : 'Create account'}
+            {mode === 'sign-in'
+              ? t('auth.welcomeBack')
+              : t('auth.createAccount')}
           </p>
           <h2
             className="m-0 text-[30px] font-bold tracking-[-0.04em] text-strong"
             id="auth-title"
           >
-            {mode === 'sign-in' ? 'Sign in to Car Diary' : 'Start your diary'}
+            {mode === 'sign-in'
+              ? t('auth.signInTitle')
+              : t('auth.signUpTitle')}
           </h2>
           <p className="mt-2.5 mb-0 text-sm leading-[1.55] text-muted">
             {mode === 'sign-in'
-              ? 'Enter the details connected to your account.'
-              : 'Use your email and a password with at least 6 characters.'}
+              ? t('auth.signInDescription')
+              : t('auth.signUpDescription')}
           </p>
         </div>
 
@@ -135,7 +149,7 @@ export const AuthScreen = () => {
           onSubmit={handleSubmit(submitAuth)}
         >
           <label className={fieldStyles}>
-            <span>Email</span>
+            <span>{t('auth.email')}</span>
             <input
               className={joinClassNames(
                 inputStyles,
@@ -145,7 +159,7 @@ export const AuthScreen = () => {
               autoComplete="email"
               placeholder="you@example.com"
               autoFocus
-              aria-label="Email"
+              aria-label={t('auth.email')}
               aria-invalid={Boolean(errors.email)}
               {...register('email')}
             />
@@ -153,7 +167,7 @@ export const AuthScreen = () => {
           </label>
 
           <label className={fieldStyles}>
-            <span>Password</span>
+            <span>{t('auth.password')}</span>
             <input
               className={joinClassNames(
                 inputStyles,
@@ -163,8 +177,8 @@ export const AuthScreen = () => {
               autoComplete={
                 mode === 'sign-in' ? 'current-password' : 'new-password'
               }
-              placeholder="At least 6 characters"
-              aria-label="Password"
+              placeholder={t('auth.passwordPlaceholder')}
+              aria-label={t('auth.password')}
               aria-invalid={Boolean(errors.password)}
               {...register('password')}
             />
@@ -186,28 +200,30 @@ export const AuthScreen = () => {
             {isSubmitting ? (
               <Loader
                 label={
-                  mode === 'sign-in' ? 'Signing in...' : 'Creating account...'
+                  mode === 'sign-in'
+                    ? t('auth.signingIn')
+                    : t('auth.creatingAccount')
                 }
                 size="small"
               />
             ) : mode === 'sign-in' ? (
-              'Sign in'
+              t('auth.signIn')
             ) : (
-              'Create account'
+              t('auth.createAccount')
             )}
           </button>
         </form>
 
         <p className="mt-6 mb-0 text-center text-[13px] text-muted">
           {mode === 'sign-in'
-            ? "Don't have an account?"
-            : 'Already have an account?'}{' '}
+            ? t('auth.noAccount')
+            : t('auth.existingAccount')}{' '}
           <button
             className="cursor-pointer border-0 bg-transparent p-0 font-[750] text-accent hover:underline focus-visible:underline"
             type="button"
             onClick={switchMode}
           >
-            {mode === 'sign-in' ? 'Create one' : 'Sign in'}
+            {mode === 'sign-in' ? t('auth.createOne') : t('auth.signIn')}
           </button>
         </p>
       </section>

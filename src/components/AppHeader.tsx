@@ -1,4 +1,6 @@
 import type { Vehicle } from '../types'
+import { useTranslation } from 'react-i18next'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { VehicleSelect } from './VehicleSelect'
 import {
   brandMarkStyles,
@@ -23,15 +25,18 @@ export const AppHeader = ({
   onAddVehicle,
   onSelectVehicle,
   onSignOut,
-}: AppHeaderProps) => (
-  <header className="flex min-h-20 items-center justify-between gap-6 border-b border-border max-[700px]:min-h-[70px]">
-    <a className={brandStyles} href="/" aria-label="Car Diary home page">
+}: AppHeaderProps) => {
+  const { t } = useTranslation()
+
+  return (
+  <header className="flex min-h-20 items-center justify-between gap-6 border-b border-border max-[700px]:min-h-0 max-[700px]:flex-wrap max-[700px]:gap-3 max-[700px]:py-3">
+    <a className={brandStyles} href="/" aria-label={t('common.homeAria')}>
       <span className={brandMarkStyles} aria-hidden="true">
         CD
       </span>
-      <span>Car Diary</span>
+      <span>{t('common.appName')}</span>
     </a>
-    <div className="flex items-center gap-3 max-[700px]:gap-[7px]">
+    <div className="flex items-center gap-3 max-[700px]:w-full max-[700px]:justify-between max-[700px]:gap-[7px]">
       {activeVehicle && (
         <div className="flex items-center gap-3 border-r border-border pr-3 max-[700px]:gap-[7px] max-[700px]:border-r-0 max-[700px]:pr-0">
           <VehicleSelect
@@ -47,10 +52,11 @@ export const AppHeader = ({
             type="button"
             onClick={onAddVehicle}
           >
-            + Add
+            {t('header.add')}
           </button>
         </div>
       )}
+      <LanguageSwitcher syncWithAccount />
       <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted max-[700px]:hidden">
         <span
           className="size-[7px] rounded-full bg-accent shadow-[0_0_0_4px_var(--color-accent-soft)]"
@@ -70,9 +76,10 @@ export const AppHeader = ({
           type="button"
           onClick={() => void onSignOut()}
         >
-          Sign out
+          {t('header.signOut')}
         </button>
       </div>
     </div>
   </header>
-)
+  )
+}

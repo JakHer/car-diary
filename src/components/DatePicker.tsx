@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as Popover from '@radix-ui/react-popover'
 import { DayPicker } from '@daypicker/react'
-import { enGB } from '@daypicker/react/locale'
+import { enGB, pl } from '@daypicker/react/locale'
 import { CalendarDays } from 'lucide-react'
 import {
   inputStyles,
   invalidControlStyles,
   joinClassNames,
 } from '../styles'
+import { getIntlLocale } from '../i18n'
 
 interface DatePickerProps {
   defaultValue?: string
@@ -17,12 +19,6 @@ interface DatePickerProps {
   value?: string
   onValueChange?: (value: string) => void
 }
-
-const displayDateFormatter = new Intl.DateTimeFormat('en-GB', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-})
 
 const parseDate = (value?: string): Date | undefined => {
   if (!value) return undefined
@@ -50,10 +46,21 @@ export const DatePicker = ({
   value,
   onValueChange,
 }: DatePickerProps) => {
+  const { i18n, t } = useTranslation()
   const [internalValue, setInternalValue] = useState(defaultValue ?? '')
   const [isOpen, setIsOpen] = useState(false)
   const dateValue = value ?? internalValue
   const selectedDate = parseDate(dateValue)
+  const locale = getIntlLocale(i18n.resolvedLanguage)
+  const displayDateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
+    [locale],
+  )
 
   const selectDate = (date: Date | undefined) => {
     const nextValue = formatDateValue(date)
@@ -75,12 +82,14 @@ export const DatePicker = ({
           )}
           type="button"
           aria-invalid={invalid}
-          aria-label={selectedDate ? 'Change date' : 'Choose date'}
+          aria-label={
+            selectedDate ? t('datePicker.change') : t('datePicker.choose')
+          }
         >
           <span>
             {selectedDate
               ? displayDateFormatter.format(selectedDate)
-              : 'Select date'}
+              : t('datePicker.placeholder')}
           </span>
           <span className="shrink-0 text-muted">
             <CalendarDays
@@ -126,7 +135,7 @@ export const DatePicker = ({
               disabled: 'cursor-not-allowed opacity-30',
             }}
             defaultMonth={selectedDate}
-            locale={enGB}
+            locale={locale === 'pl-PL' ? pl : enGB}
             mode="single"
             required={required}
             selected={selectedDate}
@@ -139,7 +148,7 @@ export const DatePicker = ({
                 type="button"
                 onClick={() => selectDate(undefined)}
               >
-                Clear date
+                {t('datePicker.clear')}
               </button>
             </div>
           )}

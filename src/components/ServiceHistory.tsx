@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Search, SearchX, X } from 'lucide-react'
 import { SelectField } from './SelectField'
 import type { ServiceCategory, ServiceRecord } from '../types'
@@ -12,6 +13,7 @@ import {
   smallActionStyles,
   tagStyles,
 } from '../styles'
+import { getIntlLocale } from '../i18n'
 
 interface ServiceHistoryProps {
   records: ServiceRecord[]
@@ -23,36 +25,14 @@ interface ServiceHistoryProps {
 type CategoryFilter = 'all' | ServiceCategory
 type RecordSort = 'newest' | 'oldest' | 'mileage' | 'cost'
 
-const categoryOptions: Array<{ label: string; value: CategoryFilter }> = [
-  { label: 'All categories', value: 'all' },
-  { label: 'Maintenance', value: 'Maintenance' },
-  { label: 'Repair', value: 'Repair' },
-  { label: 'Inspection', value: 'Inspection' },
-  { label: 'Tires', value: 'Tires' },
-  { label: 'Other', value: 'Other' },
+const categories: CategoryFilter[] = [
+  'all',
+  'Maintenance',
+  'Repair',
+  'Inspection',
+  'Tires',
+  'Other',
 ]
-
-const sortOptions: Array<{ label: string; value: RecordSort }> = [
-  { label: 'Newest first', value: 'newest' },
-  { label: 'Oldest first', value: 'oldest' },
-  { label: 'Highest mileage', value: 'mileage' },
-  { label: 'Highest cost', value: 'cost' },
-]
-
-const dateFormatter = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-})
-
-const currencyFormatter = new Intl.NumberFormat('en-GB', {
-  style: 'currency',
-  currency: 'PLN',
-})
-
-const formatDate = (date: string): string => {
-  return dateFormatter.format(new Date(`${date}T12:00:00`))
-}
 
 export const ServiceHistory = ({
   records,
@@ -60,10 +40,39 @@ export const ServiceHistory = ({
   onDelete,
   onEdit,
 }: ServiceHistoryProps) => {
+  const { i18n, t } = useTranslation()
+  const locale = getIntlLocale(i18n.resolvedLanguage)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<CategoryFilter>('all')
   const [sort, setSort] = useState<RecordSort>('newest')
-  const normalizedQuery = query.trim().toLocaleLowerCase('en')
+  const normalizedQuery = query.trim().toLocaleLowerCase(locale)
+  const categoryOptions = categories.map((value) => ({
+    label: t(`service.categories.${value}`),
+    value,
+  }))
+  const sortOptions: Array<{ label: string; value: RecordSort }> = [
+    { label: t('history.sortNewest'), value: 'newest' },
+    { label: t('history.sortOldest'), value: 'oldest' },
+    { label: t('history.sortMileage'), value: 'mileage' },
+    { label: t('history.sortCost'), value: 'cost' },
+  ]
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+    [locale],
+  )
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'PLN',
+      }),
+    [locale],
+  )
   const visibleRecords = useMemo(() => {
     const filteredRecords = records.filter((record) => {
       const matchesCategory =
@@ -74,7 +83,7 @@ export const ServiceHistory = ({
         record.notes,
       ]
         .join(' ')
-        .toLocaleLowerCase('en')
+        .toLocaleLowerCase(locale)
 
       return (
         matchesCategory &&
@@ -98,7 +107,7 @@ export const ServiceHistory = ({
         second.mileage - first.mileage
       )
     })
-  }, [category, normalizedQuery, records, sort])
+  }, [category, locale, normalizedQuery, records, sort])
   const hasActiveFilters = normalizedQuery !== '' || category !== 'all'
   const clearFilters = () => {
     setQuery('')
@@ -116,14 +125,16 @@ export const ServiceHistory = ({
         )}
       >
         <div>
-          <p className={eyebrowStyles}>Timeline</p>
-          <h2 className={sectionTitleStyles}>Service history</h2>
+          <p className={eyebrowStyles}>{t('history.eyebrow')}</p>
+          <h2 className={sectionTitleStyles}>{t('history.title')}</h2>
         </div>
         <span className={tagStyles}>
           {hasActiveFilters && visibleRecords.length !== records.length
-            ? `${visibleRecords.length} of ${records.length}`
-            : records.length}{' '}
-          {records.length === 1 ? 'entry' : 'entries'}
+            ? t('history.filteredEntries', {
+                visible: visibleRecords.length,
+                total: records.length,
+              })
+            : t('history.entryCount', { count: records.length })}
         </span>
       </div>
 
@@ -135,16 +146,18 @@ export const ServiceHistory = ({
           >
             +
           </span>
-          <h3 className="m-0 text-lg text-strong">No service records yet</h3>
+          <h3 className="m-0 text-lg text-strong">
+            {t('history.emptyTitle')}
+          </h3>
           <p className="mt-2 mb-0 max-w-[360px] text-sm leading-[1.6] text-muted">
-            Add the first visit to start building your vehicle's history.
+            {t('history.emptyDescription')}
           </p>
         </div>
       ) : (
         <>
           <div
             className="grid grid-cols-[minmax(180px,1fr)_auto_auto] gap-2.5 border-b border-border py-4 max-[700px]:grid-cols-2"
-            aria-label="Service history filters"
+            aria-label={t('history.filtersAria')}
           >
             <div className="relative max-[700px]:col-span-2">
               <Search
@@ -155,8 +168,8 @@ export const ServiceHistory = ({
               <input
                 className="h-9 w-full rounded-[9px] border border-border-strong bg-surface pr-9 pl-9 text-[13px] font-medium text-strong outline-none transition-[border-color,box-shadow] placeholder:text-light focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-soft)] [&::-webkit-search-cancel-button]:hidden"
                 type="search"
-                aria-label="Search service history"
-                placeholder="Search service history"
+                aria-label={t('history.search')}
+                placeholder={t('history.searchPlaceholder')}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -164,7 +177,7 @@ export const ServiceHistory = ({
                 <button
                   className="absolute top-1/2 right-2 grid size-6 -translate-y-1/2 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-muted hover:bg-surface-muted hover:text-strong focus-visible:bg-surface-muted focus-visible:text-strong"
                   type="button"
-                  aria-label="Clear search"
+                  aria-label={t('history.clearSearch')}
                   onClick={() => setQuery('')}
                 >
                   <X aria-hidden="true" className="size-3.5" strokeWidth={2} />
@@ -172,7 +185,7 @@ export const ServiceHistory = ({
               )}
             </div>
             <SelectField
-              ariaLabel="Filter by category"
+              ariaLabel={t('history.category')}
               options={categoryOptions}
               value={category}
               variant="toolbar"
@@ -181,7 +194,7 @@ export const ServiceHistory = ({
               }
             />
             <SelectField
-              ariaLabel="Sort service history"
+              ariaLabel={t('history.sort')}
               options={sortOptions}
               value={sort}
               variant="toolbar"
@@ -194,16 +207,18 @@ export const ServiceHistory = ({
               <span className="mb-4 grid size-11 place-items-center rounded-full bg-surface-muted text-muted">
                 <SearchX aria-hidden="true" className="size-5" />
               </span>
-              <h3 className="m-0 text-lg text-strong">No matching records</h3>
+              <h3 className="m-0 text-lg text-strong">
+                {t('history.noMatchesTitle')}
+              </h3>
               <p className="mt-2 mb-0 max-w-[340px] text-sm leading-[1.6] text-muted">
-                Try another search or clear the selected category.
+                {t('history.noMatchesDescription')}
               </p>
               <button
                 className={joinClassNames(smallActionStyles, 'mt-4 px-3 py-2')}
                 type="button"
                 onClick={clearFilters}
               >
-                Clear filters
+                {t('history.clearFilters')}
               </button>
             </div>
           ) : (
@@ -230,7 +245,7 @@ export const ServiceHistory = ({
                             'inline-block bg-accent-soft text-accent',
                           )}
                         >
-                          {record.category}
+                          {t(`service.categories.${record.category}`)}
                         </span>
                         <h3 className="mt-3 mb-0 text-lg text-strong">
                           {record.title}
@@ -246,22 +261,26 @@ export const ServiceHistory = ({
                             type="button"
                             onClick={() => onEdit(record.id)}
                           >
-                            Edit
+                            {t('common.edit')}
                           </button>
                           <button
                             className={dangerActionStyles}
                             type="button"
                             onClick={() => onDelete(record.id)}
                           >
-                            Delete
+                            {t('common.delete')}
                           </button>
                         </div>
                       </div>
                     </div>
                     <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold text-muted">
-                      <span>{formatDate(record.date)}</span>
                       <span>
-                        {record.mileage.toLocaleString('en-GB')} km
+                        {dateFormatter.format(
+                          new Date(`${record.date}T12:00:00`),
+                        )}
+                      </span>
+                      <span>
+                        {record.mileage.toLocaleString(locale)} km
                       </span>
                       {record.workshop && <span>{record.workshop}</span>}
                     </div>

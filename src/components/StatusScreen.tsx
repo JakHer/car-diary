@@ -24,13 +24,16 @@ export const LoadingScreen = ({ message }: LoadingScreenProps) => (
   </main>
 )
 
-export const ErrorScreen = ({ message, onRetry }: ErrorScreenProps) => (
-  <main className={statusScreenStyles}>
+export const ErrorScreen = ({ message, onRetry }: ErrorScreenProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <main className={statusScreenStyles}>
     <span className={brandMarkStyles} aria-hidden="true">
       CD
     </span>
     <h1 className="mt-7 mb-0 text-[clamp(30px,6vw,44px)] leading-[1.05] tracking-[-0.04em] text-strong">
-      We could not load your garage.
+      {t('status.errorTitle')}
     </h1>
     <p className={statusMessageStyles}>{message}</p>
     <button
@@ -38,23 +41,29 @@ export const ErrorScreen = ({ message, onRetry }: ErrorScreenProps) => (
       type="button"
       onClick={onRetry}
     >
-      Try again
+      {t('status.tryAgain')}
     </button>
-  </main>
-)
+    </main>
+  )
+}
 
-export const ConfigurationScreen = () => (
-  <main className={statusScreenStyles}>
+export const ConfigurationScreen = () => {
+  const { t } = useTranslation()
+
+  return (
+    <main className={statusScreenStyles}>
     <span className={brandMarkStyles} aria-hidden="true">
       CD
     </span>
     <h1 className="mt-7 mb-0 text-[clamp(30px,6vw,44px)] leading-[1.05] tracking-[-0.04em] text-strong">
-      Supabase is not configured.
+      {t('status.configurationTitle')}
     </h1>
     <p className={statusMessageStyles}>
-      Add the required values to your `.env.local` file and restart Vite.
+      {t('status.configurationDescription')}
     </p>
-  </main>
-)
+    </main>
+  )
+}
+import { useTranslation } from 'react-i18next'
 import { brandMarkStyles, primaryButtonStyles } from '../styles'
 import { Loader } from './Loader'

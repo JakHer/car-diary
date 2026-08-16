@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppHeader } from './components/AppHeader'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { ErrorScreen, LoadingScreen } from './components/StatusScreen'
@@ -26,11 +27,8 @@ const emptyState: CarDiaryState = {
   maintenanceReminders: [],
 }
 
-const getErrorMessage = (error: unknown): string => {
-  return error instanceof Error
-    ? error.message
-    : 'Something went wrong. Please try again.'
-}
+const getErrorMessage = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback
 
 interface CarDiaryAppProps {
   userId: string
@@ -46,6 +44,7 @@ interface DeleteConfirmation {
 }
 
 const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
+  const { t } = useTranslation()
   const {
     stateQuery,
     createVehicleMutation,
@@ -147,8 +146,15 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     setDeleteConfirmation({
       kind: 'vehicle',
       targetId: activeVehicle.id,
-      title: `Delete ${activeVehicle.make} ${activeVehicle.model}?`,
-      description: `This will permanently remove ${serviceCount} ${serviceCount === 1 ? 'service record' : 'service records'} and ${reminderCount} ${reminderCount === 1 ? 'reminder' : 'reminders'} linked to this vehicle. This action cannot be undone.`,
+      title: t('app.deleteVehicleTitle', {
+        vehicle: `${activeVehicle.make} ${activeVehicle.model}`,
+      }),
+      description: t('app.deleteVehicleDescription', {
+        serviceCountText: t('app.serviceRecordCount', {
+          count: serviceCount,
+        }),
+        reminderCountText: t('app.reminderCount', { count: reminderCount }),
+      }),
     })
   }
 
@@ -178,9 +184,8 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     setDeleteConfirmation({
       kind: 'service-record',
       targetId: recordId,
-      title: `Delete “${record.title}”?`,
-      description:
-        'This service record will be permanently removed from the vehicle history. This action cannot be undone.',
+      title: t('app.deleteRecordTitle', { title: record.title }),
+      description: t('app.deleteRecordDescription'),
     })
   }
 
@@ -207,9 +212,8 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
     setDeleteConfirmation({
       kind: 'reminder',
       targetId: reminderId,
-      title: `Delete “${reminder.title}”?`,
-      description:
-        'This maintenance reminder will be permanently removed. This action cannot be undone.',
+      title: t('app.deleteReminderTitle', { title: reminder.title }),
+      description: t('app.deleteReminderDescription'),
     })
   }
 
@@ -266,13 +270,13 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
   }
 
   if (stateQuery.isPending) {
-    return <LoadingScreen message="Loading your garage..." />
+    return <LoadingScreen message={t('app.loadingGarage')} />
   }
 
   if (stateQuery.isError && !stateQuery.data) {
     return (
       <ErrorScreen
-        message={getErrorMessage(dataError)}
+        message={getErrorMessage(dataError, t('app.unknownError'))}
         onRetry={() => void stateQuery.refetch()}
       />
     )
@@ -297,7 +301,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
           className="mt-4 flex items-center justify-between gap-5 rounded-[10px] bg-[#fff2f2] px-4 py-3 text-[13px] text-[#852424]"
           role="alert"
         >
-          <span>{getErrorMessage(dataError)}</span>
+          <span>{getErrorMessage(dataError, t('app.unknownError'))}</span>
           <button
             className={joinClassNames(
               smallActionStyles,
@@ -306,7 +310,7 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
             type="button"
             onClick={handleDataError}
           >
-            {stateQuery.error ? 'Retry' : 'Dismiss'}
+            {stateQuery.error ? t('common.retry') : t('common.dismiss')}
           </button>
         </div>
       )}
@@ -316,20 +320,19 @@ const CarDiaryApp = ({ userId, userEmail, onSignOut }: CarDiaryAppProps) => {
           className="fixed right-5 bottom-5 z-30 rounded-full bg-strong px-4 py-2.5 text-xs font-bold text-white shadow-card"
           role="status"
         >
-          <Loader label="Syncing changes..." size="small" />
+          <Loader label={t('app.syncing')} size="small" />
         </div>
       )}
 
       {!activeVehicle ? (
         <main className="grid flex-1 grid-cols-[minmax(0,1fr)_minmax(420px,0.78fr)] items-center gap-[clamp(48px,8vw,110px)] py-16 max-[900px]:grid-cols-1 max-[900px]:items-start max-[900px]:gap-10 max-[900px]:py-12">
           <div className="max-w-[590px]">
-            <p className={eyebrowStyles}>Your car's story starts here</p>
+            <p className={eyebrowStyles}>{t('app.emptyEyebrow')}</p>
             <h1 className="m-0 text-[clamp(44px,7vw,78px)] leading-[0.98] tracking-[-0.06em] text-strong">
-              Keep every mile and service on record.
+              {t('app.emptyTitle')}
             </h1>
             <p className="mt-6 mb-0 max-w-[520px] text-base leading-[1.7] text-muted">
-              Create a vehicle profile, then log maintenance, repairs, and
-              expenses as they happen.
+              {t('app.emptyDescription')}
             </p>
           </div>
           <VehicleForm

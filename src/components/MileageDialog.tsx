@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as Dialog from '@radix-ui/react-dialog'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Gauge, X } from 'lucide-react'
@@ -17,6 +18,7 @@ import {
   smallActionStyles,
 } from '../styles'
 import { FieldError } from './FieldError'
+import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { Loader } from './Loader'
 
 interface MileageDialogProps {
@@ -32,21 +34,24 @@ export const MileageDialog = ({
   vehicleName,
   onSave,
 }: MileageDialogProps) => {
+  const { i18n, t } = useTranslation()
   const [open, setOpen] = useState(false)
   const schema = useMemo(
-    () => createMileageSchema(currentMileage),
-    [currentMileage],
+    () => createMileageSchema(currentMileage, t),
+    [currentMileage, t],
   )
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
     reset,
+    trigger,
   } = useForm<MileageFormValues>({
     resolver: zodResolver(schema),
     defaultValues: { currentMileage },
     mode: 'onBlur',
   })
+  useTranslatedFormErrors(i18n.resolvedLanguage, errors, trigger)
   const isBusy = isSaving || isSubmitting
 
   const changeOpen = (nextOpen: boolean) => {
@@ -73,7 +78,7 @@ export const MileageDialog = ({
           className={joinClassNames(smallActionStyles, 'mt-3')}
           type="button"
         >
-          Update mileage
+          {t('mileage.trigger')}
         </button>
       </Dialog.Trigger>
 
@@ -94,11 +99,10 @@ export const MileageDialog = ({
             </span>
             <div>
               <Dialog.Title className="m-0 text-xl font-bold tracking-[-0.025em] text-strong">
-                Update mileage
+                {t('mileage.title')}
               </Dialog.Title>
               <Dialog.Description className="mt-2 mb-0 text-sm leading-[1.6] text-muted">
-                Enter the latest odometer reading for {vehicleName}. Mileage
-                cannot be reduced later.
+                {t('mileage.description', { vehicle: vehicleName })}
               </Dialog.Description>
             </div>
           </div>
@@ -107,7 +111,7 @@ export const MileageDialog = ({
             <button
               className="absolute top-4 right-4 grid size-8 cursor-pointer place-items-center rounded-full border-0 bg-surface-muted text-muted hover:bg-border hover:text-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent-soft disabled:cursor-wait disabled:opacity-65"
               type="button"
-              aria-label="Close mileage form"
+              aria-label={t('mileage.close')}
               disabled={isBusy}
             >
               <X aria-hidden="true" className="size-4" strokeWidth={2} />
@@ -121,7 +125,7 @@ export const MileageDialog = ({
             onSubmit={handleSubmit(saveMileage)}
           >
             <label className={fieldStyles}>
-              <span>Current mileage (km)</span>
+              <span>{t('mileage.current')}</span>
               <input
                 className={joinClassNames(
                   inputStyles,
@@ -131,7 +135,7 @@ export const MileageDialog = ({
                 min={currentMileage}
                 step="1"
                 autoFocus
-                aria-label="Current mileage (km)"
+                aria-label={t('mileage.current')}
                 aria-invalid={Boolean(errors.currentMileage)}
                 {...register('currentMileage', { valueAsNumber: true })}
               />
@@ -148,7 +152,7 @@ export const MileageDialog = ({
                   type="button"
                   disabled={isBusy}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </Dialog.Close>
               <button
@@ -160,9 +164,9 @@ export const MileageDialog = ({
                 disabled={isBusy}
               >
                 {isBusy ? (
-                  <Loader label="Updating..." size="small" />
+                  <Loader label={t('mileage.updating')} size="small" />
                 ) : (
-                  'Update mileage'
+                  t('mileage.trigger')
                 )}
               </button>
             </div>

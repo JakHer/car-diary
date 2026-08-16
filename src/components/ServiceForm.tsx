@@ -1,12 +1,15 @@
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ServiceRecord, ServiceRecordInput } from '../types'
 import { DatePicker } from './DatePicker'
+import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { FieldError } from './FieldError'
 import { Loader } from './Loader'
 import { SelectField } from './SelectField'
 import {
-  serviceRecordSchema,
+  createServiceRecordSchema,
   type ServiceRecordFormValues,
 } from '../lib/validation'
 import {
@@ -32,15 +35,12 @@ interface ServiceFormProps {
   onSave: (record: ServiceRecordInput) => void
 }
 
-const serviceCategoryOptions: Array<{
-  label: ServiceRecordInput['category']
-  value: ServiceRecordInput['category']
-}> = [
-  { label: 'Maintenance', value: 'Maintenance' },
-  { label: 'Repair', value: 'Repair' },
-  { label: 'Inspection', value: 'Inspection' },
-  { label: 'Tires', value: 'Tires' },
-  { label: 'Other', value: 'Other' },
+const serviceCategories: ServiceRecordInput['category'][] = [
+  'Maintenance',
+  'Repair',
+  'Inspection',
+  'Tires',
+  'Other',
 ]
 
 const getLocalDate = (): string => {
@@ -56,13 +56,23 @@ export const ServiceForm = ({
   onCancel,
   onSave,
 }: ServiceFormProps) => {
+  const { i18n, t } = useTranslation()
+  const schema = useMemo(
+    () => createServiceRecordSchema(t),
+    [t],
+  )
+  const serviceCategoryOptions = serviceCategories.map((category) => ({
+    label: t(`service.categories.${category}`),
+    value: category,
+  }))
   const {
     control,
     formState: { errors },
     handleSubmit,
     register,
+    trigger,
   } = useForm<ServiceRecordFormValues>({
-    resolver: zodResolver(serviceRecordSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       title: record?.title ?? '',
       category: record?.category ?? 'Maintenance',
@@ -74,6 +84,7 @@ export const ServiceForm = ({
     },
     mode: 'onBlur',
   })
+  useTranslatedFormErrors(i18n.resolvedLanguage, errors, trigger)
 
   const saveRecord = ({ cost, ...values }: ServiceRecordFormValues) => {
     onSave({
@@ -95,23 +106,23 @@ export const ServiceForm = ({
       <div className={sectionHeadingStyles}>
         <div>
           <p className={eyebrowStyles}>
-            {record ? 'Editing entry' : 'New entry'}
+            {record ? t('service.editingEyebrow') : t('service.newEyebrow')}
           </p>
           <h2 className={sectionTitleStyles}>
-            {record ? 'Edit service record' : 'Add service record'}
+            {record ? t('service.editTitle') : t('service.addTitle')}
           </h2>
         </div>
       </div>
 
       <label className={fieldStyles}>
-        <span>Service</span>
+        <span>{t('service.name')}</span>
         <input
           className={joinClassNames(
             inputStyles,
             errors.title && invalidControlStyles,
           )}
-          placeholder="e.g. Engine oil change"
-          aria-label="Service"
+          placeholder={t('service.namePlaceholder')}
+          aria-label={t('service.name')}
           aria-invalid={Boolean(errors.title)}
           {...register('title')}
         />
@@ -120,13 +131,13 @@ export const ServiceForm = ({
 
       <div className={joinClassNames(formGridStyles, 'gap-4')}>
         <label className={fieldStyles}>
-          <span>Category</span>
+          <span>{t('service.category')}</span>
           <Controller
             control={control}
             name="category"
             render={({ field }) => (
               <SelectField
-                ariaLabel="Category"
+                ariaLabel={t('service.category')}
                 invalid={Boolean(errors.category)}
                 name={field.name}
                 options={serviceCategoryOptions}
@@ -139,7 +150,7 @@ export const ServiceForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>Date</span>
+          <span>{t('service.date')}</span>
           <Controller
             control={control}
             name="date"
@@ -157,7 +168,7 @@ export const ServiceForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>Mileage (km)</span>
+          <span>{t('service.mileage')}</span>
           <input
             className={joinClassNames(
               inputStyles,
@@ -166,7 +177,7 @@ export const ServiceForm = ({
             type="number"
             min="0"
             step="1"
-            aria-label="Mileage (km)"
+            aria-label={t('service.mileage')}
             aria-invalid={Boolean(errors.mileage)}
             {...register('mileage', { valueAsNumber: true })}
           />
@@ -174,7 +185,7 @@ export const ServiceForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>Cost (PLN)</span>
+          <span>{t('service.cost')}</span>
           <input
             className={joinClassNames(
               inputStyles,
@@ -184,7 +195,7 @@ export const ServiceForm = ({
             min="0"
             step="0.01"
             placeholder="0.00"
-            aria-label="Cost (PLN)"
+            aria-label={t('service.cost')}
             aria-invalid={Boolean(errors.cost)}
             {...register('cost', { valueAsNumber: true })}
           />
@@ -193,14 +204,14 @@ export const ServiceForm = ({
       </div>
 
       <label className={fieldStyles}>
-        <span>Workshop</span>
+        <span>{t('service.workshop')}</span>
         <input
           className={joinClassNames(
             inputStyles,
             errors.workshop && invalidControlStyles,
           )}
-          placeholder="Optional"
-          aria-label="Workshop"
+          placeholder={t('common.optional')}
+          aria-label={t('service.workshop')}
           aria-invalid={Boolean(errors.workshop)}
           {...register('workshop')}
         />
@@ -208,15 +219,15 @@ export const ServiceForm = ({
       </label>
 
       <label className={fieldStyles}>
-        <span>Notes</span>
+        <span>{t('service.notes')}</span>
         <textarea
           className={joinClassNames(
             textareaStyles,
             errors.notes && invalidControlStyles,
           )}
           rows={3}
-          placeholder="Parts, observations, next steps..."
-          aria-label="Notes"
+          placeholder={t('service.notesPlaceholder')}
+          aria-label={t('service.notes')}
           aria-invalid={Boolean(errors.notes)}
           {...register('notes')}
         />
@@ -230,7 +241,7 @@ export const ServiceForm = ({
             type="button"
             onClick={onCancel}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
         <button
@@ -239,11 +250,11 @@ export const ServiceForm = ({
           disabled={isSaving}
         >
           {isSaving ? (
-            <Loader label="Saving record..." size="small" />
+            <Loader label={t('service.saving')} size="small" />
           ) : record ? (
-            'Save changes'
+            t('service.saveChanges')
           ) : (
-            'Save service record'
+            t('service.save')
           )}
         </button>
       </div>

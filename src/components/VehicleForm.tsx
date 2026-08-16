@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Vehicle, VehicleInput } from '../types'
 import { FieldError } from './FieldError'
+import { useTranslatedFormErrors } from '../hooks/useTranslatedFormErrors'
 import { Loader } from './Loader'
 import {
   createVehicleSchema,
@@ -34,16 +36,18 @@ export const VehicleForm = ({
   onCancel,
   onSave,
 }: VehicleFormProps) => {
+  const { i18n, t } = useTranslation()
   const currentYear = new Date().getFullYear()
   const isEditing = Boolean(vehicle)
   const schema = useMemo(
-    () => createVehicleSchema(vehicle?.currentMileage ?? 0),
-    [vehicle?.currentMileage],
+    () => createVehicleSchema(vehicle?.currentMileage ?? 0, t),
+    [t, vehicle?.currentMileage],
   )
   const {
     formState: { errors },
     handleSubmit,
     register,
+    trigger,
   } = useForm<VehicleFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -56,6 +60,7 @@ export const VehicleForm = ({
     },
     mode: 'onBlur',
   })
+  useTranslatedFormErrors(i18n.resolvedLanguage, errors, trigger)
 
   const saveVehicle = (values: VehicleFormValues) => onSave(values)
 
@@ -76,27 +81,27 @@ export const VehicleForm = ({
         </span>
         <div>
           <h2 className="m-0 text-[22px] font-bold tracking-[-0.025em] text-strong">
-            {isEditing ? 'Edit vehicle' : 'Add your vehicle'}
+            {isEditing ? t('vehicle.editTitle') : t('vehicle.addTitle')}
           </h2>
           <p className="mt-1.5 mb-0 text-sm text-muted">
             {isEditing
-              ? 'Update the profile details and current mileage.'
-              : 'Start with the details you use most often.'}
+              ? t('vehicle.editDescription')
+              : t('vehicle.addDescription')}
           </p>
         </div>
       </div>
 
       <div className={formGridStyles}>
         <label className={fieldStyles}>
-          <span>Make</span>
+          <span>{t('vehicle.make')}</span>
           <input
             className={joinClassNames(
               inputStyles,
               errors.make && invalidControlStyles,
             )}
-            placeholder="e.g. Volvo"
+            placeholder={t('vehicle.makePlaceholder')}
             autoFocus
-            aria-label="Make"
+            aria-label={t('vehicle.make')}
             aria-invalid={Boolean(errors.make)}
             {...register('make')}
           />
@@ -104,14 +109,14 @@ export const VehicleForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>Model</span>
+          <span>{t('vehicle.model')}</span>
           <input
             className={joinClassNames(
               inputStyles,
               errors.model && invalidControlStyles,
             )}
-            placeholder="e.g. V60"
-            aria-label="Model"
+            placeholder={t('vehicle.modelPlaceholder')}
+            aria-label={t('vehicle.model')}
             aria-invalid={Boolean(errors.model)}
             {...register('model')}
           />
@@ -119,7 +124,7 @@ export const VehicleForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>Year</span>
+          <span>{t('vehicle.year')}</span>
           <input
             className={joinClassNames(
               inputStyles,
@@ -129,7 +134,7 @@ export const VehicleForm = ({
             min="1886"
             max={currentYear + 1}
             placeholder={String(currentYear)}
-            aria-label="Year"
+            aria-label={t('vehicle.year')}
             aria-invalid={Boolean(errors.year)}
             {...register('year', { valueAsNumber: true })}
           />
@@ -137,7 +142,7 @@ export const VehicleForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>Current mileage (km)</span>
+          <span>{t('vehicle.currentMileage')}</span>
           <input
             className={joinClassNames(
               inputStyles,
@@ -147,7 +152,7 @@ export const VehicleForm = ({
             min="0"
             step="1"
             placeholder="125000"
-            aria-label="Current mileage (km)"
+            aria-label={t('vehicle.currentMileage')}
             aria-invalid={Boolean(errors.currentMileage)}
             {...register('currentMileage', { valueAsNumber: true })}
           />
@@ -155,14 +160,14 @@ export const VehicleForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>Registration number</span>
+          <span>{t('vehicle.registrationNumber')}</span>
           <input
             className={joinClassNames(
               inputStyles,
               errors.registrationNumber && invalidControlStyles,
             )}
-            placeholder="Optional"
-            aria-label="Registration number"
+            placeholder={t('common.optional')}
+            aria-label={t('vehicle.registrationNumber')}
             aria-invalid={Boolean(errors.registrationNumber)}
             {...register('registrationNumber')}
           />
@@ -170,15 +175,15 @@ export const VehicleForm = ({
         </label>
 
         <label className={fieldStyles}>
-          <span>VIN</span>
+          <span>{t('vehicle.vin')}</span>
           <input
             className={joinClassNames(
               inputStyles,
               errors.vin && invalidControlStyles,
             )}
             maxLength={17}
-            placeholder="Optional"
-            aria-label="VIN"
+            placeholder={t('common.optional')}
+            aria-label={t('vehicle.vin')}
             aria-invalid={Boolean(errors.vin)}
             {...register('vin')}
           />
@@ -189,8 +194,8 @@ export const VehicleForm = ({
       <div className="mt-7 flex items-center justify-between gap-5 border-t border-border pt-6 max-[700px]:flex-col max-[700px]:items-start">
         <p className="m-0 text-xs text-muted">
           {isEditing
-            ? 'Service records will not be changed.'
-            : 'Your data stays in this browser.'}
+              ? t('vehicle.serviceRecordsUnchanged')
+              : t('vehicle.dataStored')}
         </p>
         <div className="flex gap-2.5 max-[700px]:w-full max-[700px]:flex-col">
           {onCancel && (
@@ -203,7 +208,7 @@ export const VehicleForm = ({
               disabled={isSaving}
               onClick={onCancel}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           )}
           <button
@@ -215,11 +220,11 @@ export const VehicleForm = ({
             disabled={isSaving}
           >
             {isSaving ? (
-              <Loader label="Saving vehicle..." size="small" />
+              <Loader label={t('vehicle.saving')} size="small" />
             ) : isEditing ? (
-              'Save vehicle'
+              t('vehicle.save')
             ) : (
-              'Create vehicle profile'
+              t('vehicle.create')
             )}
           </button>
         </div>
