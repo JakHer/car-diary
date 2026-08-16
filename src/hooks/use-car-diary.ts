@@ -1,19 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  createFuelEntry,
-  createMaintenanceReminder,
-  createServiceRecord,
   createVehicle,
-  deleteFuelEntry,
-  deleteMaintenanceReminder,
-  deleteServiceRecord,
   deleteVehicle,
-  fetchCarDiaryState,
-  setMaintenanceReminderCompleted,
-  updateServiceRecord,
   updateVehicle,
   updateVehicleMileage,
-} from '../lib/car-diary-repository'
+} from '@/features/vehicles/vehicle-repository'
+import {
+  createServiceRecord,
+  deleteServiceRecord,
+  updateServiceRecord,
+} from '@/features/service-records/service-record-repository'
+import {
+  createFuelEntry,
+  deleteFuelEntry,
+} from '@/features/fuel/fuel-repository'
+import {
+  createMaintenanceReminder,
+  deleteMaintenanceReminder,
+  setMaintenanceReminderCompleted,
+} from '@/features/reminders/reminder-repository'
+import { fetchCarDiaryState } from '@/lib/car-diary-repository'
 import type {
   FuelEntryInput,
   MaintenanceReminderInput,

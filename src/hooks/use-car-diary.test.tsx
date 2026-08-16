@@ -21,7 +21,14 @@ const repositoryMocks = vi.hoisted(() => ({
   updateVehicleMileage: vi.fn(),
 }))
 
-vi.mock('../lib/car-diary-repository', () => repositoryMocks)
+vi.mock('@/lib/car-diary-repository', () => repositoryMocks)
+vi.mock('@/features/vehicles/vehicle-repository', () => repositoryMocks)
+vi.mock(
+  '@/features/service-records/service-record-repository',
+  () => repositoryMocks,
+)
+vi.mock('@/features/fuel/fuel-repository', () => repositoryMocks)
+vi.mock('@/features/reminders/reminder-repository', () => repositoryMocks)
 
 const carDiaryState: CarDiaryState = {
   version: 3,

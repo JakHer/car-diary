@@ -13,7 +13,7 @@ import { useTranslatedFormErrors } from '@/hooks/use-translated-form-errors'
 import {
   createMaintenanceReminderSchema,
   type MaintenanceReminderFormValues,
-} from '@/lib/validation'
+} from './reminder-schema'
 
 interface MaintenanceReminderFormProps {
   currentMileage: number

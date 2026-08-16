@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 import {
   createServiceRecordSchema,
   type ServiceRecordFormValues,
-} from '@/lib/validation'
+} from './service-record-schema'
 
 interface ServiceFormProps {
   currentMileage: number

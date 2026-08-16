@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 import {
   createVehicleSchema,
   type VehicleFormValues,
-} from '@/lib/validation'
+} from './vehicle-schema'
 
 interface VehicleFormProps {
   className?: string

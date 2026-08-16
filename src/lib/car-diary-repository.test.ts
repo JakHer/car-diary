@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   mapCarDiaryState,
-  type FuelEntryRow,
-  type MaintenanceReminderRow,
-  type ServiceRecordRow,
-  type VehicleRow,
 } from './car-diary-repository'
+import type { VehicleRow } from '@/features/vehicles/vehicle-repository'
+import type { ServiceRecordRow } from '@/features/service-records/service-record-repository'
+import type { FuelEntryRow } from '@/features/fuel/fuel-repository'
+import type { MaintenanceReminderRow } from '@/features/reminders/reminder-repository'
 
 const vehicleRows: VehicleRow[] = [
   {
