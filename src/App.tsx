@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import {
   ConfigurationScreen,
   LoadingScreen,
@@ -16,6 +16,11 @@ import {
 } from './lib/supabase'
 
 const CarDiaryApp = lazy(() => import('./CarDiaryApp'))
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage').then(({ SettingsPage: Component }) => ({
+    default: Component,
+  })),
+)
 const AuthScreen = lazy(() =>
   import('./components/AuthScreen').then(({ AuthScreen: Component }) => ({
     default: Component,
@@ -24,6 +29,7 @@ const AuthScreen = lazy(() =>
 
 const App = () => {
   const { t } = useTranslation()
+  const location = useLocation()
   const { session, isLoading } = useAuth()
   const defaultDistanceUnit = useAccountPreferences(session?.user)
 
@@ -43,7 +49,13 @@ const App = () => {
     <Suspense
       fallback={
         <LoadingScreen
-          message={session ? t('app.loadingGarage') : t('app.loadingSignIn')}
+          message={
+            session
+              ? location.pathname === '/settings'
+                ? t('settings.loading')
+                : t('app.loadingGarage')
+              : t('app.loadingSignIn')
+          }
         />
       }
     >
@@ -64,6 +76,21 @@ const App = () => {
                 <CarDiaryApp
                   defaultDistanceUnit={defaultDistanceUnit}
                   userId={session.user.id}
+                  userEmail={
+                    session.user.email ?? t('app.signedInAccount')
+                  }
+                  onSignOut={signOut}
+                />
+              ) : null
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              session ? (
+                <SettingsPage
+                  defaultDistanceUnit={defaultDistanceUnit}
+                  user={session.user}
                   userEmail={
                     session.user.email ?? t('app.signedInAccount')
                   }

@@ -39,8 +39,26 @@ export const en = {
       'This maintenance reminder will be permanently removed. This action cannot be undone.',
   },
   header: {
-    add: '+ Add',
+    add: 'Add vehicle',
+    settings: 'Settings',
     signOut: 'Sign out',
+  },
+  settings: {
+    loading: 'Loading settings...',
+    eyebrow: 'Your account',
+    title: 'Settings',
+    description:
+      'Manage the defaults synced with your account across devices.',
+    language: 'Language',
+    languageDescription: 'Choose the language used throughout Car Diary.',
+    distanceUnit: 'Default distance unit',
+    distanceUnitDescription:
+      'Used for new vehicles. Existing vehicles keep their own odometer unit.',
+    account: 'Account',
+    saving: 'Saving settings...',
+    save: 'Save changes',
+    saved: 'Settings saved.',
+    saveError: 'Could not save your settings. Please try again.',
   },
   auth: {
     eyebrow: 'Your complete vehicle history',
@@ -289,8 +307,26 @@ export const pl = {
       'To przypomnienie zostanie trwale usunięte. Tej operacji nie można cofnąć.',
   },
   header: {
-    add: '+ Dodaj',
+    add: 'Dodaj pojazd',
+    settings: 'Ustawienia',
     signOut: 'Wyloguj się',
+  },
+  settings: {
+    loading: 'Ładowanie ustawień...',
+    eyebrow: 'Twoje konto',
+    title: 'Ustawienia',
+    description:
+      'Zarządzaj domyślnymi ustawieniami synchronizowanymi z Twoim kontem na wszystkich urządzeniach.',
+    language: 'Język',
+    languageDescription: 'Wybierz język używany w całym Car Diary.',
+    distanceUnit: 'Domyślna jednostka odległości',
+    distanceUnitDescription:
+      'Używana dla nowych pojazdów. Istniejące pojazdy zachowują własną jednostkę licznika.',
+    account: 'Konto',
+    saving: 'Zapisywanie ustawień...',
+    save: 'Zapisz zmiany',
+    saved: 'Ustawienia zapisane.',
+    saveError: 'Nie udało się zapisać ustawień. Spróbuj ponownie.',
   },
   auth: {
     eyebrow: 'Pełna historia Twojego pojazdu',

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Search, SearchX, X } from 'lucide-react'
+import { Pencil, Search, SearchX, Trash2, X } from 'lucide-react'
 import { SelectField } from './SelectField'
+import { IconButton } from './IconButton'
 import type {
   DistanceUnit,
   ServiceCategory,
@@ -9,7 +10,6 @@ import type {
 } from '../types'
 import {
   cardStyles,
-  dangerActionStyles,
   eyebrowStyles,
   joinClassNames,
   sectionHeadingStyles,
@@ -263,20 +263,19 @@ export const ServiceHistory = ({
                           {currencyFormatter.format(record.costInCents / 100)}
                         </strong>
                         <div className="flex gap-1.5">
-                          <button
-                            className={smallActionStyles}
-                            type="button"
+                          <IconButton
+                            label={t('common.edit')}
                             onClick={() => onEdit(record.id)}
                           >
-                            {t('common.edit')}
-                          </button>
-                          <button
-                            className={dangerActionStyles}
-                            type="button"
+                            <Pencil aria-hidden="true" className="size-4" />
+                          </IconButton>
+                          <IconButton
+                            label={t('common.delete')}
+                            variant="danger"
                             onClick={() => onDelete(record.id)}
                           >
-                            {t('common.delete')}
-                          </button>
+                            <Trash2 aria-hidden="true" className="size-4" />
+                          </IconButton>
                         </div>
                       </div>
                     </div>

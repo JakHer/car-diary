@@ -61,4 +61,28 @@ describe('MaintenanceReminders', () => {
     )
     expect(onCreate).not.toHaveBeenCalled()
   })
+
+  it('runs reminder actions from accessible icon buttons', async () => {
+    const user = userEvent.setup()
+    const onDelete = vi.fn()
+    const onToggleCompleted = vi.fn()
+
+    render(
+      <MaintenanceReminders
+        currentMileage={86_200}
+        distanceUnit="km"
+        isSaving={false}
+        reminders={[reminder]}
+        onCreate={vi.fn()}
+        onDelete={onDelete}
+        onToggleCompleted={onToggleCompleted}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Complete' }))
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+    expect(onToggleCompleted).toHaveBeenCalledWith('reminder-1', true)
+    expect(onDelete).toHaveBeenCalledWith('reminder-1')
+  })
 })
