@@ -16,6 +16,9 @@ const hookMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/hooks/use-car-diary', () => hookMocks)
+vi.mock('@/lib/account-preferences', () => ({
+  saveActiveVehicleId: vi.fn().mockResolvedValue(undefined),
+}))
 
 vi.mock('@/components/layout/app-header', () => ({
   AppHeader: ({
@@ -42,6 +45,12 @@ vi.mock('@/features/vehicles/vehicle-dashboard', () => ({
     <h1>
       {vehicle.make} {vehicle.model}
     </h1>
+  ),
+}))
+
+vi.mock('@/pages/home/home-dashboard', () => ({
+  HomeDashboard: ({ vehicle }: { vehicle: Vehicle }) => (
+    <h1>Home for {vehicle.make} {vehicle.model}</h1>
   ),
 }))
 
@@ -178,19 +187,38 @@ describe('CarDiaryApp vehicle routing', () => {
     expect(screen.getByTestId('header-vehicle')).toHaveTextContent('vehicle-2')
   })
 
-  it.each(['/', '/vehicles/missing'])(
-    'redirects %s to the first available vehicle',
-    async (initialPath) => {
-      renderGarage(initialPath)
+  it('renders the home dashboard at the garage root', () => {
+    renderGarage('/')
 
-      await waitFor(() =>
-        expect(screen.getByTestId('current-route')).toHaveTextContent(
-          '/vehicles/vehicle-1',
-        ),
-      )
-      expect(screen.getByRole('heading', { name: 'Audi RS3' })).toBeVisible()
-    },
-  )
+    expect(screen.getByTestId('current-route')).toHaveTextContent('/')
+    expect(
+      screen.getByRole('heading', { name: 'Home for Audi RS3' }),
+    ).toBeVisible()
+  })
+
+  it('switches the active vehicle on the home dashboard without leaving it', async () => {
+    const user = userEvent.setup()
+    renderGarage('/')
+
+    await user.click(screen.getByRole('button', { name: 'Select Volvo' }))
+
+    expect(screen.getByTestId('current-route')).toHaveTextContent('/')
+    expect(
+      screen.getByRole('heading', { name: 'Home for Volvo V60' }),
+    ).toBeVisible()
+    expect(screen.getByTestId('header-vehicle')).toHaveTextContent('vehicle-2')
+  })
+
+  it('redirects an invalid vehicle route to the first vehicle', async () => {
+    renderGarage('/vehicles/missing')
+
+    await waitFor(() =>
+      expect(screen.getByTestId('current-route')).toHaveTextContent(
+        '/vehicles/vehicle-1',
+      ),
+    )
+    expect(screen.getByRole('heading', { name: 'Audi RS3' })).toBeVisible()
+  })
 
   it('updates the URL on selection and supports browser back', async () => {
     const user = userEvent.setup()

@@ -6,7 +6,6 @@ import { LanguageSwitcher } from '@/features/preferences/language-switcher'
 import { VehicleSelect } from '@/features/vehicles/vehicle-select'
 import { IconButton } from '@/components/actions/icon-button'
 import { Tooltip } from '@/components/overlays/tooltip'
-import { getVehiclePath } from '@/app/routing/vehicle-routes'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
 
@@ -33,7 +32,7 @@ export const AppHeader = ({
   <header className="flex min-h-20 items-center justify-between gap-6 border-b border-border max-[700px]:min-h-0 max-[700px]:flex-wrap max-[700px]:gap-3 max-[700px]:py-3">
     <Link
       className="inline-flex items-center gap-3 font-[750] text-strong no-underline"
-      to={activeVehicle ? getVehiclePath(activeVehicle.id) : '/'}
+      to="/"
       aria-label={t('common.homeAria')}
     >
       <span className="grid size-10 place-items-center rounded-xl bg-accent text-xs tracking-[0.06em] text-white" aria-hidden="true">

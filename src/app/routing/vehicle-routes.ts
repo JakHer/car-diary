@@ -9,6 +9,7 @@ export const getVehicleRouteRedirect = (
   vehicles: VehicleRouteEntry[],
   vehicleId?: string,
 ): string | null => {
+  if (vehicleId === undefined) return null
   if (vehicles.length === 0) return vehicleId ? '/' : null
 
   const hasRequestedVehicle = vehicles.some(
