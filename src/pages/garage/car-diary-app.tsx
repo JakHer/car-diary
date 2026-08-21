@@ -24,6 +24,7 @@ import { saveActiveVehicleId } from '@/lib/account-preferences'
 import {
   getVehiclePath,
   getVehicleRouteRedirect,
+  getVehicleSectionPath,
   isVehicleSection,
 } from '@/app/routing/vehicle-routes'
 import type {
@@ -586,6 +587,9 @@ const CarDiaryApp = ({
           onCreateReminder={createReminder}
           onCreateServiceRecord={saveServiceRecord}
           onOpenVehicle={() => navigate(getVehiclePath(activeVehicle.id))}
+          onOpenVehicleSection={(section) =>
+            navigate(getVehicleSectionPath(activeVehicle.id, section))
+          }
           onUpdateMileage={updateMileage}
         />
       ) : (

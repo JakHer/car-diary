@@ -53,8 +53,11 @@ const reminder: MaintenanceReminder = {
   createdAt: '2026-08-20T10:00:00.000Z',
 }
 
-const renderDashboard = () =>
-  render(
+const renderDashboard = () => {
+  const onOpenVehicle = vi.fn()
+  const onOpenVehicleSection = vi.fn()
+
+  const view = render(
     <HomeDashboard
       fuelEntries={[fuelEntry]}
       isCreatingFuelEntry={false}
@@ -68,10 +71,14 @@ const renderDashboard = () =>
       onCreateFuelEntry={vi.fn().mockResolvedValue(undefined)}
       onCreateReminder={vi.fn().mockResolvedValue(undefined)}
       onCreateServiceRecord={vi.fn().mockResolvedValue(undefined)}
-      onOpenVehicle={vi.fn()}
+      onOpenVehicle={onOpenVehicle}
+      onOpenVehicleSection={onOpenVehicleSection}
       onUpdateMileage={vi.fn().mockResolvedValue(undefined)}
     />,
   )
+
+  return { ...view, onOpenVehicle, onOpenVehicleSection }
+}
 
 describe('HomeDashboard', () => {
   beforeEach(async () => {
@@ -102,5 +109,30 @@ describe('HomeDashboard', () => {
     expect(
       screen.getByRole('spinbutton', { name: 'Fuel (liters)' }),
     ).toBeVisible()
+  })
+
+  it('opens the diary and links dashboard rows to their sections', async () => {
+    const user = userEvent.setup()
+    const { onOpenVehicle, onOpenVehicleSection } = renderDashboard()
+
+    await user.click(
+      screen.getByRole('button', { name: /Open vehicle diary/ }),
+    )
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Open reminder “Replace brake fluid”',
+      }),
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'Open “Fill-up · 40 l”' }),
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'Open “Engine oil change”' }),
+    )
+
+    expect(onOpenVehicle).toHaveBeenCalledOnce()
+    expect(onOpenVehicleSection).toHaveBeenNthCalledWith(1, 'reminders')
+    expect(onOpenVehicleSection).toHaveBeenNthCalledWith(2, 'fuel')
+    expect(onOpenVehicleSection).toHaveBeenNthCalledWith(3, 'service')
   })
 })

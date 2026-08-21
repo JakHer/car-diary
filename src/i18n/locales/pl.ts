@@ -59,7 +59,9 @@ export const pl = {
     description:
       'Wybierz szybką akcję albo sprawdź, co wymaga uwagi w aktywnym pojeździe.',
     activeVehicle: 'Aktywny pojazd',
-    openVehicle: 'Otwórz szczegóły pojazdu',
+    openVehicle: 'Otwórz dziennik pojazdu',
+    openReminder: 'Otwórz przypomnienie „{{title}}”',
+    openActivity: 'Otwórz „{{title}}”',
     quickActions: 'Szybkie akcje',
     addService: 'Dodaj serwis',
     fuelDescription: 'Zapisz paragon i zaktualizuj przebieg.',
