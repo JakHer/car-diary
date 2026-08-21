@@ -5,6 +5,7 @@ import { isDistanceUnit } from './distance-units'
 import { getSupabaseClient } from './supabase'
 
 interface AccountPreferencesUpdate {
+  active_vehicle_id?: string | null
   preferred_distance_unit?: DistanceUnit
   preferred_language?: AppLanguage
 }
@@ -22,6 +23,11 @@ export const getAccountDistanceUnit = (user: User): DistanceUnit | null => {
   return isDistanceUnit(unit) ? unit : null
 }
 
+export const getAccountActiveVehicleId = (user: User): string | null => {
+  const vehicleId = user.user_metadata.active_vehicle_id
+  return typeof vehicleId === 'string' && vehicleId ? vehicleId : null
+}
+
 export const saveAccountPreferences = async (
   preferences: AccountPreferencesUpdate,
 ) => {
@@ -34,3 +40,6 @@ export const saveAccountPreferences = async (
 
 export const saveAccountLanguage = (language: AppLanguage) =>
   saveAccountPreferences({ preferred_language: language })
+
+export const saveActiveVehicleId = (vehicleId: string | null) =>
+  saveAccountPreferences({ active_vehicle_id: vehicleId })

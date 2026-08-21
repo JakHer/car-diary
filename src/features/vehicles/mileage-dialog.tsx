@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Gauge, X } from 'lucide-react'
@@ -28,6 +28,7 @@ interface MileageDialogProps {
   currentMileage: number
   distanceUnit: DistanceUnit
   isSaving: boolean
+  triggerContent?: ReactNode
   vehicleName: string
   onSave: (currentMileage: number) => Promise<void>
 }
@@ -36,6 +37,7 @@ export const MileageDialog = ({
   currentMileage,
   distanceUnit,
   isSaving,
+  triggerContent,
   vehicleName,
   onSave,
 }: MileageDialogProps) => {
@@ -79,12 +81,14 @@ export const MileageDialog = ({
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="mt-3 h-auto px-2 py-[5px] text-[11px]"
-          variant="secondary"
-        >
-          {t('mileage.trigger')}
-        </Button>
+        {triggerContent ?? (
+          <Button
+            className="mt-3 h-auto px-2 py-[5px] text-[11px]"
+            variant="secondary"
+          >
+            {t('mileage.trigger')}
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent

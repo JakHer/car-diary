@@ -53,7 +53,7 @@ describe('AppHeader', () => {
     ).toHaveAttribute('href', '/settings')
     expect(
       screen.getByRole('link', { name: 'Car Diary home page' }),
-    ).toHaveAttribute('href', '/vehicles/vehicle-1')
+    ).toHaveAttribute('href', '/')
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       'driver@example.com',
     )

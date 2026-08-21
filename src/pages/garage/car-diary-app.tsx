@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/app-header'
@@ -12,6 +12,7 @@ import {
 } from '@/features/vehicles/vehicle-dialog'
 import { VehicleDashboard } from '@/features/vehicles/vehicle-dashboard'
 import { VehicleForm } from '@/features/vehicles/vehicle-form'
+import { HomeDashboard } from '@/pages/home/home-dashboard'
 import {
   removeAttachmentFiles,
   validateAttachment,
@@ -19,6 +20,7 @@ import {
 import { useCarDiary } from '@/hooks/use-car-diary'
 import { useDeleteConfirmation } from '@/hooks/use-delete-confirmation'
 import { appToast } from '@/lib/app-toast'
+import { saveActiveVehicleId } from '@/lib/account-preferences'
 import {
   getVehiclePath,
   getVehicleRouteRedirect,
@@ -48,20 +50,24 @@ const getErrorMessage = (error: unknown, fallback: string): string =>
 
 interface CarDiaryAppProps {
   defaultDistanceUnit: DistanceUnit
+  initialActiveVehicleId?: string | null
   userId: string
   userEmail: string
+  userName?: string
   onSignOut: () => Promise<void>
 }
 
 const CarDiaryApp = ({
   defaultDistanceUnit,
+  initialActiveVehicleId,
   userId,
   userEmail,
+  userName,
   onSignOut,
 }: CarDiaryAppProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { vehicleId } = useParams<{ vehicleId: string }>()
+  const { vehicleId: routeVehicleId } = useParams<{ vehicleId: string }>()
   const {
     stateQuery,
     createVehicleMutation,
@@ -94,12 +100,23 @@ const CarDiaryApp = ({
   } = useDeleteConfirmation()
   const state = stateQuery.data ?? emptyState
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
+  const [selectedVehicleId, setSelectedVehicleId] = useState(
+    initialActiveVehicleId,
+  )
   const [vehicleFormMode, setVehicleFormMode] =
     useState<VehicleFormMode | null>(null)
 
-  const activeVehicle = state.vehicles.find(
-    (vehicle) => vehicle.id === vehicleId,
-  )
+  useEffect(() => {
+    setSelectedVehicleId(initialActiveVehicleId)
+  }, [initialActiveVehicleId])
+
+  const activeVehicle =
+    state.vehicles.find((vehicle) => vehicle.id === routeVehicleId) ??
+    (routeVehicleId === undefined
+      ? state.vehicles.find(
+          (vehicle) => vehicle.id === selectedVehicleId,
+        ) ?? state.vehicles[0]
+      : undefined)
   const activeVehicleId = activeVehicle?.id ?? null
 
   const activeRecords = useMemo(
@@ -160,6 +177,10 @@ const CarDiaryApp = ({
     void createVehicleMutation
       .mutateAsync(input)
       .then((createdVehicleId) => {
+        setSelectedVehicleId(createdVehicleId)
+        void saveActiveVehicleId(createdVehicleId).catch(() =>
+          appToast.error(t('header.activeVehicleSaveError')),
+        )
         navigate(getVehiclePath(createdVehicleId))
         setEditingRecordId(null)
         setVehicleFormMode(null)
@@ -192,8 +213,14 @@ const CarDiaryApp = ({
     appToast.success(t('notifications.mileageUpdated'))
   }
 
-  const selectVehicle = (vehicleId: string) => {
-    navigate(getVehiclePath(vehicleId))
+  const selectVehicle = (nextVehicleId: string) => {
+    setSelectedVehicleId(nextVehicleId)
+    void saveActiveVehicleId(nextVehicleId).catch(() =>
+      appToast.error(t('header.activeVehicleSaveError')),
+    )
+    if (routeVehicleId !== undefined) {
+      navigate(getVehiclePath(nextVehicleId))
+    }
     setEditingRecordId(null)
   }
 
@@ -229,6 +256,11 @@ const CarDiaryApp = ({
           ),
         )
         await deleteVehicleMutation.mutateAsync(vehicleToDelete.id)
+        const nextActiveVehicleId = fallbackVehicle?.id ?? null
+        setSelectedVehicleId(nextActiveVehicleId)
+        void saveActiveVehicleId(nextActiveVehicleId).catch(() =>
+          appToast.error(t('header.activeVehicleSaveError')),
+        )
         navigate(fallbackVehicle ? getVehiclePath(fallbackVehicle.id) : '/', {
           replace: true,
         })
@@ -458,7 +490,7 @@ const CarDiaryApp = ({
 
   const vehicleRouteRedirect = getVehicleRouteRedirect(
     state.vehicles,
-    vehicleId,
+    routeVehicleId,
   )
 
   if (vehicleRouteRedirect) {
@@ -512,6 +544,23 @@ const CarDiaryApp = ({
             onSave={addVehicle}
           />
         </main>
+      ) : routeVehicleId === undefined ? (
+        <HomeDashboard
+          fuelEntries={activeFuelEntries}
+          isCreatingFuelEntry={createFuelEntryMutation.isPending}
+          isCreatingReminder={createMaintenanceReminderMutation.isPending}
+          isSavingRecord={createServiceRecordMutation.isPending}
+          isUpdatingMileage={updateVehicleMileageMutation.isPending}
+          records={activeRecords}
+          reminders={activeReminders}
+          userName={userName}
+          vehicle={activeVehicle}
+          onCreateFuelEntry={createFuel}
+          onCreateReminder={createReminder}
+          onCreateServiceRecord={saveServiceRecord}
+          onOpenVehicle={() => navigate(getVehiclePath(activeVehicle.id))}
+          onUpdateMileage={updateMileage}
+        />
       ) : (
         <VehicleDashboard
           attachments={activeAttachments}

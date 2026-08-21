@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
 import { MaintenanceReminders } from '@/features/reminders/maintenance-reminders'
 import { FuelLog } from '@/features/fuel/fuel-log'
 import { FormDialog } from '@/components/overlays/form-dialog'
@@ -12,6 +13,8 @@ import { MileageDialog } from './mileage-dialog'
 import { ServiceForm } from '@/features/service-records/service-form'
 import { ServiceHistory } from '@/features/service-records/service-history'
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button-variants'
+import { cn } from '@/lib/utils'
 import type {
   MaintenanceReminder,
   MaintenanceReminderInput,
@@ -150,6 +153,16 @@ export const VehicleDashboard = ({
 
   return (
     <PageLayout>
+      <Link
+        className={cn(
+          buttonVariants({ variant: 'link', size: 'sm' }),
+          'mb-7 h-auto gap-2 p-0 text-muted no-underline hover:text-accent',
+        )}
+        to="/"
+      >
+        <ArrowLeft aria-hidden="true" className="size-4" />
+        {t('dashboard.backHome')}
+      </Link>
       <PageHeader
         aside={
           <div className="grid shrink-0 justify-items-end max-[700px]:justify-items-start">

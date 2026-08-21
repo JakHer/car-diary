@@ -13,8 +13,8 @@ describe('vehicle routes', () => {
     )
   })
 
-  it('redirects the garage root to the first vehicle', () => {
-    expect(getVehicleRouteRedirect(vehicles)).toBe('/vehicles/vehicle-1')
+  it('keeps the garage root as the home dashboard', () => {
+    expect(getVehicleRouteRedirect(vehicles)).toBeNull()
   })
 
   it('keeps a valid vehicle route', () => {

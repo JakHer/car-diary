@@ -9,6 +9,7 @@ import { ProtectedRoute } from './routing/protected-route'
 import { PublicOnlyRoute } from './routing/public-only-route'
 import { useAuth } from '@/hooks/use-auth'
 import { useAccountPreferences } from '@/hooks/use-account-preferences'
+import { getAccountActiveVehicleId } from '@/lib/account-preferences'
 import { queryClient } from '@/lib/query-client'
 import { appToast } from '@/lib/app-toast'
 import {
@@ -27,6 +28,11 @@ const AuthScreen = lazy(() =>
     default: Component,
   })),
 )
+
+const getUserName = (metadata: Record<string, unknown>): string | undefined => {
+  const name = metadata.given_name ?? metadata.full_name ?? metadata.name
+  return typeof name === 'string' && name.trim() ? name.trim() : undefined
+}
 
 const App = () => {
   const { t } = useTranslation()
@@ -76,10 +82,14 @@ const App = () => {
               session ? (
                 <CarDiaryApp
                   defaultDistanceUnit={defaultDistanceUnit}
+                  initialActiveVehicleId={getAccountActiveVehicleId(
+                    session.user,
+                  )}
                   userId={session.user.id}
                   userEmail={
                     session.user.email ?? t('app.signedInAccount')
                   }
+                  userName={getUserName(session.user.user_metadata)}
                   onSignOut={signOut}
                 />
               ) : null
@@ -91,10 +101,14 @@ const App = () => {
               session ? (
                 <CarDiaryApp
                   defaultDistanceUnit={defaultDistanceUnit}
+                  initialActiveVehicleId={getAccountActiveVehicleId(
+                    session.user,
+                  )}
                   userId={session.user.id}
                   userEmail={
                     session.user.email ?? t('app.signedInAccount')
                   }
+                  userName={getUserName(session.user.user_metadata)}
                   onSignOut={signOut}
                 />
               ) : null
