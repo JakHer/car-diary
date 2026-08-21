@@ -53,7 +53,9 @@ export const en = {
     description:
       'Choose a quick action or check what needs attention for your active vehicle.',
     activeVehicle: 'Active vehicle',
-    openVehicle: 'Open vehicle details',
+    openVehicle: 'Open vehicle diary',
+    openReminder: 'Open reminder “{{title}}”',
+    openActivity: 'Open “{{title}}”',
     quickActions: 'Quick actions',
     addService: 'Add service',
     fuelDescription: 'Save a receipt and update the odometer.',

@@ -17,6 +17,7 @@ import type {
   ServiceRecordInput,
   Vehicle,
 } from '@/types'
+import type { VehicleSection } from '@/app/routing/vehicle-routes'
 import { getIntlLocale } from '@/i18n'
 import { formatDistance } from '@/lib/distance-units'
 import { getMaintenanceReminderStatus } from '@/lib/maintenance-reminders'
@@ -47,6 +48,9 @@ interface HomeDashboardProps {
   onCreateReminder: (input: MaintenanceReminderInput) => Promise<void>
   onCreateServiceRecord: (input: ServiceRecordInput) => Promise<void>
   onOpenVehicle: () => void
+  onOpenVehicleSection: (
+    section: Exclude<VehicleSection, 'overview'>,
+  ) => void
   onUpdateMileage: (currentMileage: number) => Promise<void>
 }
 
@@ -98,6 +102,7 @@ export const HomeDashboard = ({
   onCreateReminder,
   onCreateServiceRecord,
   onOpenVehicle,
+  onOpenVehicleSection,
   onUpdateMileage,
 }: HomeDashboardProps) => {
   const { i18n, t } = useTranslation()
@@ -168,7 +173,12 @@ export const HomeDashboard = ({
     <PageLayout>
       <PageHeader
         aside={
-          <div className="min-w-[270px] rounded-large border border-border bg-surface p-5 shadow-card max-[700px]:w-full">
+          <Button
+            className="group h-auto min-w-[270px] flex-col items-stretch gap-0 whitespace-normal rounded-large border-border bg-surface p-5 text-left shadow-card hover:border-accent hover:bg-accent-soft/25 max-[700px]:w-full"
+            type="button"
+            variant="outline"
+            onClick={onOpenVehicle}
+          >
             <span className="text-[11px] font-extrabold tracking-[0.07em] text-accent uppercase">
               {t('home.activeVehicle')}
             </span>
@@ -182,16 +192,14 @@ export const HomeDashboard = ({
                 locale,
               )}
             </span>
-            <Button
-              className="mt-4 h-auto p-0 text-xs"
-              type="button"
-              variant="link"
-              onClick={onOpenVehicle}
-            >
+            <span className="mt-4 flex items-center gap-2 text-xs font-bold text-accent">
               {t('home.openVehicle')}
-              <ArrowUpRight aria-hidden="true" className="size-3.5" />
-            </Button>
-          </div>
+              <ArrowUpRight
+                aria-hidden="true"
+                className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
+            </span>
+          </Button>
         }
         description={t('home.description')}
         eyebrow={t('home.eyebrow')}
@@ -283,24 +291,40 @@ export const HomeDashboard = ({
 
                 return (
                   <li
-                    className="flex items-center justify-between gap-4 border-b border-border py-4 last:border-b-0"
+                    className="border-b border-border last:border-b-0"
                     key={reminder.id}
                   >
-                    <div>
-                      <strong className="text-sm text-strong">
-                        {reminder.title}
-                      </strong>
-                      <span className="mt-1 block text-xs text-muted">
-                        {targets.join(' · ')}
+                    <Button
+                      aria-label={t('home.openReminder', {
+                        title: reminder.title,
+                      })}
+                      className="group grid h-auto w-full grid-cols-[minmax(0,1fr)_auto_16px] gap-3 whitespace-normal rounded-lg px-3 py-4 text-left hover:translate-y-0"
+                      type="button"
+                      variant="ghost"
+                      onClick={() => onOpenVehicleSection('reminders')}
+                    >
+                      <span>
+                        <strong className="block text-sm text-strong">
+                          {reminder.title}
+                        </strong>
+                        <span className="mt-1 block text-xs font-medium text-muted">
+                          {targets.join(' · ')}
+                        </span>
                       </span>
-                    </div>
-                    <Badge variant={status === 'overdue' ? 'danger' : 'success'}>
-                      {t(
-                        status === 'overdue'
-                          ? 'reminders.dueNow'
-                          : 'reminders.upcoming',
-                      )}
-                    </Badge>
+                      <Badge
+                        variant={status === 'overdue' ? 'danger' : 'success'}
+                      >
+                        {t(
+                          status === 'overdue'
+                            ? 'reminders.dueNow'
+                            : 'reminders.upcoming',
+                        )}
+                      </Badge>
+                      <ArrowUpRight
+                        aria-hidden="true"
+                        className="size-4 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+                      />
+                    </Button>
                   </li>
                 )
               })}
@@ -326,22 +350,36 @@ export const HomeDashboard = ({
 
                 return (
                   <li
-                    className="flex items-center gap-3 border-b border-border py-4 last:border-b-0"
+                    className="border-b border-border last:border-b-0"
                     key={activity.id}
                   >
-                    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-muted text-muted">
-                      <Icon aria-hidden="true" className="size-4" />
-                    </span>
-                    <div>
-                      <strong className="text-sm text-strong">
-                        {activity.title}
-                      </strong>
-                      <span className="mt-1 block text-xs text-muted">
-                        {dateFormatter.format(
-                          new Date(`${activity.date}T12:00:00`),
-                        )}
+                    <Button
+                      aria-label={t('home.openActivity', {
+                        title: activity.title,
+                      })}
+                      className="group grid h-auto w-full grid-cols-[36px_minmax(0,1fr)_16px] gap-3 whitespace-normal rounded-lg px-3 py-4 text-left hover:translate-y-0"
+                      type="button"
+                      variant="ghost"
+                      onClick={() => onOpenVehicleSection(activity.type)}
+                    >
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-muted text-muted transition-colors group-hover:bg-accent-soft group-hover:text-accent">
+                        <Icon aria-hidden="true" className="size-4" />
                       </span>
-                    </div>
+                      <span>
+                        <strong className="block text-sm text-strong">
+                          {activity.title}
+                        </strong>
+                        <span className="mt-1 block text-xs font-medium text-muted">
+                          {dateFormatter.format(
+                            new Date(`${activity.date}T12:00:00`),
+                          )}
+                        </span>
+                      </span>
+                      <ArrowUpRight
+                        aria-hidden="true"
+                        className="size-4 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+                      />
+                    </Button>
                   </li>
                 )
               })}
