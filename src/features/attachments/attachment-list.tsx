@@ -1,29 +1,29 @@
 import { useRef, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FileText, Image, Paperclip, Trash2 } from 'lucide-react'
-import type { ServiceAttachment } from '@/types'
+import type { FileAttachment } from '@/types'
 import { IconButton } from '@/components/actions/icon-button'
 import { Loader } from '@/components/feedback/loader'
 import { Button } from '@/components/ui/button'
-import { serviceAttachmentMimeTypes } from './service-attachment-repository'
+import { attachmentMimeTypes } from './attachment-storage'
 
-interface ServiceAttachmentsProps {
-  attachments: ServiceAttachment[]
+interface AttachmentListProps {
+  attachments: FileAttachment[]
   deletingAttachmentId: string | null
+  entityId: string
   isUploading: boolean
-  recordId: string
   onDelete: (attachmentId: string) => void
-  onUpload: (recordId: string, file: File) => void
+  onUpload: (entityId: string, file: File) => void
 }
 
-export const ServiceAttachments = ({
+export const AttachmentList = ({
   attachments,
   deletingAttachmentId,
+  entityId,
   isUploading,
-  recordId,
   onDelete,
   onUpload,
-}: ServiceAttachmentsProps) => {
+}: AttachmentListProps) => {
   const { i18n, t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const sizeFormatter = new Intl.NumberFormat(i18n.resolvedLanguage, {
@@ -32,7 +32,7 @@ export const ServiceAttachments = ({
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ''
-    if (file) onUpload(recordId, file)
+    if (file) onUpload(entityId, file)
   }
 
   return (
@@ -43,12 +43,12 @@ export const ServiceAttachments = ({
           : FileText
         const size =
           attachment.sizeBytes >= 1024 * 1024
-            ? t('service.attachmentSizeMb', {
+            ? t('attachments.sizeMb', {
                 size: sizeFormatter.format(
                   attachment.sizeBytes / (1024 * 1024),
                 ),
               })
-            : t('service.attachmentSizeKb', {
+            : t('attachments.sizeKb', {
                 size: sizeFormatter.format(attachment.sizeBytes / 1024),
               })
 
@@ -60,7 +60,7 @@ export const ServiceAttachments = ({
                 href={attachment.signedUrl}
                 rel="noreferrer"
                 target="_blank"
-                aria-label={t('service.openAttachment', {
+                aria-label={t('attachments.open', {
                   name: attachment.fileName,
                 })}
               >
@@ -72,7 +72,7 @@ export const ServiceAttachments = ({
             <IconButton
               className="size-7 rounded-md"
               disabled={deletingAttachmentId === attachment.id}
-              label={t('service.deleteAttachment', {
+              label={t('attachments.delete', {
                 name: attachment.fileName,
               })}
               variant="danger"
@@ -88,8 +88,8 @@ export const ServiceAttachments = ({
         ref={inputRef}
         className="sr-only"
         type="file"
-        accept={serviceAttachmentMimeTypes.join(',')}
-        aria-label={t('service.selectAttachment')}
+        accept={attachmentMimeTypes.join(',')}
+        aria-label={t('attachments.select')}
         onChange={handleFileChange}
       />
       <Button
@@ -100,11 +100,11 @@ export const ServiceAttachments = ({
         onClick={() => inputRef.current?.click()}
       >
         {isUploading ? (
-          <Loader label={t('service.uploadingAttachment')} size="small" />
+          <Loader label={t('attachments.uploading')} size="small" />
         ) : (
           <>
             <Paperclip aria-hidden="true" className="size-3.5" />
-            {t('service.addAttachment')}
+            {t('attachments.add')}
           </>
         )}
       </Button>

@@ -7,6 +7,7 @@ import { useCarDiary } from './use-car-diary'
 
 const repositoryMocks = vi.hoisted(() => ({
   createFuelEntry: vi.fn(),
+  deleteFuelAttachment: vi.fn(),
   createMaintenanceReminder: vi.fn(),
   createServiceRecord: vi.fn(),
   createVehicle: vi.fn(),
@@ -21,6 +22,7 @@ const repositoryMocks = vi.hoisted(() => ({
   updateVehicle: vi.fn(),
   updateVehicleMileage: vi.fn(),
   uploadServiceAttachment: vi.fn(),
+  uploadFuelAttachment: vi.fn(),
 }))
 
 vi.mock('@/lib/car-diary-repository', () => repositoryMocks)
@@ -34,15 +36,17 @@ vi.mock(
   () => repositoryMocks,
 )
 vi.mock('@/features/fuel/fuel-repository', () => repositoryMocks)
+vi.mock('@/features/fuel/fuel-attachment-repository', () => repositoryMocks)
 vi.mock('@/features/reminders/reminder-repository', () => repositoryMocks)
 
 const carDiaryState: CarDiaryState = {
-  version: 4,
+  version: 5,
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
   serviceAttachments: [],
   fuelEntries: [],
+  fuelAttachments: [],
   maintenanceReminders: [],
 }
 
@@ -171,6 +175,34 @@ describe('useCarDiary', () => {
     expect(repositoryMocks.uploadServiceAttachment).toHaveBeenCalledWith(
       'user-1',
       'record-1',
+      file,
+    )
+    await waitFor(() =>
+      expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),
+    )
+  })
+
+  it('uploads a fuel attachment and refreshes the state', async () => {
+    repositoryMocks.uploadFuelAttachment.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useCarDiary('user-1'), {
+      wrapper: createWrapper(),
+    })
+    const file = new File(['receipt'], 'fuel-receipt.pdf', {
+      type: 'application/pdf',
+    })
+
+    await waitFor(() => expect(result.current.stateQuery.isSuccess).toBe(true))
+
+    await act(async () => {
+      await result.current.uploadFuelAttachmentMutation.mutateAsync({
+        fuelEntryId: 'fuel-1',
+        file,
+      })
+    })
+
+    expect(repositoryMocks.uploadFuelAttachment).toHaveBeenCalledWith(
+      'user-1',
+      'fuel-1',
       file,
     )
     await waitFor(() =>

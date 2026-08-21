@@ -1,13 +1,12 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { ServiceAttachment } from '@/types'
-import { ServiceAttachments } from './service-attachments'
+import type { FileAttachment } from '@/types'
+import { AttachmentList } from './attachment-list'
 
-const attachment: ServiceAttachment = {
+const attachment: FileAttachment = {
   id: 'attachment-1',
-  serviceRecordId: 'record-1',
-  storagePath: 'user-1/record-1/receipt.pdf',
+  storagePath: 'user-1/service-records/record-1/receipt.pdf',
   fileName: 'receipt.pdf',
   mimeType: 'application/pdf',
   sizeBytes: 2048,
@@ -15,17 +14,17 @@ const attachment: ServiceAttachment = {
   createdAt: '2026-08-21T10:00:00.000Z',
 }
 
-describe('ServiceAttachments', () => {
+describe('AttachmentList', () => {
   it('uploads, opens and deletes attachments with accessible controls', async () => {
     const user = userEvent.setup()
     const onDelete = vi.fn()
     const onUpload = vi.fn()
     render(
-      <ServiceAttachments
+      <AttachmentList
         attachments={[attachment]}
         deletingAttachmentId={null}
+        entityId="record-1"
         isUploading={false}
-        recordId="record-1"
         onDelete={onDelete}
         onUpload={onUpload}
       />,
@@ -41,10 +40,7 @@ describe('ServiceAttachments', () => {
     const file = new File(['receipt'], 'new-receipt.pdf', {
       type: 'application/pdf',
     })
-    await user.upload(
-      screen.getByLabelText('Select a service attachment'),
-      file,
-    )
+    await user.upload(screen.getByLabelText('Select an attachment'), file)
     expect(onUpload).toHaveBeenCalledWith('record-1', file)
   })
 })

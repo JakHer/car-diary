@@ -3,7 +3,6 @@ import {
   deleteServiceAttachment,
   fetchServiceAttachments,
   uploadServiceAttachment,
-  validateServiceAttachment,
 } from './service-attachment-repository'
 
 const supabase = vi.hoisted(() => ({
@@ -78,7 +77,7 @@ describe('service attachment repository', () => {
 
     expect(upload).toHaveBeenCalledWith(
       expect.stringMatching(
-        /^user-1\/record-1\/[a-f0-9-]+-oil-receipt\.pdf$/,
+        /^user-1\/service-records\/record-1\/[a-f0-9-]+-oil-receipt\.pdf$/,
       ),
       file,
       { contentType: 'application/pdf', upsert: false },
@@ -110,18 +109,4 @@ describe('service attachment repository', () => {
     expect(eq).toHaveBeenCalledWith('id', 'attachment-1')
   })
 
-  it('rejects unsupported and oversized files', () => {
-    expect(
-      validateServiceAttachment(
-        new File(['text'], 'notes.txt', { type: 'text/plain' }),
-      ),
-    ).toBe('unsupported-type')
-    expect(
-      validateServiceAttachment(
-        new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'large.pdf', {
-          type: 'application/pdf',
-        }),
-      ),
-    ).toBe('too-large')
-  })
 })

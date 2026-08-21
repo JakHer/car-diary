@@ -16,6 +16,7 @@ import type {
   MaintenanceReminder,
   MaintenanceReminderInput,
   FuelEntry,
+  FuelAttachment,
   FuelEntryInput,
   ServiceRecord,
   ServiceAttachment,
@@ -26,6 +27,8 @@ import { getIntlLocale } from '@/i18n'
 
 interface VehicleDashboardProps {
   attachments: ServiceAttachment[]
+  fuelAttachments: FuelAttachment[]
+  deletingFuelAttachmentId: string | null
   deletingAttachmentId: string | null
   editingRecordId: string | null
   isCreatingReminder: boolean
@@ -33,6 +36,7 @@ interface VehicleDashboardProps {
   isSavingRecord: boolean
   isUpdatingMileage: boolean
   uploadingRecordId: string | null
+  uploadingFuelEntryId: string | null
   reminders: MaintenanceReminder[]
   fuelEntries: FuelEntry[]
   records: ServiceRecord[]
@@ -41,6 +45,7 @@ interface VehicleDashboardProps {
   onCreateReminder: (input: MaintenanceReminderInput) => Promise<void>
   onCreateFuelEntry: (input: FuelEntryInput) => Promise<void>
   onDeleteFuelEntry: (fuelEntryId: string) => void
+  onDeleteFuelAttachment: (attachmentId: string) => void
   onDeleteRecord: (recordId: string) => void
   onDeleteAttachment: (attachmentId: string) => void
   onDeleteReminder: (reminderId: string) => void
@@ -51,10 +56,13 @@ interface VehicleDashboardProps {
   onToggleReminder: (reminderId: string, completed: boolean) => void
   onUpdateMileage: (currentMileage: number) => Promise<void>
   onUploadAttachment: (recordId: string, file: File) => void
+  onUploadFuelAttachment: (fuelEntryId: string, file: File) => void
 }
 
 export const VehicleDashboard = ({
   attachments,
+  fuelAttachments,
+  deletingFuelAttachmentId,
   deletingAttachmentId,
   editingRecordId,
   isCreatingReminder,
@@ -62,6 +70,7 @@ export const VehicleDashboard = ({
   isSavingRecord,
   isUpdatingMileage,
   uploadingRecordId,
+  uploadingFuelEntryId,
   reminders,
   fuelEntries,
   records,
@@ -70,6 +79,7 @@ export const VehicleDashboard = ({
   onCreateReminder,
   onCreateFuelEntry,
   onDeleteFuelEntry,
+  onDeleteFuelAttachment,
   onDeleteRecord,
   onDeleteAttachment,
   onDeleteReminder,
@@ -80,6 +90,7 @@ export const VehicleDashboard = ({
   onToggleReminder,
   onUpdateMileage,
   onUploadAttachment,
+  onUploadFuelAttachment,
 }: VehicleDashboardProps) => {
   const { i18n, t } = useTranslation()
   const [serviceFormOpen, setServiceFormOpen] = useState(
@@ -215,13 +226,18 @@ export const VehicleDashboard = ({
       </section>
 
       <FuelLog
+        attachments={fuelAttachments}
         key={vehicle.id}
         currentMileage={vehicle.currentMileage}
+        deletingAttachmentId={deletingFuelAttachmentId}
         distanceUnit={vehicle.distanceUnit}
         entries={fuelEntries}
         isSaving={isCreatingFuelEntry}
+        uploadingFuelEntryId={uploadingFuelEntryId}
         onCreate={onCreateFuelEntry}
         onDelete={onDeleteFuelEntry}
+        onDeleteAttachment={onDeleteFuelAttachment}
+        onUploadAttachment={onUploadFuelAttachment}
       />
 
       <MaintenanceReminders
