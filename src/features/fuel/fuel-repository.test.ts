@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FuelEntryInput } from '@/types'
-import { createFuelEntry, deleteFuelEntry } from './fuel-repository'
+import {
+  createFuelEntry,
+  deleteFuelEntry,
+  updateFuelEntry,
+} from './fuel-repository'
 
 const supabase = vi.hoisted(() => ({
   from: vi.fn(),
@@ -50,6 +54,25 @@ describe('fuel repository', () => {
 
     await expect(deleteFuelEntry('fuel-1')).resolves.toBeUndefined()
     expect(deleteQuery).toHaveBeenCalledWith()
+    expect(eq).toHaveBeenCalledWith('id', 'fuel-1')
+  })
+
+  it('updates a fuel entry by id', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null })
+    const update = vi.fn().mockReturnValue({ eq })
+    supabase.from.mockReturnValue({ update })
+
+    await expect(
+      updateFuelEntry('fuel-1', fuelEntryInput),
+    ).resolves.toBeUndefined()
+    expect(update).toHaveBeenCalledWith({
+      fueled_at: '2026-08-16',
+      mileage: 86_200,
+      volume_milliliters: 42_750,
+      total_cost_in_cents: 27_500,
+      station: 'Orlen',
+      full_tank: true,
+    })
     expect(eq).toHaveBeenCalledWith('id', 'fuel-1')
   })
 })

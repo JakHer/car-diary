@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { DistanceUnit, FuelEntryInput } from '@/types'
+import type { DistanceUnit, FuelEntry, FuelEntryInput } from '@/types'
 import {
   createFuelEntrySchema,
   type FuelEntryFormValues,
@@ -18,9 +18,10 @@ import { Input } from '@/components/ui/input'
 interface FuelEntryFormProps {
   currentMileage: number
   distanceUnit: DistanceUnit
+  entry?: FuelEntry
   isSaving: boolean
-  onCreate: (input: FuelEntryInput) => Promise<void>
-  onCreated: () => void
+  onSave: (input: FuelEntryInput) => Promise<void>
+  onSaved: () => void
 }
 
 const getLocalDate = (): string => {
@@ -32,9 +33,10 @@ const getLocalDate = (): string => {
 export const FuelEntryForm = ({
   currentMileage,
   distanceUnit,
+  entry,
   isSaving,
-  onCreate,
-  onCreated,
+  onSave,
+  onSaved,
 }: FuelEntryFormProps) => {
   const { i18n, t } = useTranslation()
   const schema = useMemo(() => createFuelEntrySchema(t), [t])
@@ -49,12 +51,12 @@ export const FuelEntryForm = ({
   } = useForm<FuelEntryFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      date: getLocalDate(),
-      mileage: currentMileage,
-      liters: undefined,
-      totalCost: undefined,
-      station: '',
-      fullTank: false,
+      date: entry?.date ?? getLocalDate(),
+      mileage: entry?.mileage ?? currentMileage,
+      liters: entry ? entry.volumeInMilliliters / 1_000 : undefined,
+      totalCost: entry ? entry.totalCostInCents / 100 : undefined,
+      station: entry?.station ?? '',
+      fullTank: entry?.fullTank ?? false,
     },
     mode: 'onBlur',
   })
@@ -66,7 +68,7 @@ export const FuelEntryForm = ({
     ...values
   }: FuelEntryFormValues) => {
     try {
-      await onCreate({
+      await onSave({
         ...values,
         volumeInMilliliters: Math.round(liters * 1_000),
         totalCostInCents: Math.round(totalCost * 100),
@@ -75,15 +77,17 @@ export const FuelEntryForm = ({
       return
     }
 
-    reset({
-      date: getLocalDate(),
-      mileage: Math.max(currentMileage, values.mileage),
-      station: '',
-      fullTank: false,
-    })
-    setValue('liters', Number.NaN)
-    setValue('totalCost', Number.NaN)
-    onCreated()
+    if (!entry) {
+      reset({
+        date: getLocalDate(),
+        mileage: Math.max(currentMileage, values.mileage),
+        station: '',
+        fullTank: false,
+      })
+      setValue('liters', Number.NaN)
+      setValue('totalCost', Number.NaN)
+    }
+    onSaved()
   }
 
   return (
@@ -171,9 +175,12 @@ export const FuelEntryForm = ({
       </label>
       <Button type="submit" disabled={isSaving}>
         {isSaving ? (
-          <Loader label={t('fuel.adding')} size="small" />
+          <Loader
+            label={t(entry ? 'fuel.saving' : 'fuel.adding')}
+            size="small"
+          />
         ) : (
-          t('fuel.add')
+          t(entry ? 'fuel.saveChanges' : 'fuel.add')
         )}
       </Button>
     </form>

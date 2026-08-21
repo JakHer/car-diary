@@ -242,8 +242,12 @@ export const pl = {
     stationPlaceholder: 'np. Orlen',
     fullTank: 'Tankowanie do pełna',
     adding: 'Dodawanie tankowania...',
+    saving: 'Zapisywanie zmian...',
     add: 'Dodaj tankowanie',
+    editTitle: 'Edytuj tankowanie',
+    saveChanges: 'Zapisz zmiany',
     addDescription: 'Wprowadź dane z ostatniego paragonu za paliwo.',
+    editDescription: 'Zaktualizuj dane zapisane dla tego tankowania.',
     close: 'Zamknij formularz tankowania',
     emptyTitle: 'Brak wpisów tankowania',
     emptyDescription:
@@ -310,6 +314,7 @@ export const pl = {
     attachmentCleanupFailed:
       'Nie udało się usunąć powiązanych plików. Spróbuj ponownie.',
     fuelCreated: 'Tankowanie zostało dodane.',
+    fuelUpdated: 'Tankowanie zostało zaktualizowane.',
     fuelDeleted: 'Tankowanie zostało usunięte.',
     reminderCreated: 'Przypomnienie zostało dodane.',
     reminderCompleted: 'Przypomnienie zostało ukończone.',

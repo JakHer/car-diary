@@ -49,6 +49,7 @@ describe('FuelLog', () => {
         onCreate={onCreate}
         onDelete={vi.fn()}
         onDeleteAttachment={vi.fn()}
+        onUpdate={vi.fn()}
         onUploadAttachment={vi.fn()}
       />,
     )
@@ -107,6 +108,7 @@ describe('FuelLog', () => {
         onCreate={vi.fn().mockResolvedValue(undefined)}
         onDelete={onDelete}
         onDeleteAttachment={vi.fn()}
+        onUpdate={vi.fn()}
         onUploadAttachment={vi.fn()}
       />,
     )
@@ -117,6 +119,60 @@ describe('FuelLog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Delete' }))
     expect(onDelete).toHaveBeenCalledWith('fuel-1')
+  })
+
+  it('edits a saved fill-up with its existing values', async () => {
+    const user = userEvent.setup()
+    const onUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(
+      <FuelLog
+        attachments={[]}
+        currentMileage={90_000}
+        deletingAttachmentId={null}
+        distanceUnit="km"
+        entries={[entry]}
+        isSaving={false}
+        uploadingFuelEntryId={null}
+        onCreate={vi.fn().mockResolvedValue(undefined)}
+        onDelete={vi.fn()}
+        onDeleteAttachment={vi.fn()}
+        onUpdate={onUpdate}
+        onUploadAttachment={vi.fn()}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }))
+    expect(screen.getByRole('heading', { name: 'Edit fill-up' })).toBeVisible()
+    expect(screen.getByRole('spinbutton', { name: 'Mileage (km)' })).toHaveValue(
+      86_500,
+    )
+    expect(screen.getByRole('spinbutton', { name: 'Fuel (liters)' })).toHaveValue(
+      42.75,
+    )
+    expect(screen.getByRole('textbox', { name: 'Station' })).toHaveValue(
+      'Orlen',
+    )
+
+    await user.clear(screen.getByRole('textbox', { name: 'Station' }))
+    await user.type(screen.getByRole('textbox', { name: 'Station' }), 'Shell')
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() => expect(onUpdate).toHaveBeenCalledOnce())
+    expect(onUpdate).toHaveBeenCalledWith(
+      'fuel-1',
+      expect.objectContaining({
+        date: '2026-08-16',
+        mileage: 86_500,
+        volumeInMilliliters: 42_750,
+        totalCostInCents: 27_500,
+        station: 'Shell',
+        fullTank: true,
+      }),
+    )
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
   })
 
   it('shows average consumption from complete full-tank cycles', () => {
@@ -148,6 +204,7 @@ describe('FuelLog', () => {
         onCreate={vi.fn().mockResolvedValue(undefined)}
         onDelete={vi.fn()}
         onDeleteAttachment={vi.fn()}
+        onUpdate={vi.fn()}
         onUploadAttachment={vi.fn()}
       />,
     )
@@ -172,6 +229,7 @@ describe('FuelLog', () => {
         onCreate={vi.fn().mockResolvedValue(undefined)}
         onDelete={vi.fn()}
         onDeleteAttachment={vi.fn()}
+        onUpdate={vi.fn()}
         onUploadAttachment={onUploadAttachment}
       />,
     )

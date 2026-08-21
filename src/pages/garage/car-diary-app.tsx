@@ -74,6 +74,7 @@ const CarDiaryApp = ({
     uploadServiceAttachmentMutation,
     deleteServiceAttachmentMutation,
     createFuelEntryMutation,
+    updateFuelEntryMutation,
     deleteFuelEntryMutation,
     uploadFuelAttachmentMutation,
     deleteFuelAttachmentMutation,
@@ -343,6 +344,15 @@ const CarDiaryApp = ({
     appToast.success(t('notifications.fuelCreated'))
   }
 
+  const updateFuel = async (
+    fuelEntryId: string,
+    input: FuelEntryInput,
+  ) => {
+    resetMutationErrors()
+    await updateFuelEntryMutation.mutateAsync({ fuelEntryId, input })
+    appToast.success(t('notifications.fuelUpdated'))
+  }
+
   const uploadFuelEntryAttachment = (fuelEntryId: string, file: File) => {
     const validationError = validateAttachment(file)
     if (validationError) {
@@ -519,7 +529,10 @@ const CarDiaryApp = ({
           }
           editingRecordId={editingRecordId}
           isCreatingReminder={createMaintenanceReminderMutation.isPending}
-          isCreatingFuelEntry={createFuelEntryMutation.isPending}
+          isSavingFuelEntry={
+            createFuelEntryMutation.isPending ||
+            updateFuelEntryMutation.isPending
+          }
           isSavingRecord={
             createServiceRecordMutation.isPending ||
             updateServiceRecordMutation.isPending
@@ -550,6 +563,7 @@ const CarDiaryApp = ({
           onDeleteVehicle={requestVehicleDeletion}
           onEditRecord={setEditingRecordId}
           onEditVehicle={() => setVehicleFormMode('edit')}
+          onUpdateFuelEntry={updateFuel}
           onSaveRecord={saveServiceRecord}
           onToggleReminder={toggleReminder}
           onUpdateMileage={updateMileage}

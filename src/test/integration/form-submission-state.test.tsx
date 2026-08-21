@@ -65,6 +65,7 @@ describe('form submission state', () => {
         onCreate={vi.fn()}
         onDelete={vi.fn()}
         onDeleteAttachment={vi.fn()}
+        onUpdate={vi.fn()}
         onUploadAttachment={vi.fn()}
       />,
     )
