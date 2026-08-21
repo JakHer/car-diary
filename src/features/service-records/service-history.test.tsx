@@ -46,12 +46,17 @@ const records: ServiceRecord[] = [
 const renderHistory = () =>
   render(
     <ServiceHistory
+      attachments={[]}
+      deletingAttachmentId={null}
       distanceUnit="km"
       editingRecordId={null}
       records={records}
+      uploadingRecordId={null}
       onAdd={vi.fn()}
       onDelete={vi.fn()}
+      onDeleteAttachment={vi.fn()}
       onEdit={vi.fn()}
+      onUploadAttachment={vi.fn()}
     />,
   )
 
@@ -113,12 +118,17 @@ describe('ServiceHistory filters', () => {
 
     render(
       <ServiceHistory
+        attachments={[]}
+        deletingAttachmentId={null}
         distanceUnit="km"
         editingRecordId={null}
         records={[records[1]]}
+        uploadingRecordId={null}
         onAdd={vi.fn()}
         onDelete={onDelete}
+        onDeleteAttachment={vi.fn()}
         onEdit={onEdit}
+        onUploadAttachment={vi.fn()}
       />,
     )
 

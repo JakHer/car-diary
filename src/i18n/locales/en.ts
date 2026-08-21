@@ -41,6 +41,9 @@ export const en = {
     deleteFuelEntryTitle: 'Delete this fuel entry?',
     deleteFuelEntryDescription:
       'This fuel entry will be permanently removed. The vehicle mileage will not be reduced.',
+    deleteAttachmentTitle: 'Delete “{{name}}”?',
+    deleteAttachmentDescription:
+      'This attachment will be permanently removed. This action cannot be undone.',
   },
   header: {
     add: 'Add vehicle',
@@ -170,6 +173,18 @@ export const en = {
     saving: 'Saving record...',
     saveChanges: 'Save changes',
     save: 'Save service record',
+    addAttachment: 'Add attachment',
+    selectAttachment: 'Select a service attachment',
+    uploadingAttachment: 'Uploading...',
+    openAttachment: 'Open {{name}}',
+    deleteAttachment: 'Delete {{name}}',
+    attachmentSizeKb: '{{size}} KB',
+    attachmentSizeMb: '{{size}} MB',
+    attachmentErrors: {
+      empty: 'The selected file is empty.',
+      'too-large': 'The attachment cannot exceed 10 MB.',
+      'unsupported-type': 'Choose a JPEG, PNG, WebP, or PDF file.',
+    },
     categories: {
       all: 'All categories',
       Maintenance: 'Maintenance',
@@ -278,6 +293,10 @@ export const en = {
     serviceCreated: 'Service record added.',
     serviceUpdated: 'Service record updated.',
     serviceDeleted: 'Service record deleted.',
+    attachmentUploaded: 'Attachment uploaded.',
+    attachmentDeleted: 'Attachment deleted.',
+    attachmentCleanupFailed:
+      'Could not remove the associated files. Please try again.',
     fuelCreated: 'Fill-up added.',
     fuelDeleted: 'Fill-up deleted.',
     reminderCreated: 'Reminder added.',

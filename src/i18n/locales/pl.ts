@@ -47,6 +47,9 @@ export const pl = {
     deleteFuelEntryTitle: 'Usunąć to tankowanie?',
     deleteFuelEntryDescription:
       'Wpis tankowania zostanie trwale usunięty. Przebieg pojazdu nie zostanie zmniejszony.',
+    deleteAttachmentTitle: 'Usunąć „{{name}}”?',
+    deleteAttachmentDescription:
+      'Załącznik zostanie trwale usunięty. Tej operacji nie można cofnąć.',
   },
   header: {
     add: 'Dodaj pojazd',
@@ -175,6 +178,18 @@ export const pl = {
     saving: 'Zapisywanie wpisu...',
     saveChanges: 'Zapisz zmiany',
     save: 'Zapisz wpis serwisowy',
+    addAttachment: 'Dodaj załącznik',
+    selectAttachment: 'Wybierz załącznik serwisowy',
+    uploadingAttachment: 'Przesyłanie...',
+    openAttachment: 'Otwórz {{name}}',
+    deleteAttachment: 'Usuń {{name}}',
+    attachmentSizeKb: '{{size}} KB',
+    attachmentSizeMb: '{{size}} MB',
+    attachmentErrors: {
+      empty: 'Wybrany plik jest pusty.',
+      'too-large': 'Załącznik nie może przekraczać 10 MB.',
+      'unsupported-type': 'Wybierz plik JPEG, PNG, WebP lub PDF.',
+    },
     categories: {
       all: 'Wszystkie kategorie',
       Maintenance: 'Konserwacja',
@@ -288,6 +303,10 @@ export const pl = {
     serviceCreated: 'Wpis serwisowy został dodany.',
     serviceUpdated: 'Wpis serwisowy został zaktualizowany.',
     serviceDeleted: 'Wpis serwisowy został usunięty.',
+    attachmentUploaded: 'Załącznik został przesłany.',
+    attachmentDeleted: 'Załącznik został usunięty.',
+    attachmentCleanupFailed:
+      'Nie udało się usunąć powiązanych plików. Spróbuj ponownie.',
     fuelCreated: 'Tankowanie zostało dodane.',
     fuelDeleted: 'Tankowanie zostało usunięte.',
     reminderCreated: 'Przypomnienie zostało dodane.',

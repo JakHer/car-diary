@@ -13,12 +13,14 @@ const repositoryMocks = vi.hoisted(() => ({
   deleteFuelEntry: vi.fn(),
   deleteMaintenanceReminder: vi.fn(),
   deleteServiceRecord: vi.fn(),
+  deleteServiceAttachment: vi.fn(),
   deleteVehicle: vi.fn(),
   fetchCarDiaryState: vi.fn(),
   setMaintenanceReminderCompleted: vi.fn(),
   updateServiceRecord: vi.fn(),
   updateVehicle: vi.fn(),
   updateVehicleMileage: vi.fn(),
+  uploadServiceAttachment: vi.fn(),
 }))
 
 vi.mock('@/lib/car-diary-repository', () => repositoryMocks)
@@ -27,14 +29,19 @@ vi.mock(
   '@/features/service-records/service-record-repository',
   () => repositoryMocks,
 )
+vi.mock(
+  '@/features/service-records/service-attachment-repository',
+  () => repositoryMocks,
+)
 vi.mock('@/features/fuel/fuel-repository', () => repositoryMocks)
 vi.mock('@/features/reminders/reminder-repository', () => repositoryMocks)
 
 const carDiaryState: CarDiaryState = {
-  version: 3,
+  version: 4,
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
+  serviceAttachments: [],
   fuelEntries: [],
   maintenanceReminders: [],
 }
@@ -137,6 +144,34 @@ describe('useCarDiary', () => {
     expect(repositoryMocks.createFuelEntry).toHaveBeenCalledWith(
       'vehicle-1',
       fuelEntryInput,
+    )
+    await waitFor(() =>
+      expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),
+    )
+  })
+
+  it('uploads a service attachment and refreshes the state', async () => {
+    repositoryMocks.uploadServiceAttachment.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useCarDiary('user-1'), {
+      wrapper: createWrapper(),
+    })
+    const file = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    })
+
+    await waitFor(() => expect(result.current.stateQuery.isSuccess).toBe(true))
+
+    await act(async () => {
+      await result.current.uploadServiceAttachmentMutation.mutateAsync({
+        recordId: 'record-1',
+        file,
+      })
+    })
+
+    expect(repositoryMocks.uploadServiceAttachment).toHaveBeenCalledWith(
+      'user-1',
+      'record-1',
+      file,
     )
     await waitFor(() =>
       expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),

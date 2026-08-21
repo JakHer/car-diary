@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, SearchX, Wrench } from 'lucide-react'
-import type { DistanceUnit, ServiceRecord } from '@/types'
+import type {
+  DistanceUnit,
+  ServiceAttachment,
+  ServiceRecord,
+} from '@/types'
 import { getIntlLocale } from '@/i18n'
 import { IconButton } from '@/components/actions/icon-button'
 import { EmptyState } from '@/components/feedback/empty-state'
@@ -17,20 +21,30 @@ import { ServiceRecordList } from './service-record-list'
 
 interface ServiceHistoryProps {
   distanceUnit: DistanceUnit
+  attachments: ServiceAttachment[]
+  deletingAttachmentId: string | null
   records: ServiceRecord[]
   editingRecordId: string | null
+  uploadingRecordId: string | null
   onAdd: () => void
   onDelete: (recordId: string) => void
+  onDeleteAttachment: (attachmentId: string) => void
   onEdit: (recordId: string) => void
+  onUploadAttachment: (recordId: string, file: File) => void
 }
 
 export const ServiceHistory = ({
+  attachments,
+  deletingAttachmentId,
   distanceUnit,
   records,
   editingRecordId,
+  uploadingRecordId,
   onAdd,
   onDelete,
+  onDeleteAttachment,
   onEdit,
+  onUploadAttachment,
 }: ServiceHistoryProps) => {
   const { i18n, t } = useTranslation()
   const locale = getIntlLocale(i18n.resolvedLanguage)
@@ -144,12 +158,17 @@ export const ServiceHistory = ({
             </div>
           ) : (
             <ServiceRecordList
+              attachments={attachments}
+              deletingAttachmentId={deletingAttachmentId}
               distanceUnit={distanceUnit}
               editingRecordId={editingRecordId}
               locale={locale}
               records={visibleRecords}
+              uploadingRecordId={uploadingRecordId}
               onDelete={onDelete}
+              onDeleteAttachment={onDeleteAttachment}
               onEdit={onEdit}
+              onUploadAttachment={onUploadAttachment}
             />
           )}
         </>
