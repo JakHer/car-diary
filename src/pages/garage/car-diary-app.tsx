@@ -94,6 +94,7 @@ const CarDiaryApp = ({
     uploadFuelAttachmentMutation,
     deleteFuelAttachmentMutation,
     createMaintenanceReminderMutation,
+    updateMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,
     mutationError,
@@ -374,6 +375,15 @@ const CarDiaryApp = ({
     appToast.success(t('notifications.reminderCreated'))
   }
 
+  const updateReminder = async (
+    reminderId: string,
+    input: MaintenanceReminderInput,
+  ) => {
+    resetMutationErrors()
+    await updateMaintenanceReminderMutation.mutateAsync({ reminderId, input })
+    appToast.success(t('notifications.reminderUpdated'))
+  }
+
   const createFuel = async (input: FuelEntryInput) => {
     if (!activeVehicle) return
 
@@ -594,7 +604,10 @@ const CarDiaryApp = ({
               : null
           }
           editingRecordId={editingRecordId}
-          isCreatingReminder={createMaintenanceReminderMutation.isPending}
+          isSavingReminder={
+            createMaintenanceReminderMutation.isPending ||
+            updateMaintenanceReminderMutation.isPending
+          }
           isSavingFuelEntry={
             createFuelEntryMutation.isPending ||
             updateFuelEntryMutation.isPending
@@ -633,6 +646,7 @@ const CarDiaryApp = ({
           onUpdateFuelEntry={updateFuel}
           onSaveRecord={saveServiceRecord}
           onToggleReminder={toggleReminder}
+          onUpdateReminder={updateReminder}
           onUpdateMileage={updateMileage}
           onUploadAttachment={uploadServiceRecordAttachment}
           onUploadFuelAttachment={uploadFuelEntryAttachment}

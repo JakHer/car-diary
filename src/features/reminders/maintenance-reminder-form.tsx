@@ -2,7 +2,11 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { DistanceUnit, MaintenanceReminderInput } from '@/types'
+import type {
+  DistanceUnit,
+  MaintenanceReminder,
+  MaintenanceReminderInput,
+} from '@/types'
 import { DatePicker } from '@/components/forms/date-picker'
 import { FieldError } from '@/components/forms/field-error'
 import { Loader } from '@/components/feedback/loader'
@@ -19,16 +23,18 @@ interface MaintenanceReminderFormProps {
   currentMileage: number
   distanceUnit: DistanceUnit
   isSaving: boolean
-  onCreate: (input: MaintenanceReminderInput) => Promise<void>
-  onCreated: () => void
+  reminder?: MaintenanceReminder
+  onSave: (input: MaintenanceReminderInput) => Promise<void>
+  onSaved: () => void
 }
 
 export const MaintenanceReminderForm = ({
   currentMileage,
   distanceUnit,
   isSaving,
-  onCreate,
-  onCreated,
+  reminder,
+  onSave,
+  onSaved,
 }: MaintenanceReminderFormProps) => {
   const { i18n, t } = useTranslation()
   const schema = useMemo(() => createMaintenanceReminderSchema(t), [t])
@@ -42,21 +48,21 @@ export const MaintenanceReminderForm = ({
   } = useForm<MaintenanceReminderFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: '',
-      dueDate: '',
-      dueMileage: null,
+      title: reminder?.title ?? '',
+      dueDate: reminder?.dueDate ?? '',
+      dueMileage: reminder?.dueMileage ?? null,
     },
     mode: 'onBlur',
   })
   useTranslatedFormErrors(i18n.resolvedLanguage, errors, trigger)
 
-  const createReminder = async ({
+  const saveReminder = async ({
     title,
     dueDate,
     dueMileage,
   }: MaintenanceReminderFormValues) => {
     try {
-      await onCreate({
+      await onSave({
         title,
         dueDate: dueDate || null,
         dueMileage,
@@ -65,8 +71,8 @@ export const MaintenanceReminderForm = ({
       return
     }
 
-    reset()
-    onCreated()
+    if (!reminder) reset()
+    onSaved()
   }
 
   return (
@@ -74,7 +80,7 @@ export const MaintenanceReminderForm = ({
       className="grid gap-4"
       aria-busy={isSaving}
       noValidate
-      onSubmit={handleSubmit(createReminder)}
+      onSubmit={handleSubmit(saveReminder)}
     >
       <Field>
         <span>{t('reminders.reminder')}</span>
@@ -127,9 +133,12 @@ export const MaintenanceReminderForm = ({
       </FieldGroup>
       <Button type="submit" disabled={isSaving}>
         {isSaving ? (
-          <Loader label={t('reminders.adding')} size="small" />
+          <Loader
+            label={t(reminder ? 'reminders.saving' : 'reminders.adding')}
+            size="small"
+          />
         ) : (
-          t('reminders.add')
+          t(reminder ? 'reminders.saveChanges' : 'reminders.add')
         )}
       </Button>
     </form>

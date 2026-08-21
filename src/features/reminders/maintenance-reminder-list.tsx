@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BellRing, Check, RotateCcw, Trash2 } from 'lucide-react'
+import { BellRing, Check, Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import type { DistanceUnit, MaintenanceReminder } from '@/types'
 import { IconButton } from '@/components/actions/icon-button'
 import { EmptyState } from '@/components/feedback/empty-state'
@@ -17,6 +17,7 @@ interface MaintenanceReminderListProps {
   locale: string
   reminders: MaintenanceReminder[]
   onDelete: (reminderId: string) => void
+  onEdit: (reminderId: string) => void
   onToggleCompleted: (reminderId: string, completed: boolean) => void
 }
 
@@ -32,6 +33,7 @@ export const MaintenanceReminderList = ({
   locale,
   reminders,
   onDelete,
+  onEdit,
   onToggleCompleted,
 }: MaintenanceReminderListProps) => {
   const { t } = useTranslation()
@@ -124,6 +126,12 @@ export const MaintenanceReminderList = ({
               </div>
             </div>
             <div className="flex shrink-0 gap-1.5">
+              <IconButton
+                label={t('common.edit')}
+                onClick={() => onEdit(reminder.id)}
+              >
+                <Pencil aria-hidden="true" className="size-4" />
+              </IconButton>
               <IconButton
                 label={
                   status === 'completed'

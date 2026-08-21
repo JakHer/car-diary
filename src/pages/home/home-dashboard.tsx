@@ -400,8 +400,8 @@ export const HomeDashboard = ({
           currentMileage={vehicle.currentMileage}
           distanceUnit={vehicle.distanceUnit}
           isSaving={isCreatingReminder}
-          onCreate={onCreateReminder}
-          onCreated={closeAction}
+          onSave={onCreateReminder}
+          onSaved={closeAction}
         />
       </FormDialog>
     </PageLayout>

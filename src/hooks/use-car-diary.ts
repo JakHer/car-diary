@@ -27,6 +27,7 @@ import {
   createMaintenanceReminder,
   deleteMaintenanceReminder,
   setMaintenanceReminderCompleted,
+  updateMaintenanceReminder,
 } from '@/features/reminders/reminder-repository'
 import { fetchCarDiaryState } from '@/lib/car-diary-repository'
 import type {
@@ -93,6 +94,11 @@ interface DeleteFuelAttachmentVariables {
 
 interface CreateMaintenanceReminderVariables {
   vehicleId: string
+  input: MaintenanceReminderInput
+}
+
+interface UpdateMaintenanceReminderVariables {
+  reminderId: string
   input: MaintenanceReminderInput
 }
 
@@ -221,6 +227,16 @@ export const useCarDiary = (userId: string) => {
     onSuccess: invalidateState,
   })
 
+  const updateMaintenanceReminderMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'update-maintenance-reminder'],
+    mutationFn: ({
+      reminderId,
+      input,
+    }: UpdateMaintenanceReminderVariables) =>
+      updateMaintenanceReminder(reminderId, input),
+    onSuccess: invalidateState,
+  })
+
   const setMaintenanceReminderCompletedMutation = useMutation({
     mutationKey: [...carDiaryKeys.all, 'set-maintenance-reminder-completed'],
     mutationFn: ({
@@ -254,6 +270,7 @@ export const useCarDiary = (userId: string) => {
     uploadFuelAttachmentMutation,
     deleteFuelAttachmentMutation,
     createMaintenanceReminderMutation,
+    updateMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,
   ]
@@ -281,6 +298,7 @@ export const useCarDiary = (userId: string) => {
     uploadFuelAttachmentMutation,
     deleteFuelAttachmentMutation,
     createMaintenanceReminderMutation,
+    updateMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,
     mutationError,

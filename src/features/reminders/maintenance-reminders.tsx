@@ -21,6 +21,10 @@ interface MaintenanceRemindersProps {
   reminders: MaintenanceReminder[]
   onCreate: (input: MaintenanceReminderInput) => Promise<void>
   onDelete: (reminderId: string) => void
+  onUpdate: (
+    reminderId: string,
+    input: MaintenanceReminderInput,
+  ) => Promise<void>
   onToggleCompleted: (reminderId: string, completed: boolean) => void
 }
 
@@ -31,14 +35,36 @@ export const MaintenanceReminders = ({
   reminders,
   onCreate,
   onDelete,
+  onUpdate,
   onToggleCompleted,
 }: MaintenanceRemindersProps) => {
   const { i18n, t } = useTranslation()
   const [formOpen, setFormOpen] = useState(false)
+  const [editingReminder, setEditingReminder] =
+    useState<MaintenanceReminder | null>(null)
   const locale = getIntlLocale(i18n.resolvedLanguage)
   const activeReminderCount = reminders.filter(
     (reminder) => !reminder.completedAt,
   ).length
+  const openCreateForm = () => {
+    setEditingReminder(null)
+    setFormOpen(true)
+  }
+  const openEditForm = (reminderId: string) => {
+    const reminder = reminders.find(({ id }) => id === reminderId)
+    if (!reminder) return
+
+    setEditingReminder(reminder)
+    setFormOpen(true)
+  }
+  const handleFormOpenChange = (open: boolean) => {
+    setFormOpen(open)
+    if (!open) setEditingReminder(null)
+  }
+  const saveReminder = (input: MaintenanceReminderInput) =>
+    editingReminder
+      ? onUpdate(editingReminder.id, input)
+      : onCreate(input)
 
   return (
     <DashboardSection
@@ -51,7 +77,7 @@ export const MaintenanceReminders = ({
             label={t('reminders.add')}
             tooltipSide="bottom"
             variant="primary"
-            onClick={() => setFormOpen(true)}
+            onClick={openCreateForm}
           >
             <Plus aria-hidden="true" className="size-4" />
           </IconButton>
@@ -69,23 +95,32 @@ export const MaintenanceReminders = ({
         locale={locale}
         reminders={reminders}
         onDelete={onDelete}
+        onEdit={openEditForm}
         onToggleCompleted={onToggleCompleted}
       />
 
       <FormDialog
         closeLabel={t('reminders.close')}
-        description={t('reminders.addDescription')}
+        description={t(
+          editingReminder
+            ? 'reminders.editDescription'
+            : 'reminders.addDescription',
+        )}
         isBusy={isSaving}
         open={formOpen}
-        title={t('reminders.add')}
-        onOpenChange={setFormOpen}
+        title={t(
+          editingReminder ? 'reminders.editTitle' : 'reminders.add',
+        )}
+        onOpenChange={handleFormOpenChange}
       >
         <MaintenanceReminderForm
+          key={editingReminder?.id ?? 'new'}
           currentMileage={currentMileage}
           distanceUnit={distanceUnit}
           isSaving={isSaving}
-          onCreate={onCreate}
-          onCreated={() => setFormOpen(false)}
+          reminder={editingReminder ?? undefined}
+          onSave={saveReminder}
+          onSaved={() => handleFormOpenChange(false)}
         />
       </FormDialog>
     </DashboardSection>

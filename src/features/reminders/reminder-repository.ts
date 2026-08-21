@@ -50,6 +50,18 @@ export const createMaintenanceReminder = async (
   if (error) throw error
 }
 
+export const updateMaintenanceReminder = async (
+  reminderId: string,
+  input: MaintenanceReminderInput,
+): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('maintenance_reminders')
+    .update(toMaintenanceReminderRow(input))
+    .eq('id', reminderId)
+
+  if (error) throw error
+}
+
 export const setMaintenanceReminderCompleted = async (
   reminderId: string,
   completed: boolean,
