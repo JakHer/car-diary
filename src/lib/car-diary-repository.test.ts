@@ -6,7 +6,7 @@ import type { VehicleRow } from '@/features/vehicles/vehicle-repository'
 import type { ServiceRecordRow } from '@/features/service-records/service-record-repository'
 import type { FuelEntryRow } from '@/features/fuel/fuel-repository'
 import type { MaintenanceReminderRow } from '@/features/reminders/reminder-repository'
-import type { ServiceAttachment } from '@/types'
+import type { FuelAttachment, ServiceAttachment } from '@/types'
 
 const vehicleRows: VehicleRow[] = [
   {
@@ -109,6 +109,19 @@ const serviceAttachments: ServiceAttachment[] = [
   },
 ]
 
+const fuelAttachments: FuelAttachment[] = [
+  {
+    id: 'fuel-attachment-1',
+    fuelEntryId: 'fuel-1',
+    storagePath: 'user-1/fuel-entries/fuel-1/receipt.pdf',
+    fileName: 'fuel-receipt.pdf',
+    mimeType: 'application/pdf',
+    sizeBytes: 1024,
+    signedUrl: 'https://example.com/signed-fuel-receipt',
+    createdAt: '2026-08-21T11:00:00.000Z',
+  },
+]
+
 describe('mapCarDiaryState', () => {
   it('maps database rows including the persisted current mileage', () => {
     const state = mapCarDiaryState(
@@ -117,10 +130,11 @@ describe('mapCarDiaryState', () => {
       reminderRows,
       fuelEntryRows,
       serviceAttachments,
+      fuelAttachments,
     )
 
     expect(state.activeVehicleId).toBe('vehicle-1')
-    expect(state.version).toBe(4)
+    expect(state.version).toBe(5)
     expect(state.vehicles).toHaveLength(2)
     expect(state.vehicles[0]).toMatchObject({
       make: 'Volvo',
@@ -159,6 +173,10 @@ describe('mapCarDiaryState', () => {
       serviceRecordId: 'record-1',
       fileName: 'receipt.pdf',
       signedUrl: 'https://example.com/signed-receipt',
+    })
+    expect(state.fuelAttachments[0]).toMatchObject({
+      fuelEntryId: 'fuel-1',
+      fileName: 'fuel-receipt.pdf',
     })
   })
 

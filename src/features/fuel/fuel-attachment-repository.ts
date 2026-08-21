@@ -1,5 +1,5 @@
 import type { Database } from '@/database.types'
-import type { ServiceAttachment } from '@/types'
+import type { FuelAttachment } from '@/types'
 import { getSupabaseClient } from '@/lib/supabase'
 import {
   createAttachmentSignedUrls,
@@ -7,15 +7,15 @@ import {
   uploadAttachmentFile,
 } from '@/features/attachments/attachment-storage'
 
-export type ServiceAttachmentRow =
-  Database['public']['Tables']['service_attachments']['Row']
+export type FuelAttachmentRow =
+  Database['public']['Tables']['fuel_attachments']['Row']
 
-const mapServiceAttachment = (
-  row: ServiceAttachmentRow,
+const mapFuelAttachment = (
+  row: FuelAttachmentRow,
   signedUrl: string,
-): ServiceAttachment => ({
+): FuelAttachment => ({
   id: row.id,
-  serviceRecordId: row.service_record_id,
+  fuelEntryId: row.fuel_entry_id,
   storagePath: row.storage_path,
   fileName: row.file_name,
   mimeType: row.mime_type,
@@ -24,12 +24,10 @@ const mapServiceAttachment = (
   createdAt: row.created_at,
 })
 
-export const fetchServiceAttachments = async (): Promise<
-  ServiceAttachment[]
-> => {
+export const fetchFuelAttachments = async (): Promise<FuelAttachment[]> => {
   const client = getSupabaseClient()
   const { data: rows, error } = await client
-    .from('service_attachments')
+    .from('fuel_attachments')
     .select()
     .order('created_at', { ascending: true })
 
@@ -41,49 +39,44 @@ export const fetchServiceAttachments = async (): Promise<
   )
 
   return rows.map((row) =>
-    mapServiceAttachment(row, signedUrlByPath.get(row.storage_path) ?? ''),
+    mapFuelAttachment(row, signedUrlByPath.get(row.storage_path) ?? ''),
   )
 }
 
-export const uploadServiceAttachment = async (
+export const uploadFuelAttachment = async (
   userId: string,
-  serviceRecordId: string,
+  fuelEntryId: string,
   file: File,
 ): Promise<void> => {
   const client = getSupabaseClient()
   const storagePath = await uploadAttachmentFile(
     userId,
-    'service-records',
-    serviceRecordId,
+    'fuel-entries',
+    fuelEntryId,
     file,
   )
+  const { error } = await client.from('fuel_attachments').insert({
+    fuel_entry_id: fuelEntryId,
+    storage_path: storagePath,
+    file_name: file.name,
+    mime_type: file.type,
+    size_bytes: file.size,
+  })
 
-  const { error: metadataError } = await client
-    .from('service_attachments')
-    .insert({
-      service_record_id: serviceRecordId,
-      storage_path: storagePath,
-      file_name: file.name,
-      mime_type: file.type,
-      size_bytes: file.size,
-    })
-
-  if (!metadataError) return
+  if (!error) return
 
   await removeAttachmentFiles([storagePath])
-  throw metadataError
+  throw error
 }
 
-export const removeServiceAttachmentFiles = removeAttachmentFiles
-
-export const deleteServiceAttachment = async (
+export const deleteFuelAttachment = async (
   attachmentId: string,
   storagePath: string,
 ): Promise<void> => {
   await removeAttachmentFiles([storagePath])
 
   const { error } = await getSupabaseClient()
-    .from('service_attachments')
+    .from('fuel_attachments')
     .delete()
     .eq('id', attachmentId)
 

@@ -56,6 +56,44 @@ export interface Database {
           },
         ]
       }
+      fuel_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          fuel_entry_id: string
+          id: string
+          mime_type: string
+          size_bytes: number
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          fuel_entry_id: string
+          id?: string
+          mime_type: string
+          size_bytes: number
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          fuel_entry_id?: string
+          id?: string
+          mime_type?: string
+          size_bytes?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'fuel_attachments_fuel_entry_id_fkey'
+            columns: ['fuel_entry_id']
+            isOneToOne: false
+            referencedRelation: 'fuel_entries'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       maintenance_reminders: {
         Row: {
           completed_at: string | null

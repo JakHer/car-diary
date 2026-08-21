@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
-import type { DistanceUnit, FuelEntry, FuelEntryInput } from '@/types'
+import type {
+  DistanceUnit,
+  FuelAttachment,
+  FuelEntry,
+  FuelEntryInput,
+} from '@/types'
 import { getIntlLocale } from '@/i18n'
 import { IconButton } from '@/components/actions/icon-button'
 import { DashboardSection } from '@/components/layout/dashboard-section'
@@ -12,21 +17,31 @@ import { FuelEntryList } from './fuel-entry-list'
 import { FuelSummary } from './fuel-summary'
 
 interface FuelLogProps {
+  attachments: FuelAttachment[]
   currentMileage: number
+  deletingAttachmentId: string | null
   distanceUnit: DistanceUnit
   entries: FuelEntry[]
   isSaving: boolean
+  uploadingFuelEntryId: string | null
   onCreate: (input: FuelEntryInput) => Promise<void>
   onDelete: (fuelEntryId: string) => void
+  onDeleteAttachment: (attachmentId: string) => void
+  onUploadAttachment: (fuelEntryId: string, file: File) => void
 }
 
 export const FuelLog = ({
+  attachments,
   currentMileage,
+  deletingAttachmentId,
   distanceUnit,
   entries,
   isSaving,
+  uploadingFuelEntryId,
   onCreate,
   onDelete,
+  onDeleteAttachment,
+  onUploadAttachment,
 }: FuelLogProps) => {
   const { i18n, t } = useTranslation()
   const [formOpen, setFormOpen] = useState(false)
@@ -63,10 +78,15 @@ export const FuelLog = ({
         />
       )}
       <FuelEntryList
+        attachments={attachments}
+        deletingAttachmentId={deletingAttachmentId}
         distanceUnit={distanceUnit}
         entries={entries}
         locale={locale}
+        uploadingFuelEntryId={uploadingFuelEntryId}
         onDelete={onDelete}
+        onDeleteAttachment={onDeleteAttachment}
+        onUploadAttachment={onUploadAttachment}
       />
 
       <FormDialog

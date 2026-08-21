@@ -1,24 +1,35 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Fuel, Trash2 } from 'lucide-react'
-import type { DistanceUnit, FuelEntry } from '@/types'
+import type { DistanceUnit, FuelAttachment, FuelEntry } from '@/types'
 import { formatDistance } from '@/lib/distance-units'
 import { IconButton } from '@/components/actions/icon-button'
 import { EmptyState } from '@/components/feedback/empty-state'
 import { Badge } from '@/components/ui/badge'
+import { AttachmentList } from '@/features/attachments/attachment-list'
 
 interface FuelEntryListProps {
   distanceUnit: DistanceUnit
+  attachments: FuelAttachment[]
+  deletingAttachmentId: string | null
   entries: FuelEntry[]
   locale: string
+  uploadingFuelEntryId: string | null
+  onDeleteAttachment: (attachmentId: string) => void
   onDelete: (fuelEntryId: string) => void
+  onUploadAttachment: (fuelEntryId: string, file: File) => void
 }
 
 export const FuelEntryList = ({
+  attachments,
+  deletingAttachmentId,
   distanceUnit,
   entries,
   locale,
+  uploadingFuelEntryId,
+  onDeleteAttachment,
   onDelete,
+  onUploadAttachment,
 }: FuelEntryListProps) => {
   const { t } = useTranslation()
   const dateFormatter = useMemo(
@@ -72,7 +83,7 @@ export const FuelEntryList = ({
             className="flex items-center justify-between gap-4 rounded-[11px] border border-border bg-surface-muted/35 px-4 py-3.5"
             key={entry.id}
           >
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <strong className="text-sm text-strong">
                   {volumeFormatter.format(liters)} l
@@ -98,6 +109,16 @@ export const FuelEntryList = ({
                 </span>
                 {entry.station && <span>{entry.station}</span>}
               </div>
+              <AttachmentList
+                attachments={attachments.filter(
+                  (attachment) => attachment.fuelEntryId === entry.id,
+                )}
+                deletingAttachmentId={deletingAttachmentId}
+                entityId={entry.id}
+                isUploading={uploadingFuelEntryId === entry.id}
+                onDelete={onDeleteAttachment}
+                onUpload={onUploadAttachment}
+              />
             </div>
             <IconButton
               label={t('common.delete')}

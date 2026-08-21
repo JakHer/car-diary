@@ -19,6 +19,10 @@ import {
   deleteFuelEntry,
 } from '@/features/fuel/fuel-repository'
 import {
+  deleteFuelAttachment,
+  uploadFuelAttachment,
+} from '@/features/fuel/fuel-attachment-repository'
+import {
   createMaintenanceReminder,
   deleteMaintenanceReminder,
   setMaintenanceReminderCompleted,
@@ -67,6 +71,16 @@ interface UploadServiceAttachmentVariables {
 }
 
 interface DeleteServiceAttachmentVariables {
+  attachmentId: string
+  storagePath: string
+}
+
+interface UploadFuelAttachmentVariables {
+  fuelEntryId: string
+  file: File
+}
+
+interface DeleteFuelAttachmentVariables {
   attachmentId: string
   storagePath: string
 }
@@ -170,6 +184,23 @@ export const useCarDiary = (userId: string) => {
     onSuccess: invalidateState,
   })
 
+  const uploadFuelAttachmentMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'upload-fuel-attachment'],
+    mutationFn: ({ fuelEntryId, file }: UploadFuelAttachmentVariables) =>
+      uploadFuelAttachment(userId, fuelEntryId, file),
+    onSuccess: invalidateState,
+  })
+
+  const deleteFuelAttachmentMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'delete-fuel-attachment'],
+    mutationFn: ({
+      attachmentId,
+      storagePath,
+    }: DeleteFuelAttachmentVariables) =>
+      deleteFuelAttachment(attachmentId, storagePath),
+    onSuccess: invalidateState,
+  })
+
   const createMaintenanceReminderMutation = useMutation({
     mutationKey: [...carDiaryKeys.all, 'create-maintenance-reminder'],
     mutationFn: ({ vehicleId, input }: CreateMaintenanceReminderVariables) =>
@@ -206,6 +237,8 @@ export const useCarDiary = (userId: string) => {
     deleteServiceAttachmentMutation,
     createFuelEntryMutation,
     deleteFuelEntryMutation,
+    uploadFuelAttachmentMutation,
+    deleteFuelAttachmentMutation,
     createMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,
@@ -230,6 +263,8 @@ export const useCarDiary = (userId: string) => {
     deleteServiceAttachmentMutation,
     createFuelEntryMutation,
     deleteFuelEntryMutation,
+    uploadFuelAttachmentMutation,
+    deleteFuelAttachmentMutation,
     createMaintenanceReminderMutation,
     setMaintenanceReminderCompletedMutation,
     deleteMaintenanceReminderMutation,

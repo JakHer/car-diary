@@ -55,12 +55,17 @@ describe('form submission state', () => {
     const user = userEvent.setup()
     render(
       <FuelLog
+        attachments={[]}
         currentMileage={86_200}
+        deletingAttachmentId={null}
         distanceUnit="km"
         entries={[]}
         isSaving
+        uploadingFuelEntryId={null}
         onCreate={vi.fn()}
         onDelete={vi.fn()}
+        onDeleteAttachment={vi.fn()}
+        onUploadAttachment={vi.fn()}
       />,
     )
 

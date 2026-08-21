@@ -10,7 +10,7 @@ import { IconButton } from '@/components/actions/icon-button'
 import { Badge } from '@/components/ui/badge'
 import { formatDistance } from '@/lib/distance-units'
 import { cn } from '@/lib/utils'
-import { ServiceAttachments } from './service-attachments'
+import { AttachmentList } from '@/features/attachments/attachment-list'
 
 interface ServiceRecordListProps {
   distanceUnit: DistanceUnit
@@ -118,13 +118,13 @@ export const ServiceRecordList = ({
                 {record.notes}
               </p>
             )}
-            <ServiceAttachments
+            <AttachmentList
               attachments={attachments.filter(
                 (attachment) => attachment.serviceRecordId === record.id,
               )}
               deletingAttachmentId={deletingAttachmentId}
               isUploading={uploadingRecordId === record.id}
-              recordId={record.id}
+              entityId={record.id}
               onDelete={onDeleteAttachment}
               onUpload={onUploadAttachment}
             />

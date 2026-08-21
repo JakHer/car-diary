@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import i18n from '@/i18n'
-import type { FuelEntry } from '@/types'
+import type { FuelAttachment, FuelEntry } from '@/types'
 import { FuelLog } from './fuel-log'
 
 const entry: FuelEntry = {
@@ -17,6 +17,17 @@ const entry: FuelEntry = {
   createdAt: '2026-08-16T12:00:00.000Z',
 }
 
+const attachment: FuelAttachment = {
+  id: 'attachment-1',
+  fuelEntryId: 'fuel-1',
+  storagePath: 'user-1/fuel-entries/fuel-1/receipt.pdf',
+  fileName: 'fuel-receipt.pdf',
+  mimeType: 'application/pdf',
+  sizeBytes: 2048,
+  signedUrl: 'https://example.com/signed-fuel-receipt',
+  createdAt: '2026-08-21T10:00:00.000Z',
+}
+
 describe('FuelLog', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('en')
@@ -28,12 +39,17 @@ describe('FuelLog', () => {
 
     render(
       <FuelLog
+        attachments={[]}
         currentMileage={86_200}
+        deletingAttachmentId={null}
         distanceUnit="km"
         entries={[]}
         isSaving={false}
+        uploadingFuelEntryId={null}
         onCreate={onCreate}
         onDelete={vi.fn()}
+        onDeleteAttachment={vi.fn()}
+        onUploadAttachment={vi.fn()}
       />,
     )
 
@@ -81,12 +97,17 @@ describe('FuelLog', () => {
 
     render(
       <FuelLog
+        attachments={[]}
         currentMileage={86_500}
+        deletingAttachmentId={null}
         distanceUnit="km"
         entries={[entry]}
         isSaving={false}
+        uploadingFuelEntryId={null}
         onCreate={vi.fn().mockResolvedValue(undefined)}
         onDelete={onDelete}
+        onDeleteAttachment={vi.fn()}
+        onUploadAttachment={vi.fn()}
       />,
     )
 
@@ -103,7 +124,9 @@ describe('FuelLog', () => {
 
     render(
       <FuelLog
+        attachments={[]}
         currentMileage={86_500}
+        deletingAttachmentId={null}
         distanceUnit="km"
         entries={[
           {
@@ -121,13 +144,46 @@ describe('FuelLog', () => {
           },
         ]}
         isSaving={false}
+        uploadingFuelEntryId={null}
         onCreate={vi.fn().mockResolvedValue(undefined)}
         onDelete={vi.fn()}
+        onDeleteAttachment={vi.fn()}
+        onUploadAttachment={vi.fn()}
       />,
     )
 
     expect(screen.getByText('10.0 l/100 km')).toBeVisible()
     expect(screen.getByText(/PLN\s?55\.00\/100 km/)).toBeVisible()
     expect(screen.getByText('500 km')).toBeVisible()
+  })
+
+  it('shows and uploads receipts for a saved fill-up', async () => {
+    const user = userEvent.setup()
+    const onUploadAttachment = vi.fn()
+    render(
+      <FuelLog
+        attachments={[attachment]}
+        currentMileage={86_500}
+        deletingAttachmentId={null}
+        distanceUnit="km"
+        entries={[entry]}
+        isSaving={false}
+        uploadingFuelEntryId={null}
+        onCreate={vi.fn().mockResolvedValue(undefined)}
+        onDelete={vi.fn()}
+        onDeleteAttachment={vi.fn()}
+        onUploadAttachment={onUploadAttachment}
+      />,
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'Open fuel-receipt.pdf' }),
+    ).toHaveAttribute('href', attachment.signedUrl)
+
+    const file = new File(['new receipt'], 'new-fuel-receipt.pdf', {
+      type: 'application/pdf',
+    })
+    await user.upload(screen.getByLabelText('Select an attachment'), file)
+    expect(onUploadAttachment).toHaveBeenCalledWith('fuel-1', file)
   })
 })
