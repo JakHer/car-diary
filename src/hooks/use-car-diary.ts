@@ -11,6 +11,10 @@ import {
   updateServiceRecord,
 } from '@/features/service-records/service-record-repository'
 import {
+  deleteServiceAttachment,
+  uploadServiceAttachment,
+} from '@/features/service-records/service-attachment-repository'
+import {
   createFuelEntry,
   deleteFuelEntry,
 } from '@/features/fuel/fuel-repository'
@@ -55,6 +59,16 @@ interface CreateFuelEntryVariables {
 interface UpdateServiceRecordVariables {
   recordId: string
   input: ServiceRecordInput
+}
+
+interface UploadServiceAttachmentVariables {
+  recordId: string
+  file: File
+}
+
+interface DeleteServiceAttachmentVariables {
+  attachmentId: string
+  storagePath: string
 }
 
 interface CreateMaintenanceReminderVariables {
@@ -126,6 +140,23 @@ export const useCarDiary = (userId: string) => {
     onSuccess: invalidateState,
   })
 
+  const uploadServiceAttachmentMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'upload-service-attachment'],
+    mutationFn: ({ recordId, file }: UploadServiceAttachmentVariables) =>
+      uploadServiceAttachment(userId, recordId, file),
+    onSuccess: invalidateState,
+  })
+
+  const deleteServiceAttachmentMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'delete-service-attachment'],
+    mutationFn: ({
+      attachmentId,
+      storagePath,
+    }: DeleteServiceAttachmentVariables) =>
+      deleteServiceAttachment(attachmentId, storagePath),
+    onSuccess: invalidateState,
+  })
+
   const createFuelEntryMutation = useMutation({
     mutationKey: [...carDiaryKeys.all, 'create-fuel-entry'],
     mutationFn: ({ vehicleId, input }: CreateFuelEntryVariables) =>
@@ -171,6 +202,8 @@ export const useCarDiary = (userId: string) => {
     createServiceRecordMutation,
     updateServiceRecordMutation,
     deleteServiceRecordMutation,
+    uploadServiceAttachmentMutation,
+    deleteServiceAttachmentMutation,
     createFuelEntryMutation,
     deleteFuelEntryMutation,
     createMaintenanceReminderMutation,
@@ -193,6 +226,8 @@ export const useCarDiary = (userId: string) => {
     createServiceRecordMutation,
     updateServiceRecordMutation,
     deleteServiceRecordMutation,
+    uploadServiceAttachmentMutation,
+    deleteServiceAttachmentMutation,
     createFuelEntryMutation,
     deleteFuelEntryMutation,
     createMaintenanceReminderMutation,

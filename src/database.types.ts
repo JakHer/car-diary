@@ -147,6 +147,44 @@ export interface Database {
           },
         ]
       }
+      service_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          id: string
+          mime_type: string
+          service_record_id: string
+          size_bytes: number
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          id?: string
+          mime_type: string
+          service_record_id: string
+          size_bytes: number
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          mime_type?: string
+          service_record_id?: string
+          size_bytes?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'service_attachments_service_record_id_fkey'
+            columns: ['service_record_id']
+            isOneToOne: false
+            referencedRelation: 'service_records'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       vehicles: {
         Row: {
           created_at: string

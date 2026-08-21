@@ -12,6 +12,10 @@ import {
 } from '@/features/vehicles/vehicle-dialog'
 import { VehicleDashboard } from '@/features/vehicles/vehicle-dashboard'
 import { VehicleForm } from '@/features/vehicles/vehicle-form'
+import {
+  removeServiceAttachmentFiles,
+  validateServiceAttachment,
+} from '@/features/service-records/service-attachment-repository'
 import { useCarDiary } from '@/hooks/use-car-diary'
 import { useDeleteConfirmation } from '@/hooks/use-delete-confirmation'
 import { appToast } from '@/lib/app-toast'
@@ -29,10 +33,11 @@ import type {
 } from '@/types'
 
 const emptyState: CarDiaryState = {
-  version: 3,
+  version: 4,
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
+  serviceAttachments: [],
   fuelEntries: [],
   maintenanceReminders: [],
 }
@@ -65,6 +70,8 @@ const CarDiaryApp = ({
     createServiceRecordMutation,
     updateServiceRecordMutation,
     deleteServiceRecordMutation,
+    uploadServiceAttachmentMutation,
+    deleteServiceAttachmentMutation,
     createFuelEntryMutation,
     deleteFuelEntryMutation,
     createMaintenanceReminderMutation,
@@ -118,6 +125,22 @@ const CarDiaryApp = ({
       ),
     [activeVehicleId, state.fuelEntries],
   )
+
+  const activeAttachments = useMemo(() => {
+    const activeRecordIds = new Set(activeRecords.map((record) => record.id))
+    return state.serviceAttachments.filter((attachment) =>
+      activeRecordIds.has(attachment.serviceRecordId),
+    )
+  }, [activeRecords, state.serviceAttachments])
+
+  const removeAttachmentFiles = async (storagePaths: string[]) => {
+    try {
+      await removeServiceAttachmentFiles(storagePaths)
+    } catch (error) {
+      appToast.error(t('notifications.attachmentCleanupFailed'))
+      throw error
+    }
+  }
 
   const addVehicle = (input: VehicleInput) => {
     resetMutationErrors()
@@ -187,6 +210,9 @@ const CarDiaryApp = ({
           (vehicle) => vehicle.id !== vehicleToDelete.id,
         )
 
+        await removeAttachmentFiles(
+          activeAttachments.map((attachment) => attachment.storagePath),
+        )
         await deleteVehicleMutation.mutateAsync(vehicleToDelete.id)
         navigate(fallbackVehicle ? getVehiclePath(fallbackVehicle.id) : '/', {
           replace: true,
@@ -233,9 +259,50 @@ const CarDiaryApp = ({
       description: t('app.deleteRecordDescription'),
       onConfirm: async () => {
         resetMutationErrors()
+        await removeAttachmentFiles(
+          activeAttachments
+            .filter(
+              (attachment) => attachment.serviceRecordId === recordId,
+            )
+            .map((attachment) => attachment.storagePath),
+        )
         await deleteServiceRecordMutation.mutateAsync(recordId)
         if (editingRecordId === recordId) setEditingRecordId(null)
         appToast.success(t('notifications.serviceDeleted'))
+      },
+    })
+  }
+
+  const uploadServiceRecordAttachment = (recordId: string, file: File) => {
+    const validationError = validateServiceAttachment(file)
+    if (validationError) {
+      appToast.error(t(`service.attachmentErrors.${validationError}`))
+      return
+    }
+
+    resetMutationErrors()
+    void uploadServiceAttachmentMutation
+      .mutateAsync({ recordId, file })
+      .then(() => appToast.success(t('notifications.attachmentUploaded')))
+      .catch(() => undefined)
+  }
+
+  const requestServiceAttachmentDeletion = (attachmentId: string) => {
+    const attachment = activeAttachments.find(
+      (entry) => entry.id === attachmentId,
+    )
+    if (!attachment) return
+
+    requestDeletion({
+      title: t('app.deleteAttachmentTitle', { name: attachment.fileName }),
+      description: t('app.deleteAttachmentDescription'),
+      onConfirm: async () => {
+        resetMutationErrors()
+        await deleteServiceAttachmentMutation.mutateAsync({
+          attachmentId,
+          storagePath: attachment.storagePath,
+        })
+        appToast.success(t('notifications.attachmentDeleted'))
       },
     })
   }
@@ -384,6 +451,13 @@ const CarDiaryApp = ({
         </main>
       ) : (
         <VehicleDashboard
+          attachments={activeAttachments}
+          deletingAttachmentId={
+            deleteServiceAttachmentMutation.isPending
+              ? (deleteServiceAttachmentMutation.variables?.attachmentId ??
+                null)
+              : null
+          }
           editingRecordId={editingRecordId}
           isCreatingReminder={createMaintenanceReminderMutation.isPending}
           isCreatingFuelEntry={createFuelEntryMutation.isPending}
@@ -392,6 +466,11 @@ const CarDiaryApp = ({
             updateServiceRecordMutation.isPending
           }
           isUpdatingMileage={updateVehicleMileageMutation.isPending}
+          uploadingRecordId={
+            uploadServiceAttachmentMutation.isPending
+              ? (uploadServiceAttachmentMutation.variables?.recordId ?? null)
+              : null
+          }
           reminders={activeReminders}
           fuelEntries={activeFuelEntries}
           records={activeRecords}
@@ -401,6 +480,7 @@ const CarDiaryApp = ({
           onCreateFuelEntry={createFuel}
           onDeleteFuelEntry={requestFuelEntryDeletion}
           onDeleteRecord={requestServiceRecordDeletion}
+          onDeleteAttachment={requestServiceAttachmentDeletion}
           onDeleteReminder={requestReminderDeletion}
           onDeleteVehicle={requestVehicleDeletion}
           onEditRecord={setEditingRecordId}
@@ -408,6 +488,7 @@ const CarDiaryApp = ({
           onSaveRecord={saveServiceRecord}
           onToggleReminder={toggleReminder}
           onUpdateMileage={updateMileage}
+          onUploadAttachment={uploadServiceRecordAttachment}
         />
       )}
 

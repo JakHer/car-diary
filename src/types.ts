@@ -40,6 +40,17 @@ export type ServiceRecordInput = Omit<
   'id' | 'vehicleId' | 'createdAt'
 >
 
+export interface ServiceAttachment {
+  id: string
+  serviceRecordId: string
+  storagePath: string
+  fileName: string
+  mimeType: string
+  sizeBytes: number
+  signedUrl: string
+  createdAt: string
+}
+
 export interface FuelEntry {
   id: string
   vehicleId: string
@@ -73,10 +84,11 @@ export type MaintenanceReminderInput = Pick<
 >
 
 export interface CarDiaryState {
-  version: 3
+  version: 4
   vehicles: Vehicle[]
   activeVehicleId: string | null
   serviceRecords: ServiceRecord[]
+  serviceAttachments: ServiceAttachment[]
   fuelEntries: FuelEntry[]
   maintenanceReminders: MaintenanceReminder[]
 }

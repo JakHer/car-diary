@@ -18,17 +18,21 @@ import type {
   FuelEntry,
   FuelEntryInput,
   ServiceRecord,
+  ServiceAttachment,
   ServiceRecordInput,
   Vehicle,
 } from '@/types'
 import { getIntlLocale } from '@/i18n'
 
 interface VehicleDashboardProps {
+  attachments: ServiceAttachment[]
+  deletingAttachmentId: string | null
   editingRecordId: string | null
   isCreatingReminder: boolean
   isCreatingFuelEntry: boolean
   isSavingRecord: boolean
   isUpdatingMileage: boolean
+  uploadingRecordId: string | null
   reminders: MaintenanceReminder[]
   fuelEntries: FuelEntry[]
   records: ServiceRecord[]
@@ -38,6 +42,7 @@ interface VehicleDashboardProps {
   onCreateFuelEntry: (input: FuelEntryInput) => Promise<void>
   onDeleteFuelEntry: (fuelEntryId: string) => void
   onDeleteRecord: (recordId: string) => void
+  onDeleteAttachment: (attachmentId: string) => void
   onDeleteReminder: (reminderId: string) => void
   onDeleteVehicle: () => void
   onEditRecord: (recordId: string) => void
@@ -45,14 +50,18 @@ interface VehicleDashboardProps {
   onSaveRecord: (input: ServiceRecordInput) => Promise<void>
   onToggleReminder: (reminderId: string, completed: boolean) => void
   onUpdateMileage: (currentMileage: number) => Promise<void>
+  onUploadAttachment: (recordId: string, file: File) => void
 }
 
 export const VehicleDashboard = ({
+  attachments,
+  deletingAttachmentId,
   editingRecordId,
   isCreatingReminder,
   isCreatingFuelEntry,
   isSavingRecord,
   isUpdatingMileage,
+  uploadingRecordId,
   reminders,
   fuelEntries,
   records,
@@ -62,6 +71,7 @@ export const VehicleDashboard = ({
   onCreateFuelEntry,
   onDeleteFuelEntry,
   onDeleteRecord,
+  onDeleteAttachment,
   onDeleteReminder,
   onDeleteVehicle,
   onEditRecord,
@@ -69,6 +79,7 @@ export const VehicleDashboard = ({
   onSaveRecord,
   onToggleReminder,
   onUpdateMileage,
+  onUploadAttachment,
 }: VehicleDashboardProps) => {
   const { i18n, t } = useTranslation()
   const [serviceFormOpen, setServiceFormOpen] = useState(
@@ -225,12 +236,17 @@ export const VehicleDashboard = ({
 
       <div className="mt-6">
         <ServiceHistory
+          attachments={attachments}
+          deletingAttachmentId={deletingAttachmentId}
           distanceUnit={vehicle.distanceUnit}
           records={records}
           editingRecordId={editingRecordId}
+          uploadingRecordId={uploadingRecordId}
           onAdd={openNewServiceRecord}
           onDelete={onDeleteRecord}
+          onDeleteAttachment={onDeleteAttachment}
           onEdit={openServiceRecordEdit}
+          onUploadAttachment={onUploadAttachment}
         />
       </div>
 

@@ -1,28 +1,43 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Pencil, Trash2 } from 'lucide-react'
-import type { DistanceUnit, ServiceRecord } from '@/types'
+import type {
+  DistanceUnit,
+  ServiceAttachment,
+  ServiceRecord,
+} from '@/types'
 import { IconButton } from '@/components/actions/icon-button'
 import { Badge } from '@/components/ui/badge'
 import { formatDistance } from '@/lib/distance-units'
 import { cn } from '@/lib/utils'
+import { ServiceAttachments } from './service-attachments'
 
 interface ServiceRecordListProps {
   distanceUnit: DistanceUnit
+  attachments: ServiceAttachment[]
+  deletingAttachmentId: string | null
   editingRecordId: string | null
+  uploadingRecordId: string | null
   locale: string
   records: ServiceRecord[]
   onDelete: (recordId: string) => void
+  onDeleteAttachment: (attachmentId: string) => void
   onEdit: (recordId: string) => void
+  onUploadAttachment: (recordId: string, file: File) => void
 }
 
 export const ServiceRecordList = ({
+  attachments,
+  deletingAttachmentId,
   distanceUnit,
   editingRecordId,
   locale,
   records,
+  uploadingRecordId,
   onDelete,
+  onDeleteAttachment,
   onEdit,
+  onUploadAttachment,
 }: ServiceRecordListProps) => {
   const { t } = useTranslation()
   const dateFormatter = useMemo(
@@ -103,6 +118,16 @@ export const ServiceRecordList = ({
                 {record.notes}
               </p>
             )}
+            <ServiceAttachments
+              attachments={attachments.filter(
+                (attachment) => attachment.serviceRecordId === record.id,
+              )}
+              deletingAttachmentId={deletingAttachmentId}
+              isUploading={uploadingRecordId === record.id}
+              recordId={record.id}
+              onDelete={onDeleteAttachment}
+              onUpload={onUploadAttachment}
+            />
           </article>
         </li>
       ))}
