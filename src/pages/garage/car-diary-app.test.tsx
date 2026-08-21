@@ -141,6 +141,7 @@ const createHookResult = () => ({
   uploadFuelAttachmentMutation: createMutation(),
   deleteFuelAttachmentMutation: createMutation(),
   createMaintenanceReminderMutation: createMutation(),
+  updateMaintenanceReminderMutation: createMutation(),
   setMaintenanceReminderCompletedMutation: createMutation(),
   deleteMaintenanceReminderMutation: createMutation(),
   mutationError: null,

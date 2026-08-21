@@ -3,6 +3,7 @@ import type { MaintenanceReminderInput } from '@/types'
 import {
   createMaintenanceReminder,
   setMaintenanceReminderCompleted,
+  updateMaintenanceReminder,
 } from './reminder-repository'
 
 const supabase = vi.hoisted(() => ({
@@ -56,6 +57,24 @@ describe('maintenance reminder repository', () => {
     })
     expect(update).toHaveBeenNthCalledWith(2, { completed_at: null })
     expect(eq).toHaveBeenCalledTimes(2)
+    expect(eq).toHaveBeenCalledWith('id', 'reminder-1')
+  })
+
+  it('updates a reminder without changing its completion status', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null })
+    const update = vi.fn().mockReturnValue({ eq })
+    supabase.from.mockReturnValue({ update })
+
+    await expect(
+      updateMaintenanceReminder('reminder-1', reminderInput),
+    ).resolves.toBeUndefined()
+
+    expect(supabase.from).toHaveBeenCalledWith('maintenance_reminders')
+    expect(update).toHaveBeenCalledWith({
+      title: 'Oil change',
+      due_date: '2026-10-01',
+      due_mileage: 90_000,
+    })
     expect(eq).toHaveBeenCalledWith('id', 'reminder-1')
   })
 })

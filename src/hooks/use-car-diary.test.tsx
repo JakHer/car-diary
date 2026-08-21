@@ -2,7 +2,12 @@ import type { PropsWithChildren } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CarDiaryState, FuelEntryInput, VehicleInput } from '../types'
+import type {
+  CarDiaryState,
+  FuelEntryInput,
+  MaintenanceReminderInput,
+  VehicleInput,
+} from '../types'
 import { useCarDiary } from './use-car-diary'
 
 const repositoryMocks = vi.hoisted(() => ({
@@ -18,6 +23,7 @@ const repositoryMocks = vi.hoisted(() => ({
   deleteVehicle: vi.fn(),
   fetchCarDiaryState: vi.fn(),
   setMaintenanceReminderCompleted: vi.fn(),
+  updateMaintenanceReminder: vi.fn(),
   updateServiceRecord: vi.fn(),
   updateFuelEntry: vi.fn(),
   updateVehicle: vi.fn(),
@@ -68,6 +74,12 @@ const fuelEntryInput: FuelEntryInput = {
   totalCostInCents: 27_500,
   station: 'Orlen',
   fullTank: true,
+}
+
+const reminderInput: MaintenanceReminderInput = {
+  title: 'Replace timing belt',
+  dueDate: '2026-10-01',
+  dueMileage: 100_000,
 }
 
 const createWrapper = () => {
@@ -173,6 +185,30 @@ describe('useCarDiary', () => {
     expect(repositoryMocks.updateFuelEntry).toHaveBeenCalledWith(
       'fuel-1',
       fuelEntryInput,
+    )
+    await waitFor(() =>
+      expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),
+    )
+  })
+
+  it('updates a maintenance reminder and refreshes the state', async () => {
+    repositoryMocks.updateMaintenanceReminder.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useCarDiary('user-1'), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => expect(result.current.stateQuery.isSuccess).toBe(true))
+
+    await act(async () => {
+      await result.current.updateMaintenanceReminderMutation.mutateAsync({
+        reminderId: 'reminder-1',
+        input: reminderInput,
+      })
+    })
+
+    expect(repositoryMocks.updateMaintenanceReminder).toHaveBeenCalledWith(
+      'reminder-1',
+      reminderInput,
     )
     await waitFor(() =>
       expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),

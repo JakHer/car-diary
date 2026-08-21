@@ -41,6 +41,7 @@ describe('form submission state', () => {
         reminders={[]}
         onCreate={vi.fn()}
         onDelete={vi.fn()}
+        onUpdate={vi.fn()}
         onToggleCompleted={vi.fn()}
       />,
     )
