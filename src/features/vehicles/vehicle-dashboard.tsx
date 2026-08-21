@@ -32,7 +32,7 @@ interface VehicleDashboardProps {
   deletingAttachmentId: string | null
   editingRecordId: string | null
   isCreatingReminder: boolean
-  isCreatingFuelEntry: boolean
+  isSavingFuelEntry: boolean
   isSavingRecord: boolean
   isUpdatingMileage: boolean
   uploadingRecordId: string | null
@@ -52,6 +52,10 @@ interface VehicleDashboardProps {
   onDeleteVehicle: () => void
   onEditRecord: (recordId: string) => void
   onEditVehicle: () => void
+  onUpdateFuelEntry: (
+    fuelEntryId: string,
+    input: FuelEntryInput,
+  ) => Promise<void>
   onSaveRecord: (input: ServiceRecordInput) => Promise<void>
   onToggleReminder: (reminderId: string, completed: boolean) => void
   onUpdateMileage: (currentMileage: number) => Promise<void>
@@ -66,7 +70,7 @@ export const VehicleDashboard = ({
   deletingAttachmentId,
   editingRecordId,
   isCreatingReminder,
-  isCreatingFuelEntry,
+  isSavingFuelEntry,
   isSavingRecord,
   isUpdatingMileage,
   uploadingRecordId,
@@ -86,6 +90,7 @@ export const VehicleDashboard = ({
   onDeleteVehicle,
   onEditRecord,
   onEditVehicle,
+  onUpdateFuelEntry,
   onSaveRecord,
   onToggleReminder,
   onUpdateMileage,
@@ -232,11 +237,12 @@ export const VehicleDashboard = ({
         deletingAttachmentId={deletingFuelAttachmentId}
         distanceUnit={vehicle.distanceUnit}
         entries={fuelEntries}
-        isSaving={isCreatingFuelEntry}
+        isSaving={isSavingFuelEntry}
         uploadingFuelEntryId={uploadingFuelEntryId}
         onCreate={onCreateFuelEntry}
         onDelete={onDeleteFuelEntry}
         onDeleteAttachment={onDeleteFuelAttachment}
+        onUpdate={onUpdateFuelEntry}
         onUploadAttachment={onUploadFuelAttachment}
       />
 

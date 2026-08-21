@@ -50,6 +50,18 @@ export const createFuelEntry = async (
   if (error) throw error
 }
 
+export const updateFuelEntry = async (
+  fuelEntryId: string,
+  input: FuelEntryInput,
+): Promise<void> => {
+  const { error } = await getSupabaseClient()
+    .from('fuel_entries')
+    .update(toFuelEntryRow(input))
+    .eq('id', fuelEntryId)
+
+  if (error) throw error
+}
+
 export const deleteFuelEntry = async (fuelEntryId: string): Promise<void> => {
   const { error } = await getSupabaseClient()
     .from('fuel_entries')

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Fuel, Trash2 } from 'lucide-react'
+import { Fuel, Pencil, Trash2 } from 'lucide-react'
 import type { DistanceUnit, FuelAttachment, FuelEntry } from '@/types'
 import { formatDistance } from '@/lib/distance-units'
 import { IconButton } from '@/components/actions/icon-button'
@@ -17,6 +17,7 @@ interface FuelEntryListProps {
   uploadingFuelEntryId: string | null
   onDeleteAttachment: (attachmentId: string) => void
   onDelete: (fuelEntryId: string) => void
+  onEdit: (fuelEntryId: string) => void
   onUploadAttachment: (fuelEntryId: string, file: File) => void
 }
 
@@ -29,6 +30,7 @@ export const FuelEntryList = ({
   uploadingFuelEntryId,
   onDeleteAttachment,
   onDelete,
+  onEdit,
   onUploadAttachment,
 }: FuelEntryListProps) => {
   const { t } = useTranslation()
@@ -120,13 +122,21 @@ export const FuelEntryList = ({
                 onUpload={onUploadAttachment}
               />
             </div>
-            <IconButton
-              label={t('common.delete')}
-              variant="danger"
-              onClick={() => onDelete(entry.id)}
-            >
-              <Trash2 aria-hidden="true" className="size-4" />
-            </IconButton>
+            <div className="flex shrink-0 items-center gap-2">
+              <IconButton
+                label={t('common.edit')}
+                onClick={() => onEdit(entry.id)}
+              >
+                <Pencil aria-hidden="true" className="size-4" />
+              </IconButton>
+              <IconButton
+                label={t('common.delete')}
+                variant="danger"
+                onClick={() => onDelete(entry.id)}
+              >
+                <Trash2 aria-hidden="true" className="size-4" />
+              </IconButton>
+            </div>
           </li>
         )
       })}

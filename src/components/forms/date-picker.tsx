@@ -72,7 +72,7 @@ export const DatePicker = ({
       <Popover.Trigger asChild>
         <Button
           className={cn(
-            'w-full justify-between gap-3 text-left font-medium',
+            'group w-full justify-between gap-3 bg-surface text-left font-medium hover:border-ring hover:bg-surface focus-visible:border-ring',
             !selectedDate && 'text-light',
           )}
           variant="outline"
@@ -87,7 +87,7 @@ export const DatePicker = ({
               ? displayDateFormatter.format(selectedDate)
               : t('datePicker.placeholder')}
           </span>
-          <span className="shrink-0 text-muted">
+          <span className="shrink-0 text-muted transition-colors group-hover:text-accent">
             <CalendarDays
               aria-hidden="true"
               className="size-4"

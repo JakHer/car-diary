@@ -27,6 +27,7 @@ interface FuelLogProps {
   onCreate: (input: FuelEntryInput) => Promise<void>
   onDelete: (fuelEntryId: string) => void
   onDeleteAttachment: (attachmentId: string) => void
+  onUpdate: (fuelEntryId: string, input: FuelEntryInput) => Promise<void>
   onUploadAttachment: (fuelEntryId: string, file: File) => void
 }
 
@@ -41,11 +42,30 @@ export const FuelLog = ({
   onCreate,
   onDelete,
   onDeleteAttachment,
+  onUpdate,
   onUploadAttachment,
 }: FuelLogProps) => {
   const { i18n, t } = useTranslation()
   const [formOpen, setFormOpen] = useState(false)
+  const [editingEntry, setEditingEntry] = useState<FuelEntry | null>(null)
   const locale = getIntlLocale(i18n.resolvedLanguage)
+  const openCreateForm = () => {
+    setEditingEntry(null)
+    setFormOpen(true)
+  }
+  const openEditForm = (fuelEntryId: string) => {
+    const entry = entries.find(({ id }) => id === fuelEntryId)
+    if (!entry) return
+
+    setEditingEntry(entry)
+    setFormOpen(true)
+  }
+  const handleFormOpenChange = (open: boolean) => {
+    setFormOpen(open)
+    if (!open) setEditingEntry(null)
+  }
+  const saveEntry = (input: FuelEntryInput) =>
+    editingEntry ? onUpdate(editingEntry.id, input) : onCreate(input)
 
   return (
     <DashboardSection
@@ -58,7 +78,7 @@ export const FuelLog = ({
             label={t('fuel.add')}
             tooltipSide="bottom"
             variant="primary"
-            onClick={() => setFormOpen(true)}
+            onClick={openCreateForm}
           >
             <Plus aria-hidden="true" className="size-4" />
           </IconButton>
@@ -86,23 +106,28 @@ export const FuelLog = ({
         uploadingFuelEntryId={uploadingFuelEntryId}
         onDelete={onDelete}
         onDeleteAttachment={onDeleteAttachment}
+        onEdit={openEditForm}
         onUploadAttachment={onUploadAttachment}
       />
 
       <FormDialog
         closeLabel={t('fuel.close')}
-        description={t('fuel.addDescription')}
+        description={t(
+          editingEntry ? 'fuel.editDescription' : 'fuel.addDescription',
+        )}
         isBusy={isSaving}
         open={formOpen}
-        title={t('fuel.add')}
-        onOpenChange={setFormOpen}
+        title={t(editingEntry ? 'fuel.editTitle' : 'fuel.add')}
+        onOpenChange={handleFormOpenChange}
       >
         <FuelEntryForm
+          key={editingEntry?.id ?? 'new'}
           currentMileage={currentMileage}
           distanceUnit={distanceUnit}
+          entry={editingEntry ?? undefined}
           isSaving={isSaving}
-          onCreate={onCreate}
-          onCreated={() => setFormOpen(false)}
+          onSave={saveEntry}
+          onSaved={() => handleFormOpenChange(false)}
         />
       </FormDialog>
     </DashboardSection>

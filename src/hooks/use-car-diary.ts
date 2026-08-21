@@ -17,6 +17,7 @@ import {
 import {
   createFuelEntry,
   deleteFuelEntry,
+  updateFuelEntry,
 } from '@/features/fuel/fuel-repository'
 import {
   deleteFuelAttachment,
@@ -57,6 +58,11 @@ interface CreateServiceRecordVariables {
 
 interface CreateFuelEntryVariables {
   vehicleId: string
+  input: FuelEntryInput
+}
+
+interface UpdateFuelEntryVariables {
+  fuelEntryId: string
   input: FuelEntryInput
 }
 
@@ -178,6 +184,13 @@ export const useCarDiary = (userId: string) => {
     onSuccess: invalidateState,
   })
 
+  const updateFuelEntryMutation = useMutation({
+    mutationKey: [...carDiaryKeys.all, 'update-fuel-entry'],
+    mutationFn: ({ fuelEntryId, input }: UpdateFuelEntryVariables) =>
+      updateFuelEntry(fuelEntryId, input),
+    onSuccess: invalidateState,
+  })
+
   const deleteFuelEntryMutation = useMutation({
     mutationKey: [...carDiaryKeys.all, 'delete-fuel-entry'],
     mutationFn: (fuelEntryId: string) => deleteFuelEntry(fuelEntryId),
@@ -236,6 +249,7 @@ export const useCarDiary = (userId: string) => {
     uploadServiceAttachmentMutation,
     deleteServiceAttachmentMutation,
     createFuelEntryMutation,
+    updateFuelEntryMutation,
     deleteFuelEntryMutation,
     uploadFuelAttachmentMutation,
     deleteFuelAttachmentMutation,
@@ -262,6 +276,7 @@ export const useCarDiary = (userId: string) => {
     uploadServiceAttachmentMutation,
     deleteServiceAttachmentMutation,
     createFuelEntryMutation,
+    updateFuelEntryMutation,
     deleteFuelEntryMutation,
     uploadFuelAttachmentMutation,
     deleteFuelAttachmentMutation,

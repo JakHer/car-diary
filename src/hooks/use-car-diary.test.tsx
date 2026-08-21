@@ -19,6 +19,7 @@ const repositoryMocks = vi.hoisted(() => ({
   fetchCarDiaryState: vi.fn(),
   setMaintenanceReminderCompleted: vi.fn(),
   updateServiceRecord: vi.fn(),
+  updateFuelEntry: vi.fn(),
   updateVehicle: vi.fn(),
   updateVehicleMileage: vi.fn(),
   uploadServiceAttachment: vi.fn(),
@@ -147,6 +148,30 @@ describe('useCarDiary', () => {
 
     expect(repositoryMocks.createFuelEntry).toHaveBeenCalledWith(
       'vehicle-1',
+      fuelEntryInput,
+    )
+    await waitFor(() =>
+      expect(repositoryMocks.fetchCarDiaryState).toHaveBeenCalledTimes(2),
+    )
+  })
+
+  it('updates a fuel entry and refreshes the state', async () => {
+    repositoryMocks.updateFuelEntry.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useCarDiary('user-1'), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => expect(result.current.stateQuery.isSuccess).toBe(true))
+
+    await act(async () => {
+      await result.current.updateFuelEntryMutation.mutateAsync({
+        fuelEntryId: 'fuel-1',
+        input: fuelEntryInput,
+      })
+    })
+
+    expect(repositoryMocks.updateFuelEntry).toHaveBeenCalledWith(
+      'fuel-1',
       fuelEntryInput,
     )
     await waitFor(() =>

@@ -234,8 +234,12 @@ export const en = {
     stationPlaceholder: 'e.g. Orlen',
     fullTank: 'Filled to full',
     adding: 'Adding fill-up...',
+    saving: 'Saving changes...',
     add: 'Add fill-up',
+    editTitle: 'Edit fill-up',
+    saveChanges: 'Save changes',
     addDescription: 'Enter the details from your latest fuel receipt.',
+    editDescription: 'Update the details saved for this fill-up.',
     close: 'Close fuel form',
     emptyTitle: 'No fuel entries yet',
     emptyDescription:
@@ -300,6 +304,7 @@ export const en = {
     attachmentCleanupFailed:
       'Could not remove the associated files. Please try again.',
     fuelCreated: 'Fill-up added.',
+    fuelUpdated: 'Fill-up updated.',
     fuelDeleted: 'Fill-up deleted.',
     reminderCreated: 'Reminder added.',
     reminderCompleted: 'Reminder completed.',
