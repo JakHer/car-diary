@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   getVehiclePath,
   getVehicleRouteRedirect,
+  getVehicleSectionPath,
+  isVehicleSection,
 } from './vehicle-routes'
 
 const vehicles = [{ id: 'vehicle-1' }, { id: 'vehicle-2' }]
@@ -11,6 +13,17 @@ describe('vehicle routes', () => {
     expect(getVehiclePath('vehicle/with spaces')).toBe(
       '/vehicles/vehicle%2Fwith%20spaces',
     )
+  })
+
+  it('creates paths for vehicle sections', () => {
+    expect(getVehicleSectionPath('vehicle-1', 'overview')).toBe(
+      '/vehicles/vehicle-1',
+    )
+    expect(getVehicleSectionPath('vehicle-1', 'fuel')).toBe(
+      '/vehicles/vehicle-1/fuel',
+    )
+    expect(isVehicleSection('reminders')).toBe(true)
+    expect(isVehicleSection('unknown')).toBe(false)
   })
 
   it('keeps the garage root as the home dashboard', () => {

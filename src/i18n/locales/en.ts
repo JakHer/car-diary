@@ -154,6 +154,17 @@ export const en = {
     addDialogDescription: 'Enter the details for the new vehicle.',
     editDialogDescription: 'Update the vehicle profile details.',
   },
+  vehicleSections: {
+    navigation: 'Vehicle sections',
+    overview: 'Overview',
+    service: 'Service',
+    fuel: 'Fuel',
+    reminders: 'Reminders',
+    sections: 'Vehicle records',
+    serviceDescription: 'History, costs, and service attachments.',
+    fuelDescription: 'Fill-ups, consumption, and fuel expenses.',
+    remindersDescription: 'Upcoming and completed maintenance tasks.',
+  },
   mileage: {
     trigger: 'Update mileage',
     title: 'Update mileage',

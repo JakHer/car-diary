@@ -51,6 +51,16 @@ const App = () => {
 
     queryClient.clear()
   }
+  const carDiaryElement = session ? (
+    <CarDiaryApp
+      defaultDistanceUnit={defaultDistanceUnit}
+      initialActiveVehicleId={getAccountActiveVehicleId(session.user)}
+      userId={session.user.id}
+      userEmail={session.user.email ?? t('app.signedInAccount')}
+      userName={getUserName(session.user.user_metadata)}
+      onSignOut={signOut}
+    />
+  ) : null
 
   return (
     <Suspense
@@ -76,43 +86,14 @@ const App = () => {
         <Route
           element={<ProtectedRoute isAuthenticated={Boolean(session)} />}
         >
-          <Route
-            path="/"
-            element={
-              session ? (
-                <CarDiaryApp
-                  defaultDistanceUnit={defaultDistanceUnit}
-                  initialActiveVehicleId={getAccountActiveVehicleId(
-                    session.user,
-                  )}
-                  userId={session.user.id}
-                  userEmail={
-                    session.user.email ?? t('app.signedInAccount')
-                  }
-                  userName={getUserName(session.user.user_metadata)}
-                  onSignOut={signOut}
-                />
-              ) : null
-            }
-          />
+          <Route path="/" element={carDiaryElement} />
           <Route
             path="/vehicles/:vehicleId"
-            element={
-              session ? (
-                <CarDiaryApp
-                  defaultDistanceUnit={defaultDistanceUnit}
-                  initialActiveVehicleId={getAccountActiveVehicleId(
-                    session.user,
-                  )}
-                  userId={session.user.id}
-                  userEmail={
-                    session.user.email ?? t('app.signedInAccount')
-                  }
-                  userName={getUserName(session.user.user_metadata)}
-                  onSignOut={signOut}
-                />
-              ) : null
-            }
+            element={carDiaryElement}
+          />
+          <Route
+            path="/vehicles/:vehicleId/:section"
+            element={carDiaryElement}
           />
           <Route
             path="/settings"

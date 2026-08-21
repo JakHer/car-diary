@@ -159,6 +159,17 @@ export const pl = {
     addDialogDescription: 'Wprowadź dane nowego pojazdu.',
     editDialogDescription: 'Zaktualizuj dane profilu pojazdu.',
   },
+  vehicleSections: {
+    navigation: 'Sekcje pojazdu',
+    overview: 'Przegląd',
+    service: 'Serwis',
+    fuel: 'Tankowania',
+    reminders: 'Przypomnienia',
+    sections: 'Dane pojazdu',
+    serviceDescription: 'Historia, koszty i załączniki serwisowe.',
+    fuelDescription: 'Tankowania, spalanie i wydatki na paliwo.',
+    remindersDescription: 'Nadchodzące i ukończone zadania serwisowe.',
+  },
   mileage: {
     trigger: 'Zaktualizuj przebieg',
     title: 'Aktualizuj przebieg',
