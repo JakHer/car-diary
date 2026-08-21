@@ -30,7 +30,7 @@ interface VehicleDashboardProps {
   editingRecordId: string | null
   fuelAttachments: FuelAttachment[]
   fuelEntries: FuelEntry[]
-  isCreatingReminder: boolean
+  isSavingReminder: boolean
   isSavingFuelEntry: boolean
   isSavingRecord: boolean
   isUpdatingMileage: boolean
@@ -53,6 +53,10 @@ interface VehicleDashboardProps {
   onEditVehicle: () => void
   onSaveRecord: (input: ServiceRecordInput) => Promise<void>
   onToggleReminder: (reminderId: string, completed: boolean) => void
+  onUpdateReminder: (
+    reminderId: string,
+    input: MaintenanceReminderInput,
+  ) => Promise<void>
   onUpdateFuelEntry: (
     fuelEntryId: string,
     input: FuelEntryInput,
@@ -69,7 +73,7 @@ export const VehicleDashboard = ({
   editingRecordId,
   fuelAttachments,
   fuelEntries,
-  isCreatingReminder,
+  isSavingReminder,
   isSavingFuelEntry,
   isSavingRecord,
   isUpdatingMileage,
@@ -92,6 +96,7 @@ export const VehicleDashboard = ({
   onEditVehicle,
   onSaveRecord,
   onToggleReminder,
+  onUpdateReminder,
   onUpdateFuelEntry,
   onUpdateMileage,
   onUploadAttachment,
@@ -170,11 +175,12 @@ export const VehicleDashboard = ({
         <MaintenanceReminders
           currentMileage={vehicle.currentMileage}
           distanceUnit={vehicle.distanceUnit}
-          isSaving={isCreatingReminder}
+          isSaving={isSavingReminder}
           reminders={reminders}
           onCreate={onCreateReminder}
           onDelete={onDeleteReminder}
           onToggleCompleted={onToggleReminder}
+          onUpdate={onUpdateReminder}
         />
       )}
 

@@ -49,6 +49,7 @@ describe('MaintenanceReminders', () => {
         reminders={[]}
         onCreate={onCreate}
         onDelete={vi.fn()}
+        onUpdate={vi.fn()}
         onToggleCompleted={vi.fn()}
       />,
     )
@@ -76,6 +77,7 @@ describe('MaintenanceReminders', () => {
         reminders={[reminder]}
         onCreate={vi.fn().mockResolvedValue(undefined)}
         onDelete={onDelete}
+        onUpdate={vi.fn()}
         onToggleCompleted={onToggleCompleted}
       />,
     )
@@ -85,5 +87,49 @@ describe('MaintenanceReminders', () => {
 
     expect(onToggleCompleted).toHaveBeenCalledWith('reminder-1', true)
     expect(onDelete).toHaveBeenCalledWith('reminder-1')
+  })
+
+  it('edits an existing reminder with its current values', async () => {
+    const user = userEvent.setup()
+    const onUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(
+      <MaintenanceReminders
+        currentMileage={86_200}
+        distanceUnit="km"
+        isSaving={false}
+        reminders={[reminder]}
+        onCreate={vi.fn()}
+        onDelete={vi.fn()}
+        onUpdate={onUpdate}
+        onToggleCompleted={vi.fn()}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }))
+
+    expect(
+      screen.getByRole('heading', { name: 'Edit reminder' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Reminder')).toHaveValue(
+      'Replace timing belt',
+    )
+    expect(screen.getByLabelText('Due mileage (km)')).toHaveValue(100_000)
+
+    await user.clear(screen.getByLabelText('Reminder'))
+    await user.type(
+      screen.getByLabelText('Reminder'),
+      'Replace timing chain',
+    )
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    expect(onUpdate).toHaveBeenCalledWith('reminder-1', {
+      title: 'Replace timing chain',
+      dueDate: '2026-09-01',
+      dueMileage: 100_000,
+    })
+    expect(
+      screen.queryByRole('heading', { name: 'Edit reminder' }),
+    ).not.toBeInTheDocument()
   })
 })
