@@ -41,10 +41,19 @@ vi.mock('@/components/layout/app-header', () => ({
 }))
 
 vi.mock('@/features/vehicles/vehicle-dashboard', () => ({
-  VehicleDashboard: ({ vehicle }: { vehicle: Vehicle }) => (
-    <h1>
-      {vehicle.make} {vehicle.model}
-    </h1>
+  VehicleDashboard: ({
+    section,
+    vehicle,
+  }: {
+    section: string
+    vehicle: Vehicle
+  }) => (
+    <div>
+      <h1>
+        {vehicle.make} {vehicle.model}
+      </h1>
+      <output data-testid="vehicle-section">{section}</output>
+    </div>
   ),
 }))
 
@@ -171,6 +180,10 @@ const renderGarage = (initialPath: string) =>
       <Routes>
         <Route path="/" element={<GarageRoute />} />
         <Route path="/vehicles/:vehicleId" element={<GarageRoute />} />
+        <Route
+          path="/vehicles/:vehicleId/:section"
+          element={<GarageRoute />}
+        />
       </Routes>
     </MemoryRouter>,
   )
@@ -185,6 +198,25 @@ describe('CarDiaryApp vehicle routing', () => {
 
     expect(screen.getByRole('heading', { name: 'Volvo V60' })).toBeVisible()
     expect(screen.getByTestId('header-vehicle')).toHaveTextContent('vehicle-2')
+    expect(screen.getByTestId('vehicle-section')).toHaveTextContent('overview')
+  })
+
+  it('renders a vehicle section requested by a direct URL', () => {
+    renderGarage('/vehicles/vehicle-2/fuel')
+
+    expect(screen.getByRole('heading', { name: 'Volvo V60' })).toBeVisible()
+    expect(screen.getByTestId('vehicle-section')).toHaveTextContent('fuel')
+  })
+
+  it('redirects an unknown vehicle section to its overview', async () => {
+    renderGarage('/vehicles/vehicle-2/unknown')
+
+    await waitFor(() =>
+      expect(screen.getByTestId('current-route')).toHaveTextContent(
+        '/vehicles/vehicle-2',
+      ),
+    )
+    expect(screen.getByTestId('vehicle-section')).toHaveTextContent('overview')
   })
 
   it('renders the home dashboard at the garage root', () => {

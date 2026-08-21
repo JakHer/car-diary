@@ -24,6 +24,7 @@ import { saveActiveVehicleId } from '@/lib/account-preferences'
 import {
   getVehiclePath,
   getVehicleRouteRedirect,
+  isVehicleSection,
 } from '@/app/routing/vehicle-routes'
 import type {
   CarDiaryState,
@@ -67,7 +68,15 @@ const CarDiaryApp = ({
 }: CarDiaryAppProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { vehicleId: routeVehicleId } = useParams<{ vehicleId: string }>()
+  const {
+    section: routeSectionParam,
+    vehicleId: routeVehicleId,
+  } = useParams<{ section: string; vehicleId: string }>()
+  const vehicleSection = routeSectionParam
+    ? isVehicleSection(routeSectionParam)
+      ? routeSectionParam
+      : null
+    : 'overview'
   const {
     stateQuery,
     createVehicleMutation,
@@ -497,6 +506,14 @@ const CarDiaryApp = ({
     return <Navigate replace to={vehicleRouteRedirect} />
   }
 
+  if (routeVehicleId && routeSectionParam === 'overview') {
+    return <Navigate replace to={getVehiclePath(routeVehicleId)} />
+  }
+
+  if (routeVehicleId && !vehicleSection) {
+    return <Navigate replace to={getVehiclePath(routeVehicleId)} />
+  }
+
   return (
     <div
       className="mx-auto flex min-h-svh w-[calc(100%_-_40px)] max-w-[1180px] flex-col max-[700px]:w-[calc(100%_-_28px)]"
@@ -598,6 +615,7 @@ const CarDiaryApp = ({
               : null
           }
           reminders={activeReminders}
+          section={vehicleSection ?? 'overview'}
           fuelEntries={activeFuelEntries}
           records={activeRecords}
           vehicle={activeVehicle}

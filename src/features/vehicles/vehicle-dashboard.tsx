@@ -1,66 +1,62 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
-import { MaintenanceReminders } from '@/features/reminders/maintenance-reminders'
-import { FuelLog } from '@/features/fuel/fuel-log'
-import { FormDialog } from '@/components/overlays/form-dialog'
-import { IconButton } from '@/components/actions/icon-button'
-import { StatCard } from '@/components/data-display/stat-card'
-import { PageHeader } from '@/components/layout/page-header'
-import { PageLayout } from '@/components/layout/page-layout'
-import { MileageDialog } from './mileage-dialog'
-import { ServiceForm } from '@/features/service-records/service-form'
-import { ServiceHistory } from '@/features/service-records/service-history'
-import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button-variants'
-import { cn } from '@/lib/utils'
+import type { VehicleSection } from '@/app/routing/vehicle-routes'
 import type {
+  FuelAttachment,
+  FuelEntry,
+  FuelEntryInput,
   MaintenanceReminder,
   MaintenanceReminderInput,
-  FuelEntry,
-  FuelAttachment,
-  FuelEntryInput,
-  ServiceRecord,
   ServiceAttachment,
+  ServiceRecord,
   ServiceRecordInput,
   Vehicle,
 } from '@/types'
 import { getIntlLocale } from '@/i18n'
+import { FuelLog } from '@/features/fuel/fuel-log'
+import { MaintenanceReminders } from '@/features/reminders/maintenance-reminders'
+import { ServiceForm } from '@/features/service-records/service-form'
+import { ServiceHistory } from '@/features/service-records/service-history'
+import { FormDialog } from '@/components/overlays/form-dialog'
+import { PageLayout } from '@/components/layout/page-layout'
+import { VehicleOverview } from './vehicle-overview'
+import { VehiclePageHeader } from './vehicle-page-header'
+import { VehicleSectionNavigation } from './vehicle-section-navigation'
 
 interface VehicleDashboardProps {
   attachments: ServiceAttachment[]
-  fuelAttachments: FuelAttachment[]
-  deletingFuelAttachmentId: string | null
   deletingAttachmentId: string | null
+  deletingFuelAttachmentId: string | null
   editingRecordId: string | null
+  fuelAttachments: FuelAttachment[]
+  fuelEntries: FuelEntry[]
   isCreatingReminder: boolean
   isSavingFuelEntry: boolean
   isSavingRecord: boolean
   isUpdatingMileage: boolean
-  uploadingRecordId: string | null
-  uploadingFuelEntryId: string | null
-  reminders: MaintenanceReminder[]
-  fuelEntries: FuelEntry[]
   records: ServiceRecord[]
+  reminders: MaintenanceReminder[]
+  section: VehicleSection
+  uploadingFuelEntryId: string | null
+  uploadingRecordId: string | null
   vehicle: Vehicle
   onCancelRecordEdit: () => void
-  onCreateReminder: (input: MaintenanceReminderInput) => Promise<void>
   onCreateFuelEntry: (input: FuelEntryInput) => Promise<void>
-  onDeleteFuelEntry: (fuelEntryId: string) => void
-  onDeleteFuelAttachment: (attachmentId: string) => void
-  onDeleteRecord: (recordId: string) => void
+  onCreateReminder: (input: MaintenanceReminderInput) => Promise<void>
   onDeleteAttachment: (attachmentId: string) => void
+  onDeleteFuelAttachment: (attachmentId: string) => void
+  onDeleteFuelEntry: (fuelEntryId: string) => void
+  onDeleteRecord: (recordId: string) => void
   onDeleteReminder: (reminderId: string) => void
   onDeleteVehicle: () => void
   onEditRecord: (recordId: string) => void
   onEditVehicle: () => void
+  onSaveRecord: (input: ServiceRecordInput) => Promise<void>
+  onToggleReminder: (reminderId: string, completed: boolean) => void
   onUpdateFuelEntry: (
     fuelEntryId: string,
     input: FuelEntryInput,
   ) => Promise<void>
-  onSaveRecord: (input: ServiceRecordInput) => Promise<void>
-  onToggleReminder: (reminderId: string, completed: boolean) => void
   onUpdateMileage: (currentMileage: number) => Promise<void>
   onUploadAttachment: (recordId: string, file: File) => void
   onUploadFuelAttachment: (fuelEntryId: string, file: File) => void
@@ -68,34 +64,35 @@ interface VehicleDashboardProps {
 
 export const VehicleDashboard = ({
   attachments,
-  fuelAttachments,
-  deletingFuelAttachmentId,
   deletingAttachmentId,
+  deletingFuelAttachmentId,
   editingRecordId,
+  fuelAttachments,
+  fuelEntries,
   isCreatingReminder,
   isSavingFuelEntry,
   isSavingRecord,
   isUpdatingMileage,
-  uploadingRecordId,
-  uploadingFuelEntryId,
-  reminders,
-  fuelEntries,
   records,
+  reminders,
+  section,
+  uploadingFuelEntryId,
+  uploadingRecordId,
   vehicle,
   onCancelRecordEdit,
-  onCreateReminder,
   onCreateFuelEntry,
-  onDeleteFuelEntry,
-  onDeleteFuelAttachment,
-  onDeleteRecord,
+  onCreateReminder,
   onDeleteAttachment,
+  onDeleteFuelAttachment,
+  onDeleteFuelEntry,
+  onDeleteRecord,
   onDeleteReminder,
   onDeleteVehicle,
   onEditRecord,
   onEditVehicle,
-  onUpdateFuelEntry,
   onSaveRecord,
   onToggleReminder,
+  onUpdateFuelEntry,
   onUpdateMileage,
   onUploadAttachment,
   onUploadFuelAttachment,
@@ -105,29 +102,8 @@ export const VehicleDashboard = ({
     Boolean(editingRecordId),
   )
   const locale = getIntlLocale(i18n.resolvedLanguage)
-  const currencyFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: 'PLN',
-        maximumFractionDigits: 0,
-      }),
-    [locale],
-  )
-  const lastServiceFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat(locale, {
-        month: 'short',
-        year: 'numeric',
-      }),
-    [locale],
-  )
   const editingRecord = records.find(
     (record) => record.id === editingRecordId,
-  )
-  const totalCost = records.reduce(
-    (sum, record) => sum + record.costInCents,
-    0,
   )
   const openNewServiceRecord = () => {
     onCancelRecordEdit()
@@ -153,137 +129,72 @@ export const VehicleDashboard = ({
 
   return (
     <PageLayout>
-      <Link
-        className={cn(
-          buttonVariants({ variant: 'link', size: 'sm' }),
-          'mb-7 h-auto gap-2 p-0 text-muted no-underline hover:text-accent',
-        )}
-        to="/"
-      >
-        <ArrowLeft aria-hidden="true" className="size-4" />
-        {t('dashboard.backHome')}
-      </Link>
-      <PageHeader
-        aside={
-          <div className="grid shrink-0 justify-items-end max-[700px]:justify-items-start">
-            <span className="mb-1.5 text-xs font-bold tracking-[0.04em] text-muted uppercase">
-              {t('dashboard.currentMileage')}
-            </span>
-            <strong className="text-[clamp(32px,5vw,48px)] leading-none tracking-[-0.04em] text-strong">
-              {vehicle.currentMileage.toLocaleString(locale)}
-              <small className="ml-1 text-[0.45em] tracking-normal text-muted">
-                {vehicle.distanceUnit}
-              </small>
-            </strong>
-            <MileageDialog
-              currentMileage={vehicle.currentMileage}
-              distanceUnit={vehicle.distanceUnit}
-              isSaving={isUpdatingMileage}
-              vehicleName={`${vehicle.make} ${vehicle.model}`}
-              onSave={onUpdateMileage}
-            />
-          </div>
-        }
-        eyebrow={t('dashboard.activeVehicle')}
-        size="display"
-        title={`${vehicle.make} ${vehicle.model}`}
-      >
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">{vehicle.year}</Badge>
-            {vehicle.registrationNumber && (
-              <Badge variant="secondary">{vehicle.registrationNumber}</Badge>
-            )}
-            {vehicle.vin && (
-              <Badge variant="secondary">VIN {vehicle.vin}</Badge>
-            )}
-            <div className="ml-1 flex gap-1.5 border-l border-border pl-3">
-              <IconButton
-                label={t('dashboard.editVehicle')}
-                tooltipSide="bottom"
-                onClick={onEditVehicle}
-              >
-                <Pencil aria-hidden="true" className="size-4" />
-              </IconButton>
-              <IconButton
-                label={t('dashboard.deleteVehicle')}
-                tooltipSide="bottom"
-                variant="danger"
-                onClick={onDeleteVehicle}
-              >
-                <Trash2 aria-hidden="true" className="size-4" />
-              </IconButton>
-            </div>
-          </div>
-      </PageHeader>
-
-      <section
-        className="mt-11 grid grid-cols-3 gap-4 max-[700px]:grid-cols-1 max-[700px]:gap-3"
-        aria-label={t('dashboard.summaryAria')}
-      >
-        <StatCard
-          description={t('dashboard.recordedForVehicle')}
-          label={t('dashboard.serviceEntries')}
-          value={records.length}
-        />
-        <StatCard
-          description={t('dashboard.acrossEntries')}
-          label={t('dashboard.totalServiceCost')}
-          value={currencyFormatter.format(totalCost / 100)}
-        />
-        <StatCard
-          description={records[0]?.title ?? t('dashboard.addFirstRecord')}
-          label={t('dashboard.lastService')}
-          value={
-            records[0]
-              ? lastServiceFormatter.format(
-                  new Date(`${records[0].date}T12:00:00`),
-                )
-              : t('dashboard.notYet')
-          }
-        />
-      </section>
-
-      <FuelLog
-        attachments={fuelAttachments}
-        key={vehicle.id}
-        currentMileage={vehicle.currentMileage}
-        deletingAttachmentId={deletingFuelAttachmentId}
-        distanceUnit={vehicle.distanceUnit}
-        entries={fuelEntries}
-        isSaving={isSavingFuelEntry}
-        uploadingFuelEntryId={uploadingFuelEntryId}
-        onCreate={onCreateFuelEntry}
-        onDelete={onDeleteFuelEntry}
-        onDeleteAttachment={onDeleteFuelAttachment}
-        onUpdate={onUpdateFuelEntry}
-        onUploadAttachment={onUploadFuelAttachment}
+      <VehiclePageHeader
+        isUpdatingMileage={isUpdatingMileage}
+        locale={locale}
+        vehicle={vehicle}
+        onDeleteVehicle={onDeleteVehicle}
+        onEditVehicle={onEditVehicle}
+        onUpdateMileage={onUpdateMileage}
       />
+      <VehicleSectionNavigation vehicleId={vehicle.id} />
 
-      <MaintenanceReminders
-        currentMileage={vehicle.currentMileage}
-        distanceUnit={vehicle.distanceUnit}
-        isSaving={isCreatingReminder}
-        reminders={reminders}
-        onCreate={onCreateReminder}
-        onDelete={onDeleteReminder}
-        onToggleCompleted={onToggleReminder}
-      />
-
-      <div className="mt-6">
-        <ServiceHistory
-          attachments={attachments}
-          deletingAttachmentId={deletingAttachmentId}
-          distanceUnit={vehicle.distanceUnit}
+      {section === 'overview' && (
+        <VehicleOverview
+          fuelEntries={fuelEntries}
+          locale={locale}
           records={records}
-          editingRecordId={editingRecordId}
-          uploadingRecordId={uploadingRecordId}
-          onAdd={openNewServiceRecord}
-          onDelete={onDeleteRecord}
-          onDeleteAttachment={onDeleteAttachment}
-          onEdit={openServiceRecordEdit}
-          onUploadAttachment={onUploadAttachment}
+          reminders={reminders}
+          vehicleId={vehicle.id}
         />
-      </div>
+      )}
+
+      {section === 'fuel' && (
+        <FuelLog
+          attachments={fuelAttachments}
+          currentMileage={vehicle.currentMileage}
+          deletingAttachmentId={deletingFuelAttachmentId}
+          distanceUnit={vehicle.distanceUnit}
+          entries={fuelEntries}
+          isSaving={isSavingFuelEntry}
+          uploadingFuelEntryId={uploadingFuelEntryId}
+          onCreate={onCreateFuelEntry}
+          onDelete={onDeleteFuelEntry}
+          onDeleteAttachment={onDeleteFuelAttachment}
+          onUpdate={onUpdateFuelEntry}
+          onUploadAttachment={onUploadFuelAttachment}
+        />
+      )}
+
+      {section === 'reminders' && (
+        <MaintenanceReminders
+          currentMileage={vehicle.currentMileage}
+          distanceUnit={vehicle.distanceUnit}
+          isSaving={isCreatingReminder}
+          reminders={reminders}
+          onCreate={onCreateReminder}
+          onDelete={onDeleteReminder}
+          onToggleCompleted={onToggleReminder}
+        />
+      )}
+
+      {section === 'service' && (
+        <div className="mt-6">
+          <ServiceHistory
+            attachments={attachments}
+            deletingAttachmentId={deletingAttachmentId}
+            distanceUnit={vehicle.distanceUnit}
+            editingRecordId={editingRecordId}
+            records={records}
+            uploadingRecordId={uploadingRecordId}
+            onAdd={openNewServiceRecord}
+            onDelete={onDeleteRecord}
+            onDeleteAttachment={onDeleteAttachment}
+            onEdit={openServiceRecordEdit}
+            onUploadAttachment={onUploadAttachment}
+          />
+        </div>
+      )}
 
       <FormDialog
         closeLabel={t('service.close')}
