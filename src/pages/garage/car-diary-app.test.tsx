@@ -215,6 +215,15 @@ describe('CarDiaryApp vehicle routing', () => {
     expect(screen.getByTestId('vehicle-section')).toHaveTextContent('fuel')
   })
 
+  it('renders vehicle statistics requested by a direct URL', () => {
+    renderGarage('/vehicles/vehicle-2/statistics')
+
+    expect(screen.getByRole('heading', { name: 'Volvo V60' })).toBeVisible()
+    expect(screen.getByTestId('vehicle-section')).toHaveTextContent(
+      'statistics',
+    )
+  })
+
   it('redirects an unknown vehicle section to its overview', async () => {
     renderGarage('/vehicles/vehicle-2/unknown')
 

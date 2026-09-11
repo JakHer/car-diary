@@ -167,10 +167,37 @@ export const pl = {
     service: 'Serwis',
     fuel: 'Tankowania',
     reminders: 'Przypomnienia',
+    statistics: 'Statystyki',
     sections: 'Dane pojazdu',
     serviceDescription: 'Historia, koszty i załączniki serwisowe.',
     fuelDescription: 'Tankowania, spalanie i wydatki na paliwo.',
     remindersDescription: 'Nadchodzące i ukończone zadania serwisowe.',
+  },
+  statistics: {
+    eyebrow: 'Koszty w czasie',
+    monthlyTitle: 'Miesięczne wydatki',
+    year: 'Rok statystyk',
+    summaryAria: 'Podsumowanie kosztów pojazdu w {{year}} roku',
+    totalCosts: 'Łączne koszty',
+    totalDescription: 'Wydatki na paliwo i serwis w {{year}} roku.',
+    serviceCosts: 'Serwis',
+    serviceDescription: 'Przeglądy, naprawy i konserwacja.',
+    fuelCosts: 'Paliwo',
+    fuelDescription: 'Wszystkie tankowania zapisane w tym roku.',
+    monthlyAverage: 'Średnio miesięcznie',
+    averageDescription: 'Średnia z miesięcy, które upłynęły w {{year}} roku.',
+    costPerDistance: 'Koszt na {{unit}}',
+    costPerDistanceValue: '{{value}}/{{unit}}',
+    costPerDistanceDescription:
+      'Na podstawie pierwszego i ostatniego zapisanego przebiegu.',
+    recordedDistance: 'Zarejestrowany przebieg',
+    recordedDistanceDescription:
+      'Różnica między najniższym i najwyższym odczytem w roku.',
+    emptyTitle: 'Brak wydatków w tym roku',
+    emptyDescription:
+      'Koszty serwisu i paliwa pojawią się po dodaniu wpisów.',
+    monthSummary:
+      '{{month}}: łącznie {{total}}, serwis {{service}}, paliwo {{fuel}}.',
   },
   assistance: {
     eyebrow: 'W nagłej sytuacji',

@@ -162,10 +162,37 @@ export const en = {
     service: 'Service',
     fuel: 'Fuel',
     reminders: 'Reminders',
+    statistics: 'Statistics',
     sections: 'Vehicle records',
     serviceDescription: 'History, costs, and service attachments.',
     fuelDescription: 'Fill-ups, consumption, and fuel expenses.',
     remindersDescription: 'Upcoming and completed maintenance tasks.',
+  },
+  statistics: {
+    eyebrow: 'Costs over time',
+    monthlyTitle: 'Monthly expenses',
+    year: 'Statistics year',
+    summaryAria: 'Vehicle cost summary for {{year}}',
+    totalCosts: 'Total costs',
+    totalDescription: 'Fuel and service expenses in {{year}}.',
+    serviceCosts: 'Service',
+    serviceDescription: 'Maintenance, repairs, and inspections.',
+    fuelCosts: 'Fuel',
+    fuelDescription: 'All fill-ups recorded in this year.',
+    monthlyAverage: 'Monthly average',
+    averageDescription: 'Average across elapsed months in {{year}}.',
+    costPerDistance: 'Cost per {{unit}}',
+    costPerDistanceValue: '{{value}}/{{unit}}',
+    costPerDistanceDescription:
+      'Based on the first and last recorded odometer readings.',
+    recordedDistance: 'Recorded distance',
+    recordedDistanceDescription:
+      'Distance between the lowest and highest yearly readings.',
+    emptyTitle: 'No expenses for this year',
+    emptyDescription:
+      'Service and fuel costs will appear here after you add entries.',
+    monthSummary:
+      '{{month}}: {{total}} total, {{service}} service, {{fuel}} fuel.',
   },
   assistance: {
     eyebrow: 'In an emergency',
