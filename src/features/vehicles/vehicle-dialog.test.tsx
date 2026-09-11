@@ -12,6 +12,9 @@ const vehicle: Vehicle = {
   year: 2021,
   registrationNumber: 'WX 1234A',
   vin: '',
+  insurerName: '',
+  policyNumber: '',
+  assistancePhone: '',
   startingMileage: 80_000,
   currentMileage: 86_200,
   distanceUnit: 'km',
@@ -89,6 +92,31 @@ describe('VehicleDialog', () => {
     await user.keyboard('{Escape}')
 
     expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('loads saved insurance and assistance details', () => {
+    render(
+      <VehicleDialog
+        defaultDistanceUnit="km"
+        isSaving={false}
+        mode="edit"
+        open
+        vehicle={{
+          ...vehicle,
+          insurerName: 'PZU',
+          policyNumber: 'POL-123',
+          assistancePhone: '+48 22 123 45 67',
+        }}
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Insurer')).toHaveValue('PZU')
+    expect(screen.getByLabelText('Policy number')).toHaveValue('POL-123')
+    expect(screen.getByLabelText('Assistance phone number')).toHaveValue(
+      '+48 22 123 45 67',
+    )
   })
 
   it('returns focus after closing', async () => {

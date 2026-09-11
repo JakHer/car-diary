@@ -71,6 +71,7 @@ repository instead of being made directly in the remote dashboard.
 - fuel fill-ups with mileage, volume, cost, station, and full-tank tracking,
 - automatic forward-only mileage updates from service and fuel entries,
 - maintenance reminders based on date, mileage, or both,
+- roadside assistance contact and insurance policy details per vehicle,
 - upcoming, due, completed, and reopened reminder states,
 - email and password authentication,
 - Supabase-backed vehicle, service record, and reminder storage,

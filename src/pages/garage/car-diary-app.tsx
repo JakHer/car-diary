@@ -586,6 +586,7 @@ const CarDiaryApp = ({
           onCreateFuelEntry={createFuel}
           onCreateReminder={createReminder}
           onCreateServiceRecord={saveServiceRecord}
+          onEditVehicle={() => setVehicleFormMode('edit')}
           onOpenVehicle={() => navigate(getVehiclePath(activeVehicle.id))}
           onOpenVehicleSection={(section) =>
             navigate(getVehicleSectionPath(activeVehicle.id, section))

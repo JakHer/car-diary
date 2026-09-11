@@ -12,6 +12,9 @@ const vehicle: Vehicle = {
   year: 2022,
   registrationNumber: 'WU0721P',
   vin: '',
+  insurerName: 'PZU',
+  policyNumber: 'POL-123',
+  assistancePhone: '+48 22 123 45 67',
   distanceUnit: 'km',
   startingMileage: 45_000,
   currentMileage: 46_000,
@@ -53,7 +56,13 @@ const reminder: MaintenanceReminder = {
   createdAt: '2026-08-20T10:00:00.000Z',
 }
 
-const renderDashboard = () => {
+const renderDashboard = ({
+  dashboardVehicle = vehicle,
+  onEditVehicle = vi.fn(),
+}: {
+  dashboardVehicle?: Vehicle
+  onEditVehicle?: () => void
+} = {}) => {
   const onOpenVehicle = vi.fn()
   const onOpenVehicleSection = vi.fn()
 
@@ -67,17 +76,18 @@ const renderDashboard = () => {
       records={[record]}
       reminders={[reminder]}
       userName="Kuba"
-      vehicle={vehicle}
+      vehicle={dashboardVehicle}
       onCreateFuelEntry={vi.fn().mockResolvedValue(undefined)}
       onCreateReminder={vi.fn().mockResolvedValue(undefined)}
       onCreateServiceRecord={vi.fn().mockResolvedValue(undefined)}
+      onEditVehicle={onEditVehicle}
       onOpenVehicle={onOpenVehicle}
       onOpenVehicleSection={onOpenVehicleSection}
       onUpdateMileage={vi.fn().mockResolvedValue(undefined)}
     />,
   )
 
-  return { ...view, onOpenVehicle, onOpenVehicleSection }
+  return { ...view, onEditVehicle, onOpenVehicle, onOpenVehicleSection }
 }
 
 describe('HomeDashboard', () => {
@@ -134,5 +144,28 @@ describe('HomeDashboard', () => {
     expect(onOpenVehicleSection).toHaveBeenNthCalledWith(1, 'reminders')
     expect(onOpenVehicleSection).toHaveBeenNthCalledWith(2, 'fuel')
     expect(onOpenVehicleSection).toHaveBeenNthCalledWith(3, 'service')
+  })
+
+  it('provides a direct assistance call link', () => {
+    renderDashboard()
+
+    expect(
+      screen.getByRole('link', { name: /Call assistance/ }),
+    ).toHaveAttribute('href', 'tel:+48221234567')
+  })
+
+  it('opens vehicle editing when the assistance contact is missing', async () => {
+    const user = userEvent.setup()
+    const onEditVehicle = vi.fn()
+    renderDashboard({
+      dashboardVehicle: { ...vehicle, assistancePhone: '' },
+      onEditVehicle,
+    })
+
+    await user.click(
+      screen.getByRole('button', { name: 'Add assistance contact' }),
+    )
+
+    expect(onEditVehicle).toHaveBeenCalledOnce()
   })
 })

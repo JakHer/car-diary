@@ -167,6 +167,21 @@ export const en = {
     fuelDescription: 'Fill-ups, consumption, and fuel expenses.',
     remindersDescription: 'Upcoming and completed maintenance tasks.',
   },
+  assistance: {
+    eyebrow: 'In an emergency',
+    title: 'Roadside assistance',
+    formTitle: 'Insurance and assistance',
+    formDescription:
+      'Keep the details you may need after a breakdown or collision.',
+    insurerName: 'Insurer',
+    insurerPlaceholder: 'e.g. PZU',
+    policyNumber: 'Policy number',
+    phone: 'Assistance phone number',
+    phonePlaceholder: 'e.g. +48 22 123 45 67',
+    call: 'Call assistance',
+    add: 'Add assistance contact',
+    policy: 'Policy {{number}}',
+  },
   mileage: {
     trigger: 'Update mileage',
     title: 'Update mileage',
@@ -357,6 +372,10 @@ export const en = {
   validation: {
     required: '{{field}} is required.',
     maxLength: '{{field}} must be at most {{maximum}} characters.',
+    insurerNameMax: 'Insurer must be at most 120 characters.',
+    policyNumberMax: 'Policy number must be at most 80 characters.',
+    assistancePhoneMax: 'Phone number must be at most 32 characters.',
+    validPhone: 'Enter a valid phone number.',
     enterMileage: 'Enter the mileage.',
     wholeMileage: 'Mileage must be a whole number.',
     negativeMileage: 'Mileage cannot be negative.',
