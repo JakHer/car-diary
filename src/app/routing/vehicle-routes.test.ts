@@ -23,6 +23,10 @@ describe('vehicle routes', () => {
       '/vehicles/vehicle-1/fuel',
     )
     expect(isVehicleSection('reminders')).toBe(true)
+    expect(getVehicleSectionPath('vehicle-1', 'statistics')).toBe(
+      '/vehicles/vehicle-1/statistics',
+    )
+    expect(isVehicleSection('statistics')).toBe(true)
     expect(isVehicleSection('unknown')).toBe(false)
   })
 

@@ -7,6 +7,7 @@ export type VehicleSection =
   | 'service'
   | 'fuel'
   | 'reminders'
+  | 'statistics'
 
 export const isVehicleSection = (
   value: string | undefined,
@@ -14,7 +15,8 @@ export const isVehicleSection = (
   value === 'overview' ||
   value === 'service' ||
   value === 'fuel' ||
-  value === 'reminders'
+  value === 'reminders' ||
+  value === 'statistics'
 
 export const getVehiclePath = (vehicleId: string): string =>
   `/vehicles/${encodeURIComponent(vehicleId)}`

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
-import { BellRing, Fuel, LayoutDashboard, Wrench } from 'lucide-react'
+import { BarChart3, BellRing, Fuel, LayoutDashboard, Wrench } from 'lucide-react'
 import {
   getVehicleSectionPath,
   type VehicleSection,
@@ -16,6 +16,7 @@ const sections = [
   { id: 'service', icon: Wrench },
   { id: 'fuel', icon: Fuel },
   { id: 'reminders', icon: BellRing },
+  { id: 'statistics', icon: BarChart3 },
 ] satisfies Array<{ id: VehicleSection; icon: typeof LayoutDashboard }>
 
 export const VehicleSectionNavigation = ({

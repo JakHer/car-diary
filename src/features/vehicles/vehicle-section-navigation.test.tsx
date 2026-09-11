@@ -36,5 +36,9 @@ describe('VehicleSectionNavigation', () => {
       'href',
       '/vehicles/vehicle-1/reminders',
     )
+    expect(screen.getByRole('link', { name: 'Statistics' })).toHaveAttribute(
+      'href',
+      '/vehicles/vehicle-1/statistics',
+    )
   })
 })

@@ -17,6 +17,7 @@ import { FuelLog } from '@/features/fuel/fuel-log'
 import { MaintenanceReminders } from '@/features/reminders/maintenance-reminders'
 import { ServiceForm } from '@/features/service-records/service-form'
 import { ServiceHistory } from '@/features/service-records/service-history'
+import { VehicleStatistics } from '@/features/statistics/vehicle-statistics'
 import { FormDialog } from '@/components/overlays/form-dialog'
 import { PageLayout } from '@/components/layout/page-layout'
 import { VehicleOverview } from './vehicle-overview'
@@ -182,6 +183,15 @@ export const VehicleDashboard = ({
           onDelete={onDeleteReminder}
           onToggleCompleted={onToggleReminder}
           onUpdate={onUpdateReminder}
+        />
+      )}
+
+      {section === 'statistics' && (
+        <VehicleStatistics
+          distanceUnit={vehicle.distanceUnit}
+          fuelEntries={fuelEntries}
+          locale={locale}
+          records={records}
         />
       )}
 

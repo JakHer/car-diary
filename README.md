@@ -70,6 +70,7 @@ repository instead of being made directly in the remote dashboard.
 - service timeline and vehicle summary,
 - fuel fill-ups with mileage, volume, cost, station, and full-tank tracking,
 - automatic forward-only mileage updates from service and fuel entries,
+- yearly vehicle cost statistics with a monthly fuel and service breakdown,
 - maintenance reminders based on date, mileage, or both,
 - roadside assistance contact and insurance policy details per vehicle,
 - upcoming, due, completed, and reopened reminder states,
