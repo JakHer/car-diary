@@ -63,6 +63,9 @@ const vehicleInput: VehicleInput = {
   year: 2021,
   registrationNumber: 'WX 1234A',
   vin: '',
+  insurerName: '',
+  policyNumber: '',
+  assistancePhone: '',
   currentMileage: 86_200,
   distanceUnit: 'km',
 }

@@ -63,6 +63,9 @@ export const VehicleForm = ({
       currentMileage: vehicle?.currentMileage,
       registrationNumber: vehicle?.registrationNumber ?? '',
       vin: vehicle?.vin ?? '',
+      insurerName: vehicle?.insurerName ?? '',
+      policyNumber: vehicle?.policyNumber ?? '',
+      assistancePhone: vehicle?.assistancePhone ?? '',
     },
     mode: 'onBlur',
   })
@@ -206,6 +209,53 @@ export const VehicleForm = ({
             {...register('vin')}
           />
           <FieldError message={errors.vin?.message} />
+        </Field>
+
+        <div className="col-span-full mt-2 border-t border-border pt-6">
+          <h3 className="m-0 text-base font-bold text-strong">
+            {t('assistance.formTitle')}
+          </h3>
+          <p className="mt-1.5 mb-0 text-xs leading-relaxed text-muted">
+            {t('assistance.formDescription')}
+          </p>
+        </div>
+
+        <Field>
+          <span>{t('assistance.insurerName')}</span>
+          <Input
+            maxLength={120}
+            placeholder={t('assistance.insurerPlaceholder')}
+            aria-label={t('assistance.insurerName')}
+            aria-invalid={Boolean(errors.insurerName)}
+            {...register('insurerName')}
+          />
+          <FieldError message={errors.insurerName?.message} />
+        </Field>
+
+        <Field>
+          <span>{t('assistance.policyNumber')}</span>
+          <Input
+            maxLength={80}
+            placeholder={t('common.optional')}
+            aria-label={t('assistance.policyNumber')}
+            aria-invalid={Boolean(errors.policyNumber)}
+            {...register('policyNumber')}
+          />
+          <FieldError message={errors.policyNumber?.message} />
+        </Field>
+
+        <Field className="col-span-full">
+          <span>{t('assistance.phone')}</span>
+          <Input
+            type="tel"
+            maxLength={32}
+            placeholder={t('assistance.phonePlaceholder')}
+            autoComplete="tel"
+            aria-label={t('assistance.phone')}
+            aria-invalid={Boolean(errors.assistancePhone)}
+            {...register('assistancePhone')}
+          />
+          <FieldError message={errors.assistancePhone?.message} />
         </Field>
       </FieldGroup>
 

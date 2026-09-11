@@ -36,6 +36,17 @@ export const createVehicleSchema = (
         (value) => value.length === 0 || value.length === 17,
         t('validation.vinLength'),
       ),
+    insurerName: z.string().trim().max(120, t('validation.insurerNameMax')),
+    policyNumber: z.string().trim().max(80, t('validation.policyNumberMax')),
+    assistancePhone: z
+      .string()
+      .trim()
+      .max(32, t('validation.assistancePhoneMax'))
+      .refine(
+        (value) =>
+          value.length === 0 || (value.match(/\d/g)?.length ?? 0) >= 3,
+        t('validation.validPhone'),
+      ),
   })
 
 export const vehicleSchema = createVehicleSchema()

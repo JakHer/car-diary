@@ -225,12 +225,15 @@ export interface Database {
       }
       vehicles: {
         Row: {
+          assistance_phone: string
           created_at: string
           current_mileage: number
           distance_unit: string
           id: string
+          insurer_name: string
           make: string
           model: string
+          policy_number: string
           registration_number: string
           starting_mileage: number
           updated_at: string
@@ -239,12 +242,15 @@ export interface Database {
           year: number
         }
         Insert: {
+          assistance_phone?: string
           created_at?: string
           current_mileage: number
           distance_unit?: string
           id?: string
+          insurer_name?: string
           make: string
           model: string
+          policy_number?: string
           registration_number?: string
           starting_mileage: number
           updated_at?: string
@@ -253,12 +259,15 @@ export interface Database {
           year: number
         }
         Update: {
+          assistance_phone?: string
           created_at?: string
           current_mileage?: number
           distance_unit?: string
           id?: string
+          insurer_name?: string
           make?: string
           model?: string
+          policy_number?: string
           registration_number?: string
           starting_mileage?: number
           updated_at?: string

@@ -14,6 +14,9 @@ export interface Vehicle {
   year: number
   registrationNumber: string
   vin: string
+  insurerName: string
+  policyNumber: string
+  assistancePhone: string
   distanceUnit: DistanceUnit
   startingMileage: number
   currentMileage: number

@@ -172,6 +172,21 @@ export const pl = {
     fuelDescription: 'Tankowania, spalanie i wydatki na paliwo.',
     remindersDescription: 'Nadchodzące i ukończone zadania serwisowe.',
   },
+  assistance: {
+    eyebrow: 'W nagłej sytuacji',
+    title: 'Pomoc w trasie',
+    formTitle: 'Ubezpieczenie i assistance',
+    formDescription:
+      'Zapisz dane, których możesz potrzebować po awarii lub stłuczce.',
+    insurerName: 'Ubezpieczyciel',
+    insurerPlaceholder: 'np. PZU',
+    policyNumber: 'Numer polisy',
+    phone: 'Numer telefonu assistance',
+    phonePlaceholder: 'np. +48 22 123 45 67',
+    call: 'Zadzwoń po pomoc',
+    add: 'Dodaj kontakt assistance',
+    policy: 'Polisa {{number}}',
+  },
   mileage: {
     trigger: 'Zaktualizuj przebieg',
     title: 'Aktualizuj przebieg',
@@ -367,6 +382,10 @@ export const pl = {
   validation: {
     required: 'Pole „{{field}}” jest wymagane.',
     maxLength: 'Pole „{{field}}” może mieć maksymalnie {{maximum}} znaków.',
+    insurerNameMax: 'Nazwa ubezpieczyciela może mieć maksymalnie 120 znaków.',
+    policyNumberMax: 'Numer polisy może mieć maksymalnie 80 znaków.',
+    assistancePhoneMax: 'Numer telefonu może mieć maksymalnie 32 znaki.',
+    validPhone: 'Wprowadź poprawny numer telefonu.',
     enterMileage: 'Wprowadź przebieg.',
     wholeMileage: 'Przebieg musi być liczbą całkowitą.',
     negativeMileage: 'Przebieg nie może być ujemny.',

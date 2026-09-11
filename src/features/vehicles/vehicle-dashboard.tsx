@@ -150,7 +150,8 @@ export const VehicleDashboard = ({
           locale={locale}
           records={records}
           reminders={reminders}
-          vehicleId={vehicle.id}
+          vehicle={vehicle}
+          onEditVehicle={onEditVehicle}
         />
       )}
 
