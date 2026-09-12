@@ -80,6 +80,7 @@ export type FuelEntryInput = Omit<
 
 export type OdometerReadingSource =
   | 'vehicle'
+  | 'snapshot'
   | 'manual'
   | 'service'
   | 'fuel'

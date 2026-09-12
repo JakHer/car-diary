@@ -9,7 +9,7 @@ describe('mapOdometerReading', () => {
         vehicle_id: 'vehicle-1',
         recorded_at: '2026-09-12',
         mileage: 86_500,
-        source_type: 'manual',
+        source_type: 'snapshot',
         source_id: null,
         created_at: '2026-09-12T10:00:00.000Z',
       }),
@@ -18,7 +18,7 @@ describe('mapOdometerReading', () => {
       vehicleId: 'vehicle-1',
       date: '2026-09-12',
       mileage: 86_500,
-      source: 'manual',
+      source: 'snapshot',
       sourceId: null,
       createdAt: '2026-09-12T10:00:00.000Z',
     })

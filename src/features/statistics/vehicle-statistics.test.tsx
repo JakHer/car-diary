@@ -78,6 +78,7 @@ describe('VehicleStatistics', () => {
       }),
     ).toBeVisible()
     expect(screen.getByText('Monthly expenses')).toBeVisible()
+    expect(screen.getByText('Mileage over time')).toBeVisible()
     expect(screen.getByRole('combobox', { name: 'Statistics year' })).toHaveTextContent(
       '2026',
     )

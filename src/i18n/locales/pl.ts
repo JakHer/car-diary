@@ -197,6 +197,20 @@ export const pl = {
       'Różnica odczytów licznika od {{start}} do {{end}}.',
     recordedDistanceUnavailable:
       'Brak pełnego zakresu odczytów dla wybranego roku.',
+    odometerEyebrow: 'Historia licznika',
+    odometerTitle: 'Przebieg w czasie',
+    odometerEmptyTitle: 'Za mało danych o przebiegu',
+    odometerEmptyDescription:
+      'Dodaj co najmniej dwa odczyty z różnych dni, aby zobaczyć wykres.',
+    odometerChartAria: 'Historia przebiegu w {{year}} roku',
+    odometerPoint: '{{event}} · {{date}} · {{distance}}',
+    odometerFuelEvent: 'Tankowanie',
+    odometerServiceEvent: 'Wpis serwisowy',
+    odometerSource: {
+      vehicle: 'Odczyt początkowy',
+      snapshot: 'Migawka aktualnego przebiegu',
+      manual: 'Ręczna aktualizacja',
+    },
     emptyTitle: 'Brak wydatków w tym roku',
     emptyDescription:
       'Koszty serwisu i paliwa pojawią się po dodaniu wpisów.',

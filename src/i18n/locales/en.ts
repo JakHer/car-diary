@@ -192,6 +192,20 @@ export const en = {
       'Odometer difference from {{start}} to {{end}}.',
     recordedDistanceUnavailable:
       'No complete odometer range for the selected year.',
+    odometerEyebrow: 'Odometer history',
+    odometerTitle: 'Mileage over time',
+    odometerEmptyTitle: 'Not enough mileage data',
+    odometerEmptyDescription:
+      'Add at least two readings on different dates to see the chart.',
+    odometerChartAria: 'Odometer history for {{year}}',
+    odometerPoint: '{{event}} · {{date}} · {{distance}}',
+    odometerFuelEvent: 'Fill-up',
+    odometerServiceEvent: 'Service entry',
+    odometerSource: {
+      vehicle: 'Initial reading',
+      snapshot: 'Current mileage snapshot',
+      manual: 'Manual update',
+    },
     emptyTitle: 'No expenses for this year',
     emptyDescription:
       'Service and fuel costs will appear here after you add entries.',
