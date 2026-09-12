@@ -1,12 +1,7 @@
 import type { MaintenanceReminder } from '../types'
+import { getLocalDate } from './local-date'
 
 export type MaintenanceReminderStatus = 'completed' | 'overdue' | 'upcoming'
-
-const getLocalDate = (): string => {
-  const now = new Date()
-  const offset = now.getTimezoneOffset() * 60_000
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10)
-}
 
 export const getMaintenanceReminderStatus = (
   reminder: MaintenanceReminder,

@@ -17,6 +17,7 @@ import { Field, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import { getLocalDate } from '@/lib/local-date'
 import {
   createServiceRecordSchema,
   type ServiceRecordFormValues,
@@ -39,12 +40,6 @@ const serviceCategories: ServiceRecordInput['category'][] = [
   'Tires',
   'Other',
 ]
-
-const getLocalDate = (): string => {
-  const now = new Date()
-  const offset = now.getTimezoneOffset() * 60_000
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10)
-}
 
 export const ServiceForm = ({
   currentMileage,

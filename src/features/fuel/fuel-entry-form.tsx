@@ -14,6 +14,7 @@ import { Loader } from '@/components/feedback/loader'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { getLocalDate } from '@/lib/local-date'
 
 interface FuelEntryFormProps {
   currentMileage: number
@@ -22,12 +23,6 @@ interface FuelEntryFormProps {
   isSaving: boolean
   onSave: (input: FuelEntryInput) => Promise<void>
   onSaved: () => void
-}
-
-const getLocalDate = (): string => {
-  const now = new Date()
-  const offset = now.getTimezoneOffset() * 60_000
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10)
 }
 
 export const FuelEntryForm = ({
