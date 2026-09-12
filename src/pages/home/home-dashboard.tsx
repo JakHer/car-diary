@@ -1,14 +1,5 @@
-import { useMemo, useState, type ComponentProps } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { LucideIcon } from 'lucide-react'
-import {
-  ArrowUpRight,
-  BellRing,
-  Fuel,
-  Gauge,
-  PhoneCall,
-  Wrench,
-} from 'lucide-react'
 import type {
   FuelEntry,
   FuelEntryInput,
@@ -20,21 +11,14 @@ import type {
 } from '@/types'
 import type { VehicleSection } from '@/app/routing/vehicle-routes'
 import { getIntlLocale } from '@/i18n'
-import { formatDistance } from '@/lib/distance-units'
-import { getMaintenanceReminderStatus } from '@/lib/maintenance-reminders'
-import { getTelephoneHref } from '@/lib/phone-numbers'
-import { FuelEntryForm } from '@/features/fuel/fuel-entry-form'
-import { MaintenanceReminderForm } from '@/features/reminders/maintenance-reminder-form'
-import { ServiceForm } from '@/features/service-records/service-form'
-import { MileageDialog } from '@/features/vehicles/mileage-dialog'
-import { DashboardSection } from '@/components/layout/dashboard-section'
 import { PageHeader } from '@/components/layout/page-header'
 import { PageLayout } from '@/components/layout/page-layout'
-import { FormDialog } from '@/components/overlays/form-dialog'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-
-type HomeAction = 'fuel' | 'reminder' | 'service' | null
+import { ActiveVehicleCard } from './components/active-vehicle-card'
+import { HomeActionDialogs } from './components/home-action-dialogs'
+import { QuickActions } from './components/quick-actions'
+import { RecentActivity } from './components/recent-activity'
+import { UpcomingReminders } from './components/upcoming-reminders'
+import type { HomeAction } from './home-dashboard.types'
 
 interface HomeDashboardProps {
   fuelEntries: FuelEntry[]
@@ -57,40 +41,6 @@ interface HomeDashboardProps {
   onUpdateMileage: (currentMileage: number) => Promise<void>
 }
 
-interface QuickActionProps extends Omit<ComponentProps<typeof Button>, 'children'> {
-  description: string
-  icon: LucideIcon
-  label: string
-}
-
-const QuickAction = ({
-  description,
-  icon: Icon,
-  label,
-  ...buttonProps
-}: QuickActionProps) => (
-  <Button
-    className="group grid h-full min-h-40 w-full grid-cols-1 grid-rows-[44px_auto_1fr] items-start justify-items-start gap-y-4 whitespace-normal rounded-large border-border bg-surface p-5 text-left shadow-card hover:border-accent hover:bg-accent-soft/35"
-    type="button"
-    variant="outline"
-    {...buttonProps}
-  >
-    <span className="grid size-11 place-items-center rounded-xl bg-accent-soft text-accent transition-colors group-hover:bg-accent group-hover:text-white">
-      <Icon aria-hidden="true" className="size-5" strokeWidth={1.8} />
-    </span>
-    <strong className="flex items-center gap-2 self-start text-base text-strong">
-      {label}
-      <ArrowUpRight
-        aria-hidden="true"
-        className="size-4 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
-      />
-    </strong>
-    <span className="block self-start text-xs leading-relaxed font-medium text-muted">
-      {description}
-    </span>
-  </Button>
-)
-
 export const HomeDashboard = ({
   fuelEntries,
   isCreatingFuelEntry,
@@ -112,134 +62,17 @@ export const HomeDashboard = ({
   const { i18n, t } = useTranslation()
   const [action, setAction] = useState<HomeAction>(null)
   const locale = getIntlLocale(i18n.resolvedLanguage)
-  const vehicleName = `${vehicle.make} ${vehicle.model}`
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat(locale, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }),
-    [locale],
-  )
-  const volumeFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat(locale, {
-        maximumFractionDigits: 2,
-      }),
-    [locale],
-  )
-  const upcomingReminders = reminders
-    .filter((reminder) => !reminder.completedAt)
-    .toSorted((first, second) => {
-      const firstStatus = getMaintenanceReminderStatus(
-        first,
-        vehicle.currentMileage,
-      )
-      const secondStatus = getMaintenanceReminderStatus(
-        second,
-        vehicle.currentMileage,
-      )
-      if (firstStatus !== secondStatus) {
-        return firstStatus === 'overdue' ? -1 : 1
-      }
-
-      return (first.dueDate ?? '9999-12-31').localeCompare(
-        second.dueDate ?? '9999-12-31',
-      )
-    })
-    .slice(0, 3)
-  const recentActivity = [
-    ...records.map((record) => ({
-      date: record.date,
-      id: `service-${record.id}`,
-      title: record.title,
-      type: 'service' as const,
-    })),
-    ...fuelEntries.map((entry) => ({
-      date: entry.date,
-      id: `fuel-${entry.id}`,
-      title: t('home.fuelActivity', {
-        volume: volumeFormatter.format(entry.volumeInMilliliters / 1_000),
-      }),
-      type: 'fuel' as const,
-    })),
-  ]
-    .toSorted((first, second) => second.date.localeCompare(first.date))
-    .slice(0, 4)
-  const closeAction = () => setAction(null)
-  const saveServiceRecord = async (input: ServiceRecordInput) => {
-    await onCreateServiceRecord(input)
-    closeAction()
-  }
 
   return (
     <PageLayout>
       <PageHeader
         aside={
-          <div className="min-w-[290px] overflow-hidden rounded-large border border-border bg-surface shadow-card max-[700px]:w-full">
-            <Button
-              className="group h-auto w-full flex-col items-stretch gap-0 whitespace-normal rounded-none border-0 bg-transparent p-5 text-left shadow-none hover:bg-accent-soft/25"
-              type="button"
-              variant="outline"
-              onClick={onOpenVehicle}
-            >
-              <span className="text-[11px] font-extrabold tracking-[0.07em] text-accent uppercase">
-                {t('home.activeVehicle')}
-              </span>
-              <strong className="mt-2 block text-xl text-strong">
-                {vehicleName}
-              </strong>
-              <span className="mt-1 block text-sm text-muted">
-                {formatDistance(
-                  vehicle.currentMileage,
-                  vehicle.distanceUnit,
-                  locale,
-                )}
-              </span>
-              <span className="mt-4 flex items-center gap-2 text-xs font-bold text-accent">
-                {t('home.openVehicle')}
-                <ArrowUpRight
-                  aria-hidden="true"
-                  className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </span>
-            </Button>
-            {vehicle.assistancePhone ? (
-              <a
-                className="group flex min-h-14 items-center gap-3 border-t border-border px-5 py-3 text-strong no-underline transition-colors hover:bg-accent-soft/35"
-                href={getTelephoneHref(vehicle.assistancePhone)}
-              >
-                <PhoneCall
-                  aria-hidden="true"
-                  className="size-4 shrink-0 text-accent"
-                />
-                <span className="min-w-0 flex-1">
-                  <strong className="block text-xs">
-                    {t('assistance.call')}
-                  </strong>
-                  {vehicle.insurerName && (
-                    <span className="mt-0.5 block truncate text-[11px] text-muted">
-                      {vehicle.insurerName}
-                    </span>
-                  )}
-                </span>
-                <span className="text-xs font-bold text-accent">
-                  {vehicle.assistancePhone}
-                </span>
-              </a>
-            ) : (
-              <Button
-                className="h-14 w-full justify-start rounded-none border-0 border-t border-border px-5 text-xs shadow-none hover:translate-y-0"
-                type="button"
-                variant="ghost"
-                onClick={onEditVehicle}
-              >
-                <PhoneCall aria-hidden="true" className="size-4 text-accent" />
-                {t('assistance.add')}
-              </Button>
-            )}
-          </div>
+          <ActiveVehicleCard
+            locale={locale}
+            vehicle={vehicle}
+            onEditVehicle={onEditVehicle}
+            onOpenVehicle={onOpenVehicle}
+          />
         }
         description={t('home.description')}
         eyebrow={t('home.eyebrow')}
@@ -248,240 +81,45 @@ export const HomeDashboard = ({
           <>
             {userName
               ? t('home.greetingWithName', { name: userName })
-              : t('home.greeting')}
-            {' '}
+              : t('home.greeting')}{' '}
             <span className="block text-accent">{t('home.question')}</span>
           </>
         }
       />
 
-      <section
-        className="mt-11 grid grid-cols-4 gap-4 max-[900px]:grid-cols-2 max-[520px]:grid-cols-1"
-        aria-label={t('home.quickActions')}
-      >
-        <QuickAction
-          description={t('home.fuelDescription')}
-          icon={Fuel}
-          label={t('fuel.add')}
-          onClick={() => setAction('fuel')}
-        />
-        <QuickAction
-          description={t('home.serviceDescription')}
-          icon={Wrench}
-          label={t('home.addService')}
-          onClick={() => setAction('service')}
-        />
-        <MileageDialog
-          currentMileage={vehicle.currentMileage}
-          distanceUnit={vehicle.distanceUnit}
-          isSaving={isUpdatingMileage}
-          triggerContent={
-            <QuickAction
-              description={t('home.mileageDescription')}
-              icon={Gauge}
-              label={t('mileage.trigger')}
-            />
-          }
-          vehicleName={vehicleName}
-          onSave={onUpdateMileage}
-        />
-        <QuickAction
-          description={t('home.reminderDescription')}
-          icon={BellRing}
-          label={t('reminders.add')}
-          onClick={() => setAction('reminder')}
-        />
-      </section>
+      <QuickActions
+        isUpdatingMileage={isUpdatingMileage}
+        vehicle={vehicle}
+        onActionChange={setAction}
+        onUpdateMileage={onUpdateMileage}
+      />
 
       <div className="mt-6 grid grid-cols-2 items-start gap-6 max-[800px]:grid-cols-1">
-        <DashboardSection
-          actions={
-            <Badge variant="secondary">{upcomingReminders.length}</Badge>
-          }
-          contentClassName="mt-2"
-          eyebrow={t('home.planEyebrow')}
-          title={t('home.upcomingTitle')}
-          titleId="home-reminders-title"
-        >
-          {upcomingReminders.length === 0 ? (
-            <p className="my-8 text-center text-sm text-muted">
-              {t('home.noUpcoming')}
-            </p>
-          ) : (
-            <ul className="m-0 list-none p-0">
-              {upcomingReminders.map((reminder) => {
-                const status = getMaintenanceReminderStatus(
-                  reminder,
-                  vehicle.currentMileage,
-                )
-                const targets = [
-                  reminder.dueDate
-                    ? dateFormatter.format(
-                        new Date(`${reminder.dueDate}T12:00:00`),
-                      )
-                    : null,
-                  reminder.dueMileage !== null
-                    ? formatDistance(
-                        reminder.dueMileage,
-                        vehicle.distanceUnit,
-                        locale,
-                      )
-                    : null,
-                ].filter(Boolean)
-
-                return (
-                  <li
-                    className="border-b border-border last:border-b-0"
-                    key={reminder.id}
-                  >
-                    <Button
-                      aria-label={t('home.openReminder', {
-                        title: reminder.title,
-                      })}
-                      className="group grid h-auto w-full grid-cols-[minmax(0,1fr)_auto_16px] gap-3 whitespace-normal rounded-lg px-3 py-4 text-left hover:translate-y-0"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => onOpenVehicleSection('reminders')}
-                    >
-                      <span>
-                        <strong className="block text-sm text-strong">
-                          {reminder.title}
-                        </strong>
-                        <span className="mt-1 block text-xs font-medium text-muted">
-                          {targets.join(' · ')}
-                        </span>
-                      </span>
-                      <Badge
-                        variant={status === 'overdue' ? 'danger' : 'success'}
-                      >
-                        {t(
-                          status === 'overdue'
-                            ? 'reminders.dueNow'
-                            : 'reminders.upcoming',
-                        )}
-                      </Badge>
-                      <ArrowUpRight
-                        aria-hidden="true"
-                        className="size-4 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
-                      />
-                    </Button>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </DashboardSection>
-
-        <DashboardSection
-          actions={<Badge variant="secondary">{recentActivity.length}</Badge>}
-          contentClassName="mt-2"
-          eyebrow={t('home.activityEyebrow')}
-          title={t('home.recentTitle')}
-          titleId="home-activity-title"
-        >
-          {recentActivity.length === 0 ? (
-            <p className="my-8 text-center text-sm text-muted">
-              {t('home.noActivity')}
-            </p>
-          ) : (
-            <ul className="m-0 list-none p-0">
-              {recentActivity.map((activity) => {
-                const Icon = activity.type === 'fuel' ? Fuel : Wrench
-
-                return (
-                  <li
-                    className="border-b border-border last:border-b-0"
-                    key={activity.id}
-                  >
-                    <Button
-                      aria-label={t('home.openActivity', {
-                        title: activity.title,
-                      })}
-                      className="group grid h-auto w-full grid-cols-[36px_minmax(0,1fr)_16px] gap-3 whitespace-normal rounded-lg px-3 py-4 text-left hover:translate-y-0"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => onOpenVehicleSection(activity.type)}
-                    >
-                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-muted text-muted transition-colors group-hover:bg-accent-soft group-hover:text-accent">
-                        <Icon aria-hidden="true" className="size-4" />
-                      </span>
-                      <span>
-                        <strong className="block text-sm text-strong">
-                          {activity.title}
-                        </strong>
-                        <span className="mt-1 block text-xs font-medium text-muted">
-                          {dateFormatter.format(
-                            new Date(`${activity.date}T12:00:00`),
-                          )}
-                        </span>
-                      </span>
-                      <ArrowUpRight
-                        aria-hidden="true"
-                        className="size-4 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
-                      />
-                    </Button>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </DashboardSection>
+        <UpcomingReminders
+          locale={locale}
+          reminders={reminders}
+          vehicle={vehicle}
+          onOpenVehicleSection={onOpenVehicleSection}
+        />
+        <RecentActivity
+          fuelEntries={fuelEntries}
+          locale={locale}
+          records={records}
+          onOpenVehicleSection={onOpenVehicleSection}
+        />
       </div>
 
-      <FormDialog
-        closeLabel={t('fuel.close')}
-        description={t('fuel.addDescription')}
-        isBusy={isCreatingFuelEntry}
-        open={action === 'fuel'}
-        title={t('fuel.add')}
-        onOpenChange={(open) => setAction(open ? 'fuel' : null)}
-      >
-        <FuelEntryForm
-          key={action === 'fuel' ? 'fuel-open' : 'fuel-closed'}
-          currentMileage={vehicle.currentMileage}
-          distanceUnit={vehicle.distanceUnit}
-          isSaving={isCreatingFuelEntry}
-          onSave={onCreateFuelEntry}
-          onSaved={closeAction}
-        />
-      </FormDialog>
-
-      <FormDialog
-        closeLabel={t('service.close')}
-        description={t('service.addDescription')}
-        isBusy={isSavingRecord}
-        open={action === 'service'}
-        title={t('service.addTitle')}
-        onOpenChange={(open) => setAction(open ? 'service' : null)}
-      >
-        <ServiceForm
-          key={action === 'service' ? 'service-open' : 'service-closed'}
-          currentMileage={vehicle.currentMileage}
-          distanceUnit={vehicle.distanceUnit}
-          embedded
-          isSaving={isSavingRecord}
-          onCancel={closeAction}
-          onSave={saveServiceRecord}
-        />
-      </FormDialog>
-
-      <FormDialog
-        closeLabel={t('reminders.close')}
-        description={t('reminders.addDescription')}
-        isBusy={isCreatingReminder}
-        open={action === 'reminder'}
-        title={t('reminders.add')}
-        onOpenChange={(open) => setAction(open ? 'reminder' : null)}
-      >
-        <MaintenanceReminderForm
-          key={action === 'reminder' ? 'reminder-open' : 'reminder-closed'}
-          currentMileage={vehicle.currentMileage}
-          distanceUnit={vehicle.distanceUnit}
-          isSaving={isCreatingReminder}
-          onSave={onCreateReminder}
-          onSaved={closeAction}
-        />
-      </FormDialog>
+      <HomeActionDialogs
+        action={action}
+        isCreatingFuelEntry={isCreatingFuelEntry}
+        isCreatingReminder={isCreatingReminder}
+        isSavingRecord={isSavingRecord}
+        vehicle={vehicle}
+        onActionChange={setAction}
+        onCreateFuelEntry={onCreateFuelEntry}
+        onCreateReminder={onCreateReminder}
+        onCreateServiceRecord={onCreateServiceRecord}
+      />
     </PageLayout>
   )
 }
