@@ -8,6 +8,7 @@ export type OdometerReadingRow =
 const toOdometerReadingSource = (source: string): OdometerReadingSource => {
   switch (source) {
     case 'vehicle':
+    case 'snapshot':
     case 'manual':
     case 'service':
     case 'fuel':

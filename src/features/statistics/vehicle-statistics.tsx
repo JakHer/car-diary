@@ -15,6 +15,7 @@ import { StatCard } from '@/components/data-display/stat-card'
 import { SelectField } from '@/components/forms/select-field'
 import { DashboardSection } from '@/components/layout/dashboard-section'
 import { VehicleCostChart } from './vehicle-cost-chart'
+import { OdometerChart } from './odometer-chart'
 
 interface VehicleStatisticsProps {
   distanceUnit: DistanceUnit
@@ -173,6 +174,24 @@ export const VehicleStatistics = ({
         <VehicleCostChart
           locale={locale}
           monthlyCosts={statistics.monthlyCosts}
+        />
+      </DashboardSection>
+
+      <DashboardSection
+        actions={null}
+        className="mt-6"
+        contentClassName="mt-6"
+        eyebrow={t('statistics.odometerEyebrow')}
+        title={t('statistics.odometerTitle')}
+        titleId="vehicle-odometer-chart-title"
+      >
+        <OdometerChart
+          distanceUnit={distanceUnit}
+          fuelEntries={fuelEntries}
+          locale={locale}
+          readings={odometerReadings}
+          records={records}
+          year={selectedYear}
         />
       </DashboardSection>
     </>

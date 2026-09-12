@@ -1,4 +1,5 @@
 import type { FuelEntry, OdometerReading, ServiceRecord } from '@/types'
+import { normalizeOdometerReadings } from './odometer-readings'
 
 export interface MonthlyVehicleCosts {
   monthIndex: number
@@ -54,12 +55,9 @@ export const calculateVehicleCostStatistics = (
   const yearFuelEntries = fuelEntries.filter(
     ({ date }) => getEntryYear(date) === year,
   )
-  const yearReadings = odometerReadings
-    .filter(({ date }) => getEntryYear(date) === year)
-    .toSorted(
-      (first, second) =>
-        first.date.localeCompare(second.date) || first.mileage - second.mileage,
-    )
+  const yearReadings = normalizeOdometerReadings(
+    odometerReadings.filter(({ date }) => getEntryYear(date) === year),
+  )
 
   for (const record of yearRecords) {
     const month = monthlyCosts[getEntryMonth(record.date)]
