@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react'
 
-interface DeleteConfirmationRequest {
+export interface DeleteConfirmationRequest {
   description: string
   title: string
   onConfirm: () => Promise<void>
 }
+
+export type RequestDeletion = (request: DeleteConfirmationRequest) => void
 
 export const useDeleteConfirmation = () => {
   const [confirmation, setConfirmation] =
