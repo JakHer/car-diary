@@ -6,6 +6,7 @@ import type { VehicleRow } from '@/features/vehicles/vehicle-repository'
 import type { ServiceRecordRow } from '@/features/service-records/service-record-repository'
 import type { FuelEntryRow } from '@/features/fuel/fuel-repository'
 import type { MaintenanceReminderRow } from '@/features/reminders/reminder-repository'
+import type { OdometerReadingRow } from '@/features/vehicles/odometer-reading-repository'
 import type { FuelAttachment, ServiceAttachment } from '@/types'
 
 const vehicleRows: VehicleRow[] = [
@@ -128,6 +129,18 @@ const fuelAttachments: FuelAttachment[] = [
   },
 ]
 
+const odometerReadingRows: OdometerReadingRow[] = [
+  {
+    id: 'reading-1',
+    vehicle_id: 'vehicle-1',
+    recorded_at: '2026-08-16',
+    mileage: 86_500,
+    source_type: 'fuel',
+    source_id: 'fuel-1',
+    created_at: '2026-08-16T12:00:00.000Z',
+  },
+]
+
 describe('mapCarDiaryState', () => {
   it('maps database rows including the persisted current mileage', () => {
     const state = mapCarDiaryState(
@@ -137,10 +150,11 @@ describe('mapCarDiaryState', () => {
       fuelEntryRows,
       serviceAttachments,
       fuelAttachments,
+      odometerReadingRows,
     )
 
     expect(state.activeVehicleId).toBe('vehicle-1')
-    expect(state.version).toBe(5)
+    expect(state.version).toBe(6)
     expect(state.vehicles).toHaveLength(2)
     expect(state.vehicles[0]).toMatchObject({
       make: 'Volvo',
@@ -186,6 +200,13 @@ describe('mapCarDiaryState', () => {
     expect(state.fuelAttachments[0]).toMatchObject({
       fuelEntryId: 'fuel-1',
       fileName: 'fuel-receipt.pdf',
+    })
+    expect(state.odometerReadings[0]).toMatchObject({
+      vehicleId: 'vehicle-1',
+      date: '2026-08-16',
+      mileage: 86_500,
+      source: 'fuel',
+      sourceId: 'fuel-1',
     })
   })
 

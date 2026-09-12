@@ -78,6 +78,22 @@ export type FuelEntryInput = Omit<
   'id' | 'vehicleId' | 'createdAt'
 >
 
+export type OdometerReadingSource =
+  | 'vehicle'
+  | 'manual'
+  | 'service'
+  | 'fuel'
+
+export interface OdometerReading {
+  id: string
+  vehicleId: string
+  date: string
+  mileage: number
+  source: OdometerReadingSource
+  sourceId: string | null
+  createdAt: string
+}
+
 export interface MaintenanceReminder {
   id: string
   vehicleId: string
@@ -94,12 +110,13 @@ export type MaintenanceReminderInput = Pick<
 >
 
 export interface CarDiaryState {
-  version: 5
+  version: 6
   vehicles: Vehicle[]
   activeVehicleId: string | null
   serviceRecords: ServiceRecord[]
   serviceAttachments: ServiceAttachment[]
   fuelEntries: FuelEntry[]
   fuelAttachments: FuelAttachment[]
+  odometerReadings: OdometerReading[]
   maintenanceReminders: MaintenanceReminder[]
 }

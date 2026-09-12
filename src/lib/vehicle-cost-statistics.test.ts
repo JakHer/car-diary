@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { FuelEntry, ServiceRecord } from '@/types'
+import type { FuelEntry, OdometerReading, ServiceRecord } from '@/types'
 import {
   calculateVehicleCostStatistics,
   getVehicleStatisticsYears,
@@ -57,11 +57,33 @@ const fuelEntries: FuelEntry[] = [
   },
 ]
 
+const odometerReadings: OdometerReading[] = [
+  {
+    id: 'reading-1',
+    vehicleId: 'vehicle-1',
+    date: '2026-01-10',
+    mileage: 10_000,
+    source: 'service',
+    sourceId: 'service-1',
+    createdAt: '2026-01-10T10:00:00.000Z',
+  },
+  {
+    id: 'reading-2',
+    vehicleId: 'vehicle-1',
+    date: '2026-03-20',
+    mileage: 12_000,
+    source: 'fuel',
+    sourceId: 'fuel-2',
+    createdAt: '2026-03-20T10:00:00.000Z',
+  },
+]
+
 describe('vehicle cost statistics', () => {
   it('calculates yearly totals, monthly costs and cost per distance unit', () => {
     const statistics = calculateVehicleCostStatistics(
       records,
       fuelEntries,
+      odometerReadings,
       2026,
       new Date('2026-03-31T12:00:00.000Z'),
     )
@@ -73,6 +95,8 @@ describe('vehicle cost statistics', () => {
       averageMonthlyCostInCents: 45_000,
       recordedDistance: 2_000,
       costPerDistanceUnitInCents: 67.5,
+      distancePeriodStart: '2026-01-10',
+      distancePeriodEnd: '2026-03-20',
     })
     expect(statistics.monthlyCosts[0]).toMatchObject({
       serviceCostInCents: 60_000,
@@ -86,17 +110,41 @@ describe('vehicle cost statistics', () => {
     const statistics = calculateVehicleCostStatistics(
       records,
       [],
+      odometerReadings.slice(0, 1),
       2026,
       new Date('2026-03-31T12:00:00.000Z'),
     )
 
     expect(statistics.recordedDistance).toBeNull()
     expect(statistics.costPerDistanceUnitInCents).toBeNull()
+    expect(statistics.distancePeriodStart).toBeNull()
+    expect(statistics.distancePeriodEnd).toBeNull()
+  })
+
+  it('uses only costs covered by the first and last odometer reading', () => {
+    const earlierRecord = {
+      ...records[0],
+      id: 'service-earlier',
+      date: '2026-01-01',
+      mileage: 9_500,
+      costInCents: 100_000,
+    }
+    const statistics = calculateVehicleCostStatistics(
+      [earlierRecord, ...records],
+      fuelEntries,
+      odometerReadings,
+      2026,
+      new Date('2026-03-31T12:00:00.000Z'),
+    )
+
+    expect(statistics.totalCostInCents).toBe(235_000)
+    expect(statistics.recordedDistance).toBe(2_000)
+    expect(statistics.costPerDistanceUnitInCents).toBe(67.5)
   })
 
   it('returns available years in descending order and includes this year', () => {
-    expect(getVehicleStatisticsYears(records, fuelEntries, 2027)).toEqual([
-      2027, 2026, 2025,
-    ])
+    expect(
+      getVehicleStatisticsYears(records, fuelEntries, odometerReadings, 2027),
+    ).toEqual([2027, 2026, 2025])
   })
 })

@@ -135,6 +135,44 @@ export interface Database {
           },
         ]
       }
+      odometer_readings: {
+        Row: {
+          created_at: string
+          id: string
+          mileage: number
+          recorded_at: string
+          source_id: string | null
+          source_type: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mileage: number
+          recorded_at: string
+          source_id?: string | null
+          source_type: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mileage?: number
+          recorded_at?: string
+          source_id?: string | null
+          source_type?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'odometer_readings_vehicle_id_fkey'
+            columns: ['vehicle_id']
+            isOneToOne: false
+            referencedRelation: 'vehicles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       service_records: {
         Row: {
           category: string

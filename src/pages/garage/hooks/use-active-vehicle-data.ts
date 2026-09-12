@@ -49,6 +49,14 @@ export const useActiveVehicleData = ({
     [activeVehicleId, state.fuelEntries],
   )
 
+  const odometerReadings = useMemo(
+    () =>
+      state.odometerReadings.filter(
+        (reading) => reading.vehicleId === activeVehicleId,
+      ),
+    [activeVehicleId, state.odometerReadings],
+  )
+
   const attachments = useMemo(() => {
     const recordIds = new Set(records.map((record) => record.id))
     return state.serviceAttachments.filter((attachment) =>
@@ -68,6 +76,7 @@ export const useActiveVehicleData = ({
     attachments,
     fuelAttachments,
     fuelEntries,
+    odometerReadings,
     records,
     reminders,
   }

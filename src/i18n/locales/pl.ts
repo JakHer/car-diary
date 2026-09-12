@@ -186,13 +186,17 @@ export const pl = {
     fuelDescription: 'Wszystkie tankowania zapisane w tym roku.',
     monthlyAverage: 'Średnio miesięcznie',
     averageDescription: 'Średnia z miesięcy, które upłynęły w {{year}} roku.',
-    costPerDistance: 'Koszt na {{unit}}',
+    costPerDistance: 'Łączny koszt na {{unit}}',
     costPerDistanceValue: '{{value}}/{{unit}}',
     costPerDistanceDescription:
-      'Na podstawie pierwszego i ostatniego zapisanego przebiegu.',
+      'Koszty zapisane od {{start}} do {{end}}.',
+    costPerDistanceUnavailable:
+      'Potrzebne są co najmniej dwa różne odczyty licznika.',
     recordedDistance: 'Zarejestrowany przebieg',
     recordedDistanceDescription:
-      'Różnica między najniższym i najwyższym odczytem w roku.',
+      'Różnica odczytów licznika od {{start}} do {{end}}.',
+    recordedDistanceUnavailable:
+      'Brak pełnego zakresu odczytów dla wybranego roku.',
     emptyTitle: 'Brak wydatków w tym roku',
     emptyDescription:
       'Koszty serwisu i paliwa pojawią się po dodaniu wpisów.',

@@ -1,6 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { DistanceUnit, FuelEntry, ServiceRecord } from '@/types'
+import type {
+  DistanceUnit,
+  FuelEntry,
+  OdometerReading,
+  ServiceRecord,
+} from '@/types'
 import { formatDistance } from '@/lib/distance-units'
 import {
   calculateVehicleCostStatistics,
@@ -15,6 +20,7 @@ interface VehicleStatisticsProps {
   distanceUnit: DistanceUnit
   fuelEntries: FuelEntry[]
   locale: string
+  odometerReadings: OdometerReading[]
   records: ServiceRecord[]
 }
 
@@ -22,12 +28,13 @@ export const VehicleStatistics = ({
   distanceUnit,
   fuelEntries,
   locale,
+  odometerReadings,
   records,
 }: VehicleStatisticsProps) => {
   const { t } = useTranslation()
   const availableYears = useMemo(
-    () => getVehicleStatisticsYears(records, fuelEntries),
-    [fuelEntries, records],
+    () => getVehicleStatisticsYears(records, fuelEntries, odometerReadings),
+    [fuelEntries, odometerReadings, records],
   )
   const [requestedYear, setRequestedYear] = useState(availableYears[0])
   const selectedYear = availableYears.includes(requestedYear)
@@ -38,9 +45,10 @@ export const VehicleStatistics = ({
       calculateVehicleCostStatistics(
         records,
         fuelEntries,
+        odometerReadings,
         selectedYear,
       ),
-    [fuelEntries, records, selectedYear],
+    [fuelEntries, odometerReadings, records, selectedYear],
   )
   const currencyFormatter = useMemo(
     () =>
@@ -51,8 +59,28 @@ export const VehicleStatistics = ({
       }),
     [locale],
   )
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+    [locale],
+  )
   const formatCost = (costInCents: number) =>
     currencyFormatter.format(costInCents / 100)
+  const distancePeriod =
+    statistics.distancePeriodStart && statistics.distancePeriodEnd
+      ? {
+          start: dateFormatter.format(
+            new Date(`${statistics.distancePeriodStart}T12:00:00`),
+          ),
+          end: dateFormatter.format(
+            new Date(`${statistics.distancePeriodEnd}T12:00:00`),
+          ),
+        }
+      : null
 
   return (
     <>
@@ -89,7 +117,11 @@ export const VehicleStatistics = ({
           }
         />
         <StatCard
-          description={t('statistics.costPerDistanceDescription')}
+          description={
+            distancePeriod
+              ? t('statistics.costPerDistanceDescription', distancePeriod)
+              : t('statistics.costPerDistanceUnavailable')
+          }
           label={t('statistics.costPerDistance', { unit: distanceUnit })}
           value={
             statistics.costPerDistanceUnitInCents === null
@@ -101,7 +133,11 @@ export const VehicleStatistics = ({
           }
         />
         <StatCard
-          description={t('statistics.recordedDistanceDescription')}
+          description={
+            distancePeriod
+              ? t('statistics.recordedDistanceDescription', distancePeriod)
+              : t('statistics.recordedDistanceUnavailable')
+          }
           label={t('statistics.recordedDistance')}
           value={
             statistics.recordedDistance === null

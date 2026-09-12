@@ -30,13 +30,14 @@ import { useServiceActions } from './hooks/use-service-actions'
 import { useVehicleActions } from './hooks/use-vehicle-actions'
 
 const emptyState: CarDiaryState = {
-  version: 5,
+  version: 6,
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
   serviceAttachments: [],
   fuelEntries: [],
   fuelAttachments: [],
+  odometerReadings: [],
   maintenanceReminders: [],
 }
 
@@ -98,6 +99,7 @@ const CarDiaryApp = ({
     attachments: activeAttachments,
     fuelAttachments: activeFuelAttachments,
     fuelEntries: activeFuelEntries,
+    odometerReadings: activeOdometerReadings,
     records: activeRecords,
     reminders: activeReminders,
   } = useActiveVehicleData({
@@ -314,6 +316,7 @@ const CarDiaryApp = ({
           isUpdatingMileage={
             controller.updateVehicleMileageMutation.isPending
           }
+          odometerReadings={activeOdometerReadings}
           uploadingRecordId={
             controller.uploadServiceAttachmentMutation.isPending
               ? (controller.uploadServiceAttachmentMutation.variables

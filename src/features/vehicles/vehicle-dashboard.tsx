@@ -7,6 +7,7 @@ import type {
   FuelEntryInput,
   MaintenanceReminder,
   MaintenanceReminderInput,
+  OdometerReading,
   ServiceAttachment,
   ServiceRecord,
   ServiceRecordInput,
@@ -35,6 +36,7 @@ interface VehicleDashboardProps {
   isSavingFuelEntry: boolean
   isSavingRecord: boolean
   isUpdatingMileage: boolean
+  odometerReadings: OdometerReading[]
   records: ServiceRecord[]
   reminders: MaintenanceReminder[]
   section: VehicleSection
@@ -78,6 +80,7 @@ export const VehicleDashboard = ({
   isSavingFuelEntry,
   isSavingRecord,
   isUpdatingMileage,
+  odometerReadings,
   records,
   reminders,
   section,
@@ -191,6 +194,7 @@ export const VehicleDashboard = ({
           distanceUnit={vehicle.distanceUnit}
           fuelEntries={fuelEntries}
           locale={locale}
+          odometerReadings={odometerReadings}
           records={records}
         />
       )}
