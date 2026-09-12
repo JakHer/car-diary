@@ -20,7 +20,7 @@ const createVehicle = (id: string): Vehicle => ({
 })
 
 const state: CarDiaryState = {
-  version: 5,
+  version: 6,
   vehicles: [createVehicle('vehicle-1'), createVehicle('vehicle-2')],
   activeVehicleId: null,
   serviceRecords: [
@@ -86,6 +86,17 @@ const state: CarDiaryState = {
       createdAt: '2026-02-02T00:00:00.000Z',
     },
   ],
+  odometerReadings: [
+    {
+      id: 'reading-1',
+      vehicleId: 'vehicle-2',
+      date: '2026-02-02',
+      mileage: 12_100,
+      source: 'fuel',
+      sourceId: 'fuel-1',
+      createdAt: '2026-02-02T00:00:00.000Z',
+    },
+  ],
   maintenanceReminders: [
     {
       id: 'reminder-1',
@@ -117,6 +128,7 @@ describe('useActiveVehicleData', () => {
     expect(result.current.fuelEntries).toHaveLength(1)
     expect(result.current.attachments).toHaveLength(1)
     expect(result.current.fuelAttachments).toHaveLength(1)
+    expect(result.current.odometerReadings).toHaveLength(1)
   })
 
   it('gives the URL vehicle priority and rejects an unknown route vehicle', () => {

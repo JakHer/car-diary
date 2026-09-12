@@ -47,13 +47,14 @@ vi.mock('@/features/fuel/fuel-attachment-repository', () => repositoryMocks)
 vi.mock('@/features/reminders/reminder-repository', () => repositoryMocks)
 
 const carDiaryState: CarDiaryState = {
-  version: 5,
+  version: 6,
   vehicles: [],
   activeVehicleId: null,
   serviceRecords: [],
   serviceAttachments: [],
   fuelEntries: [],
   fuelAttachments: [],
+  odometerReadings: [],
   maintenanceReminders: [],
 }
 

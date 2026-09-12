@@ -109,13 +109,14 @@ const vehicles: Vehicle[] = [
 ]
 
 const state: CarDiaryState = {
-  version: 5,
+  version: 6,
   vehicles,
   activeVehicleId: null,
   serviceRecords: [],
   serviceAttachments: [],
   fuelEntries: [],
   fuelAttachments: [],
+  odometerReadings: [],
   maintenanceReminders: [],
 }
 

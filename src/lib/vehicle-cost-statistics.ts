@@ -1,4 +1,4 @@
-import type { FuelEntry, ServiceRecord } from '@/types'
+import type { FuelEntry, OdometerReading, ServiceRecord } from '@/types'
 
 export interface MonthlyVehicleCosts {
   monthIndex: number
@@ -14,6 +14,8 @@ export interface VehicleCostStatistics {
   averageMonthlyCostInCents: number | null
   costPerDistanceUnitInCents: number | null
   recordedDistance: number | null
+  distancePeriodStart: string | null
+  distancePeriodEnd: string | null
   monthlyCosts: MonthlyVehicleCosts[]
 }
 
@@ -23,6 +25,7 @@ const getEntryMonth = (date: string): number => Number(date.slice(5, 7)) - 1
 export const getVehicleStatisticsYears = (
   records: ServiceRecord[],
   fuelEntries: FuelEntry[],
+  odometerReadings: OdometerReading[],
   currentYear = new Date().getFullYear(),
 ): number[] =>
   [
@@ -30,12 +33,14 @@ export const getVehicleStatisticsYears = (
       currentYear,
       ...records.map(({ date }) => getEntryYear(date)),
       ...fuelEntries.map(({ date }) => getEntryYear(date)),
+      ...odometerReadings.map(({ date }) => getEntryYear(date)),
     ]),
   ].toSorted((first, second) => second - first)
 
 export const calculateVehicleCostStatistics = (
   records: ServiceRecord[],
   fuelEntries: FuelEntry[],
+  odometerReadings: OdometerReading[],
   year: number,
   currentDate = new Date(),
 ): VehicleCostStatistics => {
@@ -49,6 +54,12 @@ export const calculateVehicleCostStatistics = (
   const yearFuelEntries = fuelEntries.filter(
     ({ date }) => getEntryYear(date) === year,
   )
+  const yearReadings = odometerReadings
+    .filter(({ date }) => getEntryYear(date) === year)
+    .toSorted(
+      (first, second) =>
+        first.date.localeCompare(second.date) || first.mileage - second.mileage,
+    )
 
   for (const record of yearRecords) {
     const month = monthlyCosts[getEntryMonth(record.date)]
@@ -71,14 +82,30 @@ export const calculateVehicleCostStatistics = (
     0,
   )
   const totalCostInCents = serviceCostInCents + fuelCostInCents
-  const mileageReadings = [
-    ...yearRecords.map(({ mileage }) => mileage),
-    ...yearFuelEntries.map(({ mileage }) => mileage),
-  ]
+  const firstReading = yearReadings[0]
+  const lastReading = yearReadings.at(-1)
   const recordedDistance =
-    mileageReadings.length >= 2
-      ? Math.max(...mileageReadings) - Math.min(...mileageReadings)
+    firstReading &&
+    lastReading &&
+    lastReading.mileage > firstReading.mileage
+      ? lastReading.mileage - firstReading.mileage
       : null
+  const distancePeriodCostInCents =
+    firstReading && lastReading
+      ? [...yearRecords, ...yearFuelEntries]
+          .filter(
+            ({ date }) =>
+              date >= firstReading.date && date <= lastReading.date,
+          )
+          .reduce(
+            (total, entry) =>
+              total +
+              ('costInCents' in entry
+                ? entry.costInCents
+                : entry.totalCostInCents),
+            0,
+          )
+      : 0
   const currentYear = currentDate.getFullYear()
   const elapsedMonthCount =
     year < currentYear
@@ -95,9 +122,11 @@ export const calculateVehicleCostStatistics = (
       elapsedMonthCount > 0 ? totalCostInCents / elapsedMonthCount : null,
     costPerDistanceUnitInCents:
       recordedDistance && recordedDistance > 0
-        ? totalCostInCents / recordedDistance
+        ? distancePeriodCostInCents / recordedDistance
         : null,
     recordedDistance,
+    distancePeriodStart: recordedDistance ? (firstReading?.date ?? null) : null,
+    distancePeriodEnd: recordedDistance ? (lastReading?.date ?? null) : null,
     monthlyCosts,
   }
 }

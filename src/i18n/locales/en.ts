@@ -181,13 +181,17 @@ export const en = {
     fuelDescription: 'All fill-ups recorded in this year.',
     monthlyAverage: 'Monthly average',
     averageDescription: 'Average across elapsed months in {{year}}.',
-    costPerDistance: 'Cost per {{unit}}',
+    costPerDistance: 'Total cost per {{unit}}',
     costPerDistanceValue: '{{value}}/{{unit}}',
     costPerDistanceDescription:
-      'Based on the first and last recorded odometer readings.',
+      'Costs recorded from {{start}} to {{end}}.',
+    costPerDistanceUnavailable:
+      'At least two different odometer readings are required.',
     recordedDistance: 'Recorded distance',
     recordedDistanceDescription:
-      'Distance between the lowest and highest yearly readings.',
+      'Odometer difference from {{start}} to {{end}}.',
+    recordedDistanceUnavailable:
+      'No complete odometer range for the selected year.',
     emptyTitle: 'No expenses for this year',
     emptyDescription:
       'Service and fuel costs will appear here after you add entries.',
